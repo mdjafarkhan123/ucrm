@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
-	import worldIcon from '@tabler/icons/outline/world.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -159,38 +160,31 @@
 					A confirmation is on its way to <strong>{bookedEmail}</strong>.
 				{/if}
 			</p>
-			<BookingFacts
-				startsAt={booked.starts_at}
-				endsAt={booked.ends_at}
-				{zone}
-				{locale}
-				hostName={booked.host_name}
-				phone={form.phone}
-				locationKind={booked.location_kind}
-				videoJoinUrl={booked.video_join_url}
-			/>
-			<p class="booking-page__hint">
-				Need a different time? Use the link in that email to change or cancel.
-			</p>
+			{#snippet facts()}
+				<BookingFacts
+					startsAt={booked.starts_at}
+					endsAt={booked.ends_at}
+					{zone}
+					{locale}
+					hostName={booked.host_name}
+					phone={form.phone}
+					locationKind={booked.location_kind}
+					videoJoinUrl={booked.video_join_url}
+				/>
+			{/snippet}
+			{#snippet hint()}Need a different time? Use the link in that email to change or cancel.{/snippet}
 		</BookingStatus>
 	</BookingFrame>
 {:else}
-	<BookingFrame {meeting}>
-		{#snippet meta()}
-			{#if step === 'details' && chosen}
-				<li class="booking-page__meta-chosen">
-					<span aria-hidden="true">{@html calendarIcon}</span>
-					<span>
-						{timeWords(chosen, zone, locale)} – {timeWords(chosenEnd, zone, locale)},
-						{dateWords(chosen, zone, locale)}
-					</span>
-				</li>
-				<li>
-					<span aria-hidden="true">{@html worldIcon}</span>{zoneCity(zone)} time
-				</li>
-			{/if}
-		{/snippet}
-
+	<BookingFrame
+		{meeting}
+		chosen={step === 'details' && chosen
+			? {
+					when: `${timeWords(chosen, zone, locale)} – ${timeWords(chosenEnd, zone, locale)}, ${dateWords(chosen, zone, locale)}`,
+					zone: `${zoneCity(zone)} time`
+				}
+			: null}
+	>
 		{#if step === 'pick'}
 			<h2 class="booking-page__step-title">Choose a day and time</h2>
 			{#if notice}
@@ -299,13 +293,16 @@
 					errorMessage={fieldErrors.note ?? ''}
 					bind:value={form.note}
 				/>
-				<TurnstileCheck
-					siteKey={data.turnstileSiteKey}
-					bind:token={turnstileToken}
-					bind:this={turnstile}
-				/>
 				<div class="booking-page__submit">
+					<TurnstileCheck
+						siteKey={data.turnstileSiteKey}
+						bind:token={turnstileToken}
+						bind:this={turnstile}
+					/>
 					<Button type="submit" size="large" loading={submitting} disabled={submitting}>
+						<span class="booking-page__submit-icon" aria-hidden="true"
+							>{@html data.requiresApproval ? sendIcon : calendarCheckIcon}</span
+						>
 						{data.requiresApproval ? 'Send request' : 'Book the call'}
 					</Button>
 				</div>
@@ -315,13 +312,12 @@
 {/if}
 
 <style lang="scss">
-	.booking-page__meta-chosen {
-		color: var(--color-interactive);
-	}
-
 	.booking-page__step-title {
 		margin: 0;
+		color: var(--color-heading);
 		font-size: var(--typography--fontSize-larger);
+		font-weight: 700;
+		letter-spacing: -0.2px;
 	}
 
 	.booking-page__banner {
@@ -346,7 +342,17 @@
 
 	.booking-page__submit {
 		display: flex;
-		justify-content: flex-end;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-base);
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+
+		// The main button stays at the right, with or without the security check beside it.
+		:global(> :last-child) {
+			margin-left: auto;
+		}
 
 		@media (max-width: 640px) {
 			:global(> *) {
@@ -355,7 +361,12 @@
 		}
 	}
 
-	.booking-page__hint {
-		font-size: var(--typography--fontSize-small);
+	.booking-page__submit-icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 </style>

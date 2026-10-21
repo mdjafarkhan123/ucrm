@@ -95,6 +95,7 @@
 
 <style lang="scss">
 	// Bits UI renders these parts, so the styles are global, scoped by the booking-month block name.
+	// Look: design skill `layout.md` → Booking page → Month.
 	:global {
 		.booking-month {
 			width: 100%;
@@ -108,35 +109,43 @@
 		}
 
 		.booking-month__heading {
+			color: var(--color-heading);
 			font-size: var(--typography--fontSize-large);
-			font-weight: 600;
-			color: var(--color-text);
+			font-weight: 700;
 		}
 
 		.booking-month__nav-group {
 			display: flex;
-			gap: var(--space-smaller);
+			gap: var(--space-small);
 		}
 
 		.booking-month__nav {
 			display: inline-grid;
 			place-items: center;
-			width: 2.5rem;
-			height: 2.5rem;
+			width: 36px;
+			height: 36px;
 			padding: 0;
-			border: 0;
-			border-radius: var(--radius-circle);
-			background: transparent;
-			color: var(--color-interactive);
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+			color: var(--color-icon);
+			box-shadow: var(--shadow-button);
 			cursor: pointer;
+			transition:
+				background-color 120ms ease,
+				border-color 120ms ease;
 
 			svg {
-				width: 1.25rem;
-				height: 1.25rem;
+				width: 16px;
+				height: 16px;
 			}
 
 			&:hover:not([data-disabled]) {
-				background: var(--color-interactive--background--subtle--hover);
+				background: var(--color-surface--hover);
+			}
+
+			&:active:not([data-disabled]) {
+				background: var(--color-surface--active);
 			}
 
 			&:focus-visible {
@@ -145,7 +154,10 @@
 			}
 
 			&[data-disabled] {
+				border-color: var(--color-disabled--secondary);
+				background: var(--color-disabled--secondary);
 				color: var(--color-disabled);
+				box-shadow: none;
 				cursor: default;
 			}
 		}
@@ -153,17 +165,17 @@
 		.booking-month__grid {
 			width: 100%;
 			border-collapse: separate;
-			border-spacing: 0 var(--space-smaller);
+			border-spacing: 0 6px;
 			table-layout: fixed;
 		}
 
 		.booking-month__weekday {
-			padding-bottom: var(--space-small);
+			height: 28px;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
+			letter-spacing: 0.6px;
 			text-transform: uppercase;
-			letter-spacing: 0.04em;
 		}
 
 		.booking-month__cell {
@@ -172,45 +184,75 @@
 		}
 
 		.booking-month__day {
+			position: relative;
 			display: inline-grid;
 			place-items: center;
-			width: min(2.75rem, 100%);
+			width: min(44px, 100%);
 			aspect-ratio: 1;
+			border: 1.5px solid transparent;
 			border-radius: var(--radius-circle);
-			color: var(--color-text--secondary);
+			color: var(--color-disabled);
 			font-size: var(--typography--fontSize-base);
+			font-weight: 500;
 			font-variant-numeric: tabular-nums;
 			cursor: default;
 			user-select: none;
+			transition:
+				background-color 120ms ease,
+				border-color 120ms ease;
+
+			// The small dot under the number: an open day's in the brand colour, today's quiet.
+			&::after {
+				position: absolute;
+				bottom: 7px;
+				left: 50%;
+				width: 4px;
+				height: 4px;
+				border-radius: var(--radius-circle);
+				transform: translateX(-50%);
+				content: none;
+			}
+
+			&[data-today]::after {
+				background: var(--color-text--secondary);
+				content: '';
+			}
 
 			&[data-outside-month] {
 				visibility: hidden;
 			}
 
 			&:not([data-unavailable]):not([data-disabled]) {
-				background: var(--color-interactive--background--subtle--hover);
-				color: var(--color-interactive);
+				border-color: var(--color-border--interactive);
+				background: var(--color-surface);
+				color: var(--color-heading);
 				font-weight: 700;
 				cursor: pointer;
 
+				&::after {
+					background: var(--color-interactive);
+					content: '';
+				}
+
 				&:hover {
-					background: var(--color-success--surface);
+					border-color: var(--color-interactive);
+					background: var(--color-surface--hover);
 				}
 			}
 
 			&[data-selected] {
+				border-color: var(--color-interactive) !important;
 				background: var(--color-interactive) !important;
-				color: var(--color-surface) !important;
+				color: var(--color-text--reverse) !important;
+
+				&::after {
+					content: none;
+				}
 			}
 
 			&:focus-visible {
 				outline: none;
 				box-shadow: var(--shadow-focus);
-			}
-
-			&[data-unavailable],
-			&[data-disabled] {
-				color: var(--color-disabled);
 			}
 		}
 	}

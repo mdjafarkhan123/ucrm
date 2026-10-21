@@ -6,7 +6,6 @@
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import linkOffIcon from '@tabler/icons/outline/link-off.svg?raw';
-	import worldIcon from '@tabler/icons/outline/world.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -146,17 +145,21 @@
 					We have emailed you the new time. Your old time is free for someone else.
 				{/if}
 			</p>
-			<BookingFacts
-				startsAt={booking.starts_at}
-				endsAt={booking.ends_at}
-				{zone}
-				{locale}
-				hostName={booking.host_name}
-				phone={booking.visitor_phone}
-				locationKind={booking.location_kind}
-				videoJoinUrl={booking.video_join_url}
-			/>
-			<Button variant="tertiary" onclick={() => show('view')}>Back to your booking</Button>
+			{#snippet facts()}
+				<BookingFacts
+					startsAt={booking.starts_at}
+					endsAt={booking.ends_at}
+					{zone}
+					{locale}
+					hostName={booking.host_name}
+					phone={booking.visitor_phone}
+					locationKind={booking.location_kind}
+					videoJoinUrl={booking.video_join_url}
+				/>
+			{/snippet}
+			{#snippet action()}
+				<Button variant="tertiary" onclick={() => show('view')}>Back to your booking</Button>
+			{/snippet}
 		</BookingStatus>
 	</BookingFrame>
 {:else if mode === 'cancelled' || !booking.can_change}
@@ -166,9 +169,23 @@
 		booking.status === 'withdrawn' ||
 		booking.status === 'declined'}
 	{@const passed = Date.parse(booking.starts_at) <= Date.now() || booking.call_status === 'held'}
+	{#snippet struckFacts()}
+		<BookingFacts
+			startsAt={booking.starts_at}
+			endsAt={booking.ends_at}
+			{zone}
+			{locale}
+			hostName={booking.host_name}
+			phone={booking.visitor_phone}
+			locationKind={booking.location_kind}
+			videoJoinUrl={booking.video_join_url}
+			struck
+		/>
+	{/snippet}
 	<BookingFrame>
 		<BookingStatus
 			icon={cancelled ? calendarOffIcon : calendarIcon}
+			facts={cancelled ? struckFacts : undefined}
 			title={booking.status === 'declined'
 				? 'This request was not accepted'
 				: booking.status === 'withdrawn'
@@ -180,17 +197,6 @@
 							: "It's too late to change online"}
 		>
 			{#if cancelled}
-				<BookingFacts
-					startsAt={booking.starts_at}
-					endsAt={booking.ends_at}
-					{zone}
-					{locale}
-					hostName={booking.host_name}
-					phone={booking.visitor_phone}
-					locationKind={booking.location_kind}
-					videoJoinUrl={booking.video_join_url}
-					struck
-				/>
 				{#if bookAgain}
 					<p>Want to talk another time? Choose a new time that suits you.</p>
 					<Button href={bookAgain}>Choose a new time</Button>
@@ -206,20 +212,15 @@
 		</BookingStatus>
 	</BookingFrame>
 {:else}
-	<BookingFrame meeting={booking}>
-		{#snippet meta()}
-			{#if mode === 'confirm' && chosen}
-				<li class="manage-page__meta-chosen">
-					<span aria-hidden="true">{@html calendarIcon}</span>
-					<span>
-						{timeWords(chosen, zone, locale)} – {timeWords(chosenEnd, zone, locale)},
-						{dateWords(chosen, zone, locale)}
-					</span>
-				</li>
-				<li><span aria-hidden="true">{@html worldIcon}</span>{zoneCity(zone)} time</li>
-			{/if}
-		{/snippet}
-
+	<BookingFrame
+		meeting={booking}
+		chosen={mode === 'confirm' && chosen
+			? {
+					when: `${timeWords(chosen, zone, locale)} – ${timeWords(chosenEnd, zone, locale)}, ${dateWords(chosen, zone, locale)}`,
+					zone: `${zoneCity(zone)} time`
+				}
+			: null}
+	>
 		{#if mode !== 'view'}
 			<BookingBackButton
 				label={mode === 'confirm' ? 'Choose another time' : 'Back to your booking'}
@@ -249,6 +250,7 @@
 				phone={booking.visitor_phone}
 				locationKind={booking.location_kind}
 				videoJoinUrl={booking.video_join_url}
+				framed
 			/>
 			{#if deadlineBeforeStart}
 				<p class="manage-page__hint">
@@ -347,10 +349,6 @@
 {/if}
 
 <style lang="scss">
-	.manage-page__meta-chosen {
-		color: var(--color-interactive);
-	}
-
 	.manage-page__heading {
 		display: flex;
 		flex-wrap: wrap;
@@ -360,7 +358,10 @@
 
 	.manage-page__title {
 		margin: 0;
+		color: var(--color-heading);
 		font-size: var(--typography--fontSize-larger);
+		font-weight: 700;
+		letter-spacing: -0.2px;
 	}
 
 	.manage-page__badge {

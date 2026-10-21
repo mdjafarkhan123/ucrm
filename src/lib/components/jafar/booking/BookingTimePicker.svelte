@@ -10,6 +10,7 @@
 		today
 	} from '@internationalized/date';
 	import worldIcon from '@tabler/icons/outline/world.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
 	import BookingMonth from '$lib/components/jafar/booking/BookingMonth.svelte';
 	import { dateWords, dayKey, timeWords, zoneCity } from '$lib/jafar/booking';
@@ -197,6 +198,7 @@
 							<li>
 								<button type="button" class="time-picker__time" onclick={() => onchoose(start)}>
 									{timeWords(start, zone, locale)}
+									<span class="time-picker__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 								</button>
 							</li>
 						{/each}
@@ -210,7 +212,7 @@
 <style lang="scss">
 	.time-picker {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 220px;
+		grid-template-columns: minmax(0, 1fr) 240px;
 		gap: var(--space-larger);
 		min-height: 420px;
 
@@ -255,8 +257,9 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-small);
+		padding-top: var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-label);
 
 		:global(.timezone-picker),
 		:global(> div) {
@@ -272,10 +275,11 @@
 
 	.time-picker__zone-icon {
 		display: inline-flex;
+		color: var(--color-icon--secondary);
 
 		:global(svg) {
-			width: 1rem;
-			height: 1rem;
+			width: 16px;
+			height: 16px;
 		}
 	}
 
@@ -304,7 +308,7 @@
 	.time-picker__times {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
+		gap: var(--space-slim);
 		min-width: 0;
 	}
 
@@ -316,12 +320,13 @@
 	}
 
 	.time-picker__day-title {
-		margin: 0;
-		min-height: 2.5rem;
 		display: flex;
 		align-items: center;
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
+		min-height: 36px;
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-large);
+		font-weight: 700;
 	}
 
 	.time-picker__list {
@@ -330,7 +335,7 @@
 		gap: var(--space-small);
 		max-height: 420px;
 		margin: 0;
-		padding: 0 var(--space-smaller) 0 0;
+		padding: var(--space-smaller) var(--space-smaller) var(--space-smaller) 0;
 		overflow-y: auto;
 		list-style: none;
 
@@ -343,28 +348,52 @@
 	}
 
 	.time-picker__time {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-small);
 		width: 100%;
-		min-height: 3rem;
-		border: var(--border-thick) solid var(--color-interactive);
+		height: 44px;
+		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		color: var(--color-interactive);
 		font: inherit;
-		font-weight: 700;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		cursor: pointer;
 		transition:
 			background-color 120ms ease,
-			color 120ms ease;
+			border-color 120ms ease;
 
 		&:hover {
-			background: var(--color-interactive);
-			color: var(--color-surface);
+			border-color: var(--color-interactive);
+			background: var(--color-surface--hover);
+			box-shadow: inset 0 0 0 0.5px var(--color-interactive);
+		}
+
+		&:active {
+			background: var(--color-surface--active);
 		}
 
 		&:focus-visible {
 			outline: none;
 			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.time-picker__arrow {
+		display: none;
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+
+		.time-picker__time:hover & {
+			display: block;
 		}
 	}
 </style>

@@ -34,12 +34,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `clients/CommunicationSettingsDialog` | 🔁F pop-up | ✅ Batch 27 `DXj9z` A 2026-10-20 | ✅ Built 2026-10-21 |
 | `communications/ComposerChannelMenu` | menus ×1 | ✅ Batch 27 `DXj9z` A 2026-10-20 | ✅ Built 2026-10-21 |
 | `forms/PublicFormQuestion` |  | ✅ Batch 28 `Y3od0z` B 2026-10-20 | ✅ Built 2026-10-21 |
-| `imports/ImportMapStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
-| `imports/ImportReviewStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
-| `imports/ImportStepper` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
-| `imports/ImportUploadStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingMonth` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingTimePicker` | loading | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
+| `imports/ImportMapStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ✅ |
+| `imports/ImportReviewStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ✅ |
+| `imports/ImportStepper` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ✅ |
+| `imports/ImportUploadStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ✅ |
+| `jafar/booking/BookingMonth` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
+| `jafar/booking/BookingTimePicker` | loading | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Merged 2026-10-19 |
 | `marketing/AsyncMultiPicker` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/CustomerGroupDialog` | 🔁F pop-up | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
@@ -59,10 +59,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `clients/ClientMergeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `invoices/CollectPaymentDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `jafar/NotificationBell` | loading | ⬜ | ⬜ |
-| `jafar/booking/BookingBackButton` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingFacts` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingFrame` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingStatus` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
+| `jafar/booking/BookingBackButton` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
+| `jafar/booking/BookingFacts` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
+| `jafar/booking/BookingFrame` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
+| `jafar/booking/BookingStatus` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jobs/ApplyToFutureDialog` | ◆ pop-up | ✅ Schedule pop-ups `a03Qm` | ✅ Merged 2026-10-19 |
 | `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ✅ Merged 2026-10-19 |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
