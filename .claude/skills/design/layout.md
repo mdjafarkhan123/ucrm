@@ -87,8 +87,21 @@
   date as a read-only 40 high tile (`--color-surface--background--subtle`, radius 8, padding 0 12, gap 10: a 16
   calendar-check icon in `--color-invoice`, the date 14/600 heading, "in 14 days" 12 quiet) with a 12 quiet hint;
   Custom date swaps the tile for a date field. Rail: the shared money summary card (`cards.md`), Attachments.
+- **New client page**, approved A by Jafar 2026-10-21 (Pencil: "Batch 42 · Client form · Approved A", `fJ8Mx`;
+  the same page edits a client from the client page's ⋯ menu). First card: the coloured top in client sand
+  (40 white `user-round` tile, "New client" or "Edit <name>", a 14 `--color-client--onSurface` line), then the
+  Client type (Person / Company) and Status (Lead / Customer) segmented switches 24 apart; under it the white
+  part, padding 20 24 24, gap 16: "Primary details" 16/600, fields two per row, 16 apart; email, phone, billing
+  email and company carry a 16 front icon in `--color-conversation`, `--color-time`, `--color-invoice`,
+  `--color-client`. Billing email is full width with its 12 quiet hint; Communication setting is a select with a
+  Configure button (`settings` in `--color-conversation`). A similar client is a warning notice strip at the
+  card's foot; an exact match is the critical strip and the matched field gets the error edge. Then the
+  Client address card (Card header, `map-pin` client tile, the optional hint), fields two per row. Rail: Lead
+  source, Tags (count in the hint), Notes, Attachments, all with client tiles. Save bar: Cancel, Save & create
+  another, Save client. Edit: no address card, Notes or Attachments, no Save & create another; Lead can't be
+  picked for a customer, with a 12 hint under Status.
 - Invoice dates and payment terms keep their existing Terms & dates card. Each page keeps its existing cards
-  and right-sidebar contents. Client creation is outside this shared form's approval.
+  and right-sidebar contents. The client form has its own first card (above).
 
 ## Setup steps
 
