@@ -85,9 +85,17 @@
 			onchange={(chosen) => (value = chosen)}
 		/>
 	{:else if question.type === 'dropdown_multi' || question.type === 'checkbox'}
-		<div class="form-question__choices" role="group" aria-labelledby={labelId} aria-describedby={helpId}>
+		<div
+			class="form-question__choices"
+			role="group"
+			aria-labelledby={labelId}
+			aria-describedby={helpId}
+		>
 			{#each options as option (option)}
-				<label class="form-question__choice" class:form-question__choice--picked={list.includes(option)}>
+				<label
+					class="form-question__choice"
+					class:form-question__choice--picked={list.includes(option)}
+				>
 					<input
 						type="checkbox"
 						checked={list.includes(option)}
@@ -137,7 +145,6 @@
 						checked={value === choice.answer}
 						onchange={() => (value = choice.answer)}
 					/>
-					<span class="form-question__circle" aria-hidden="true"></span>
 					<IconTile
 						icon={choice.icon}
 						tone={value === choice.answer ? 'success' : 'inactive'}

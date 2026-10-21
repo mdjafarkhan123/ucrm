@@ -38,11 +38,13 @@
 	<SegmentedControl bind:value={viewport} ariaLabel="Preview width" options={viewportOptions} />
 
 	{#if query.isError}
-		<ErrorState
-			title="This could not be rendered"
-			description="Something went wrong on our side. Try again."
-			retry={() => query.refetch()}
-		/>
+		<div class="template-preview__problem">
+			<ErrorState
+				title="This could not be rendered"
+				description="Something went wrong on our side. Try again."
+				retry={() => query.refetch()}
+			/>
+		</div>
 	{:else}
 		<!-- The well the email sits in, at the width a customer's screen gives it. -->
 		<div class="template-preview__well">
@@ -73,6 +75,17 @@
 		display: grid;
 		gap: var(--space-base);
 		justify-items: start;
+	}
+
+	.template-preview__problem {
+		box-sizing: border-box;
+		display: grid;
+		place-items: center;
+		justify-self: stretch;
+		min-height: 320px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
 	}
 
 	.template-preview__well {

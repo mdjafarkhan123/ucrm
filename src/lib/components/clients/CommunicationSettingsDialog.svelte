@@ -231,6 +231,11 @@
 			gap: var(--space-base);
 		}
 
+		&__item {
+			display: grid;
+			justify-items: start;
+		}
+
 		// Lines up under the tick's label: the 18 box and its 10 gap.
 		&__not-sending {
 			display: inline-flex;
