@@ -13,7 +13,7 @@ Batch 35 money-card scope: `parts/new-request-top-form.md` (supersedes abandoned
 **Next:**
 1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23, 26–28 and 33 merged; 24, 29, 30 approved (25 superseded).
    Batch 35 summary appearance implemented in the Quote branch; complete content unfinished. Batches 37
-   (customer group), 38 (profile photo, `n2ujB`) and 39 (weekly hours, `DhRBV`) approved B. Batch 40 signature pad A/B drawn `alWwd`, waiting for Jafar. Next drawing: empty row in `stages/list-1b-parts.md`;
+   (customer group), 38 (profile photo, `n2ujB`), 39 (weekly hours, `DhRBV`) approved B; 40 (signature pad, `alWwd`) approved A. Next drawing: empty row in `stages/list-1b-parts.md`;
    List 1a drawn, DataTable skipped. Older work needs the 12px text sweep.
 2. Schedule, event completion and Jobs pop-ups merged; proof `docs/evidence/2026-10-19-schedule/README.md`.
    App fills available width; 1440 is the reference. Migration applied.
