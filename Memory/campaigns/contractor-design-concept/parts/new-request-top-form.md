@@ -77,3 +77,7 @@ Text colours by meaning (Jafar 2026-10-21, "from contractor perspective"): what 
 `color-warning`, customer pays white, loss `color-feature-alert`; B cards use the dark theme tokens so greens stay
 bright on the deep card. B adds a margin status chip (Healthy margin / Below your 35% target / Losing money); the
 target comes from the existing quote target-margin setting, so using it on jobs and invoices needs Jafar's yes.
+Redraw 2026-10-21 (Jafar: "design like the classic design… use other color with border"): B is now `MSRlv`,
+classic.pen's Projected profit layout (profit + margin pill, "On $X of work", one cost/profit bar, legend with
+shares) on an ink-blue card. New Pencil variables, not yet in code: `color-money-start` #032b3a,
+`color-money-end` #0b4559, `color-money-border` #ffffff2e (edge stays visible in dark mode). `color-feature-deep` is unused now.
