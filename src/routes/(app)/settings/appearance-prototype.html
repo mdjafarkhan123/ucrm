@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Appearance settings prototype · Uplift</title>
+		<style>
+			:root {
+				font:
+					16px/1.45 Inter,
+					ui-sans-serif,
+					system-ui,
+					sans-serif;
+				color: #233d48;
+				background: #eef1f2;
+				--navy: #032b3a;
+				--ink: #233d48;
+				--muted: #49646f;
+				--green: #4d7c0f;
+				--green-dark: #3f6212;
+				--green-soft: #eafcbe;
+				--line: #dadfe2;
+				--paper: #fff;
+				--canvas: #eef1f2;
+				--info: #e2f1fd;
+				--info-ink: #225c8c;
+				--warn: #f5f0d1;
+				--warn-ink: #645916;
+				--error: #f8e5e7;
+				--error-ink: #7b2938;
+				--success: #d8f5e2;
+				--success-ink: #245b3d;
+				--focus: 0 0 0 2px #fff, 0 0 0 4px #84979f;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				min-width: 320px;
+			}
+			button,
+			input {
+				font: inherit;
+			}
+			button {
+				cursor: pointer;
+			}
+			button:focus-visible,
+			input:focus-visible,
+			[tabindex]:focus-visible {
+				outline: 0;
+				box-shadow: var(--focus);
+			}
+			button:disabled {
+				cursor: not-allowed;
+			}
+			[hidden] {
+				display: none !important;
+			}
+			.intro,
+			.lab {
+				max-width: 1280px;
+				margin: auto;
+				padding: 24px;
+			}
+			.intro__eyebrow {
+				margin: 0 0 4px;
+				color: var(--green-dark);
+				font-size: 0.75rem;
+				font-weight: 800;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+			.intro h1 {
+				margin: 0;
+				color: var(--navy);
+				font-size: clamp(1.55rem, 3vw, 2.3rem);
+				line-height: 1.15;
+			}
+			.intro p {
+				max-width: 78ch;
+				margin: 12px 0 0;
+			}
+			.prototype-label {
+				display: inline-flex;
+				margin-top: 14px;
+				padding: 6px 10px;
+				border-radius: 999px;
+				background: var(--warn);
+				color: var(--warn-ink);
+				font-size: 0.75rem;
+				font-weight: 800;
+			}
+			.crm {
+				max-width: 1440px;
+				min-height: 780px;
+				margin: auto;
+				display: grid;
+				grid-template-columns: 230px minmax(0, 1fr);
+				background: var(--paper);
+				border-block: 1px solid var(--line);
+				box-shadow: 0 14px 40px #032b3a1f;
+			}
+			.sidebar {
+				padding: 18px 12px;
+				background: var(--navy);
+				color: #fff;
+			}
+			.sidebar__brand {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 2px 8px 20px;
+				font-weight: 800;
+			}
+			.sidebar__mark {
+				display: grid;
+				width: 34px;
+				height: 34px;
+				place-items: center;
+				border-radius: 8px;
+				background: #84cc16;
+				color: var(--navy);
+			}
+			.sidebar__org {
+				margin: 0 8px 18px;
+				padding: 10px;
+				border: 1px solid #ffffff2e;
+				border-radius: 8px;
+				font-size: 0.75rem;
+				color: #dadfe2;
+			}
+			.sidebar__org strong {
+				display: block;
+				color: #fff;
+				font-size: 0.84rem;
+			}
+			.sidebar nav {
+				display: grid;
+				gap: 4px;
+			}
+			.sidebar a {
+				min-height: 40px;
+				display: flex;
+				align-items: center;
+				padding: 8px 10px;
+				border-radius: 8px;
+				color: #dadfe2;
+				text-decoration: none;
+				font-size: 0.875rem;
+			}
+			.sidebar a:hover {
+				background: #ffffff14;
+			}
+			.sidebar a[aria-current='page'] {
+				background: #fff;
+				color: var(--navy);
+				font-weight: 700;
+			}
+			.crm__main {
+				min-width: 0;
+				background: var(--canvas);
+			}
+			.topbar {
+				min-height: 64px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 16px;
+				padding: 10px 24px;
+				background: #fff;
+				border-bottom: 1px solid var(--line);
+			}
+			.topbar__mobile {
+				display: none;
+				color: var(--navy);
+				font-weight: 800;
+			}
+			.topbar__search {
+				width: min(420px, 48vw);
+				min-height: 40px;
+				padding: 9px 12px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: #f9fafb;
+				color: var(--muted);
+				font-size: 0.85rem;
+			}
+			.topbar__account {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				color: var(--muted);
+				font-size: 0.8rem;
+			}
+			.topbar__avatar {
+				display: grid;
+				width: 36px;
+				height: 36px;
+				place-items: center;
+				border-radius: 50%;
+				background: var(--green-soft);
+				color: var(--green-dark);
+				font-weight: 800;
+			}
+			.workspace {
+				max-width: 1080px;
+				margin: auto;
+				padding: 28px 28px 60px;
+			}
+			.breadcrumbs {
+				margin: 0 0 18px;
+				color: var(--muted);
+				font-size: 0.8rem;
+			}
+			.page-head {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				gap: 18px;
+				margin-bottom: 26px;
+			}
+			.page-head h2 {
+				margin: 0;
+				color: var(--navy);
+				font-size: clamp(1.75rem, 3vw, 2.4rem);
+				line-height: 1.1;
+			}
+			.page-head p {
+				max-width: 68ch;
+				margin: 8px 0 0;
+				color: var(--muted);
+			}
+			.role {
+				flex: none;
+				padding: 6px 10px;
+				border-radius: 999px;
+				background: #ebe8f7;
+				color: #5b40bf;
+				font-size: 0.75rem;
+				font-weight: 800;
+				text-transform: capitalize;
+			}
+			.panel {
+				margin-bottom: 24px;
+				padding: 24px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: #fff;
+			}
+			.panel__head {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				gap: 16px;
+				margin-bottom: 20px;
+			}
+			.panel__head h3 {
+				margin: 0;
+				color: var(--navy);
+				font-size: 1.25rem;
+			}
+			.panel__head p {
+				max-width: 70ch;
+				margin: 5px 0 0;
+				color: var(--muted);
+				font-size: 0.875rem;
+			}
+			.saved {
+				flex: none;
+				padding: 5px 9px;
+				border-radius: 999px;
+				background: var(--green-soft);
+				color: var(--green-dark);
+				font-size: 0.75rem;
+				font-weight: 800;
+			}
+			.banner {
+				display: flex;
+				align-items: flex-start;
+				gap: 10px;
+				margin-bottom: 18px;
+				padding: 12px 16px;
+				border-radius: 8px;
+				font-size: 0.875rem;
+			}
+			.banner strong {
+				display: block;
+			}
+			.banner__copy {
+				flex: 1;
+			}
+			.banner__actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			.banner--info {
+				background: var(--info);
+				color: var(--info-ink);
+			}
+			.banner--warning {
+				background: var(--warn);
+				color: var(--warn-ink);
+			}
+			.banner--error {
+				background: var(--error);
+				color: var(--error-ink);
+			}
+			.banner--success {
+				background: var(--success);
+				color: var(--success-ink);
+			}
+			.theme-grid {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 16px;
+			}
+			.theme {
+				position: relative;
+				display: block;
+				overflow: hidden;
+				border: 2px solid var(--line);
+				border-radius: 8px;
+				background: #fff;
+				cursor: pointer;
+			}
+			.theme:hover {
+				border-color: #a9b7bc;
+			}
+			.theme:has(input:checked) {
+				border-color: var(--green);
+				box-shadow: inset 0 0 0 1px var(--green);
+			}
+			.theme:has(input:focus-visible) {
+				box-shadow: var(--focus);
+			}
+			.theme input,
+			.mode input {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				opacity: 0;
+			}
+			.theme__preview {
+				height: 160px;
+				display: grid;
+				grid-template-columns: 38px 1fr;
+				padding: 14px;
+				background: #eef1f2;
+			}
+			.theme__preview::before {
+				content: '';
+				border-radius: 6px 0 0 6px;
+				background: var(--navy);
+			}
+			.theme__preview::after {
+				content: '';
+				border: 1px solid #c8d1d5;
+				border-left: 0;
+				border-radius: 0 6px 6px 0;
+				background: linear-gradient(
+					#233d48 0 7px,
+					transparent 7px 22px,
+					#f9fafb 22px 68px,
+					transparent 68px 80px,
+					#f9fafb 80px 126px
+				);
+				background-size: calc(50% - 10px) auto;
+				background-repeat: no-repeat;
+				background-position: 12px 14px;
+			}
+			.theme--botanical .theme__preview {
+				grid-template-columns: 1fr;
+				gap: 8px;
+				background: #eae8df;
+			}
+			.theme--botanical .theme__preview::before {
+				height: 30px;
+				border-radius: 12px;
+				background: #234b3a;
+			}
+			.theme--botanical .theme__preview::after {
+				border: 1px solid #d5c9b6;
+				border-radius: 14px;
+				background-color: #fbfaf6;
+			}
+			.theme__body {
+				display: flex;
+				gap: 10px;
+				padding: 14px;
+			}
+			.theme__radio {
+				width: 20px;
+				height: 20px;
+				flex: none;
+				border: 2px solid #a9b7bc;
+				border-radius: 50%;
+			}
+			.theme:has(input:checked) .theme__radio {
+				border: 6px solid var(--green);
+			}
+			.theme__title {
+				display: flex;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 6px;
+				color: var(--navy);
+				font-weight: 800;
+			}
+			.theme__tag {
+				padding: 3px 7px;
+				border-radius: 999px;
+				background: var(--warn);
+				color: var(--warn-ink);
+				font-size: 0.65rem;
+			}
+			.theme__desc {
+				display: block;
+				margin-top: 4px;
+				color: var(--muted);
+				font-size: 0.8rem;
+			}
+			.actions {
+				display: flex;
+				justify-content: flex-end;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin-top: 20px;
+				padding-top: 20px;
+				border-top: 1px solid var(--line);
+			}
+			.button {
+				min-height: 40px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0 16px;
+				border: 1px solid transparent;
+				border-radius: 8px;
+				font-weight: 700;
+			}
+			.button--primary {
+				background: var(--green);
+				border-color: var(--green);
+				color: #fff;
+			}
+			.button--primary:hover:not(:disabled) {
+				background: var(--green-dark);
+			}
+			.button--secondary {
+				background: #fff;
+				border-color: #a9b7bc;
+				color: var(--ink);
+			}
+			.button--secondary:hover:not(:disabled) {
+				background: #f9fafb;
+				border-color: var(--ink);
+			}
+			.button--tertiary {
+				min-height: 32px;
+				padding-inline: 10px;
+				background: transparent;
+				color: inherit;
+			}
+			.button--tertiary:hover:not(:disabled) {
+				background: #ffffff66;
+			}
+			.button:disabled {
+				background: #eef1f2;
+				border-color: #dadfe2;
+				color: #84979f;
+			}
+			.button[aria-busy='true'] {
+				background-image: repeating-linear-gradient(135deg, #ffffff33 0 8px, transparent 8px 16px);
+				animation: stripe 0.8s linear infinite;
+			}
+			@keyframes stripe {
+				to {
+					background-position: 22px 0;
+				}
+			}
+			.modes {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 12px;
+			}
+			.mode {
+				position: relative;
+				min-height: 90px;
+				display: grid;
+				place-items: center;
+				align-content: center;
+				padding: 12px;
+				border: 2px solid var(--line);
+				border-radius: 8px;
+				text-align: center;
+				cursor: pointer;
+			}
+			.mode:has(input:checked) {
+				border-color: var(--green);
+				background: #f7fee7;
+			}
+			.mode:has(input:focus-visible) {
+				box-shadow: var(--focus);
+			}
+			.mode strong {
+				color: var(--navy);
+				font-size: 0.875rem;
+			}
+			.mode span {
+				color: var(--muted);
+				font-size: 0.72rem;
+			}
+			.recovery {
+				min-height: 620px;
+				display: grid;
+				place-items: center;
+				padding: 32px;
+			}
+			.recovery__card {
+				width: min(520px, 100%);
+				padding: 32px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: #fff;
+				text-align: center;
+			}
+			.recovery h2 {
+				margin: 0;
+				color: var(--navy);
+			}
+			.recovery p {
+				color: var(--muted);
+			}
+			.modal {
+				position: fixed;
+				z-index: 10;
+				inset: 0;
+				display: grid;
+				place-items: center;
+				padding: 24px;
+				background: #032b3a70;
+			}
+			.modal__card {
+				width: min(940px, 100%);
+				max-height: calc(100vh - 48px);
+				overflow: auto;
+				border-radius: 12px;
+				background: #fff;
+				box-shadow: 0 25px 70px #032b3a55;
+			}
+			.modal__head {
+				position: sticky;
+				top: 0;
+				display: flex;
+				justify-content: space-between;
+				gap: 16px;
+				padding: 18px 22px;
+				border-bottom: 1px solid var(--line);
+				background: #fff;
+			}
+			.modal__head h2 {
+				margin: 0;
+				color: var(--navy);
+				font-size: 1.25rem;
+			}
+			.modal__head p {
+				margin: 4px 0 0;
+				color: var(--muted);
+				font-size: 0.8rem;
+			}
+			.modal__close {
+				width: 40px;
+				height: 40px;
+				border: 0;
+				border-radius: 8px;
+				background: transparent;
+				font-size: 1.5rem;
+			}
+			.modal__label {
+				padding: 10px 22px;
+				background: var(--warn);
+				color: var(--warn-ink);
+				font-size: 0.8rem;
+				font-weight: 700;
+			}
+			.preview {
+				min-height: 470px;
+				display: grid;
+				grid-template-columns: 170px 1fr;
+				background: #eef1f2;
+			}
+			.preview__nav {
+				padding: 22px 14px;
+				background: var(--navy);
+				color: #fff;
+			}
+			.preview__nav strong {
+				display: block;
+				margin-bottom: 24px;
+			}
+			.preview__nav span {
+				display: block;
+				margin: 9px 0;
+				color: #dadfe2;
+				font-size: 0.8rem;
+			}
+			.preview__main {
+				padding: 28px;
+			}
+			.preview__main h3 {
+				margin: 0;
+				color: var(--navy);
+				font-size: 1.7rem;
+			}
+			.preview__main p {
+				color: var(--muted);
+			}
+			.preview__stats {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 14px;
+				margin-top: 24px;
+			}
+			.preview__stat {
+				padding: 18px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: #fff;
+			}
+			.preview__stat small {
+				color: var(--muted);
+			}
+			.preview__stat strong {
+				display: block;
+				margin-top: 8px;
+				color: var(--navy);
+				font-size: 1.5rem;
+			}
+			.preview--botanical {
+				grid-template-columns: 1fr;
+				padding: 18px;
+				background: #eae8df;
+			}
+			.preview--botanical .preview__nav {
+				display: flex;
+				gap: 20px;
+				padding: 14px 20px;
+				border-radius: 16px;
+				background: #234b3a;
+			}
+			.preview--botanical .preview__nav strong {
+				margin: 0 auto 0 0;
+			}
+			.preview--botanical .preview__nav span {
+				margin: 0;
+			}
+			.preview--botanical .preview__main {
+				margin-top: 16px;
+				border-radius: 18px;
+				background: #fbfaf6;
+			}
+			.preview--botanical .preview__stat {
+				border-color: #ddd6ca;
+				border-radius: 14px;
+				background: #f3efe7;
+			}
+			.lab__head {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-end;
+				gap: 18px;
+				margin-bottom: 16px;
+			}
+			.lab__head h2 {
+				margin: 0;
+				color: var(--navy);
+			}
+			.lab__head p {
+				max-width: 70ch;
+				margin: 5px 0 0;
+				color: var(--muted);
+			}
+			.lab__grid {
+				display: grid;
+				grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
+				gap: 20px;
+			}
+			.lab-card {
+				padding: 20px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: #fff;
+			}
+			.lab-card h3 {
+				margin: 0 0 14px;
+				color: var(--navy);
+				font-size: 1rem;
+			}
+			.state {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 7px 12px;
+				margin: 0;
+				font-size: 0.8rem;
+			}
+			.state dt {
+				color: var(--muted);
+			}
+			.state dd {
+				margin: 0;
+				color: var(--navy);
+				font-weight: 700;
+				overflow-wrap: anywhere;
+			}
+			.last-change {
+				padding: 10px 12px;
+				border-radius: 8px;
+				background: var(--info);
+				color: var(--info-ink);
+				font-size: 0.8rem;
+			}
+			.free {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			.free .button {
+				min-height: 36px;
+				padding-inline: 10px;
+				font-size: 0.76rem;
+			}
+			.walkthrough {
+				margin-top: 20px;
+			}
+			.tabs {
+				display: flex;
+				gap: 4px;
+				overflow-x: auto;
+				border-bottom: 1px solid var(--line);
+			}
+			.tab {
+				min-height: 40px;
+				flex: none;
+				padding: 0 12px;
+				border: 0;
+				border-bottom: 3px solid transparent;
+				background: transparent;
+				color: var(--muted);
+				font-weight: 700;
+			}
+			.tab[aria-selected='true'] {
+				border-color: var(--green);
+				color: var(--navy);
+			}
+			.steps {
+				display: grid;
+				gap: 10px;
+				margin-top: 16px;
+			}
+			.step {
+				display: grid;
+				grid-template-columns: 28px minmax(0, 1fr) auto;
+				gap: 10px;
+				align-items: center;
+				padding: 10px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+			}
+			.step[data-done='true'] {
+				border-color: #b9d890;
+				background: #f7fee7;
+			}
+			.step__n {
+				display: grid;
+				width: 28px;
+				height: 28px;
+				place-items: center;
+				border-radius: 50%;
+				background: #eef1f2;
+				font-size: 0.75rem;
+				font-weight: 800;
+			}
+			.step strong {
+				color: var(--navy);
+				font-size: 0.84rem;
+			}
+			.step small {
+				display: block;
+				color: var(--muted);
+			}
+			@media (max-width: 760px) {
+				.intro,
+				.lab {
+					padding: 18px 16px;
+				}
+				.crm {
+					grid-template-columns: 1fr;
+				}
+				.sidebar {
+					display: none;
+				}
+				.topbar {
+					min-height: 58px;
+					padding: 8px 16px;
+				}
+				.topbar__mobile {
+					display: block;
+				}
+				.topbar__search {
+					display: none;
+				}
+				.topbar__account span:first-child {
+					display: none;
+				}
+				.workspace {
+					padding: 20px 16px 48px;
+				}
+				.page-head,
+				.panel__head,
+				.lab__head {
+					display: block;
+				}
+				.role,
+				.saved {
+					display: inline-flex;
+					margin-top: 10px;
+				}
+				.panel {
+					padding: 18px 16px;
+				}
+				.theme-grid,
+				.modes,
+				.lab__grid {
+					grid-template-columns: 1fr;
+				}
+				.theme__preview {
+					height: 140px;
+				}
+				.actions {
+					display: grid;
+					grid-template-columns: 1fr;
+				}
+				.actions .button {
+					width: 100%;
+				}
+				.banner {
+					flex-wrap: wrap;
+				}
+				.banner__actions {
+					width: 100%;
+				}
+				.modal {
+					padding: 0;
+					align-items: stretch;
+				}
+				.modal__card {
+					max-height: 100vh;
+					border-radius: 0;
+				}
+				.preview,
+				.preview--botanical {
+					grid-template-columns: 1fr;
+					padding: 0;
+				}
+				.preview__nav,
+				.preview--botanical .preview__nav {
+					display: flex;
+					gap: 12px;
+					padding: 12px 16px;
+					border-radius: 0;
+					overflow-x: auto;
+				}
+				.preview__nav strong {
+					margin: 0 auto 0 0;
+				}
+				.preview__nav span {
+					margin: 0;
+					white-space: nowrap;
+				}
+				.preview__main,
+				.preview--botanical .preview__main {
+					margin: 0;
+					padding: 20px 16px;
+					border-radius: 0;
+				}
+				.preview__stats {
+					grid-template-columns: 1fr;
+				}
+				.step {
+					grid-template-columns: 28px minmax(0, 1fr);
+				}
+				.step .button {
+					grid-column: 1 / -1;
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<section class="intro" aria-labelledby="prototype-title">
+			<p class="intro__eyebrow">A2a · Review prototype</p>
+			<h1 id="prototype-title">
+				Can people change the CRM design without losing work or guessing what happened?
+			</h1>
+			<p>
+				This fictional, read-only demo tests the organization chooser, personal appearance, save
+				conflicts and failures, safe application, and fresh-visit recovery. Nothing connects to a
+				business or saves data.
+			</p>
+			<span class="prototype-label"
+				>Prototype only · Botanical remains unavailable to customers</span
+			>
+		</section>
+		<div class="crm">
+			<aside class="sidebar">
+				<div class="sidebar__brand"><span class="sidebar__mark">U</span>Uplift</div>
+				<div class="sidebar__org">
+					<strong>North Shore Heating, Cooling &amp; Home Services</strong>Business workspace
+				</div>
+				<nav>
+					<a href="#">Dashboard</a><a href="#">Clients</a><a href="#">Schedule</a
+					><a href="#">Jobs</a><a href="#" aria-current="page">Settings</a>
+				</nav>
+			</aside>
+			<div class="crm__main">
+				<header class="topbar">
+					<span class="topbar__mobile">Uplift</span>
+					<div class="topbar__search">Search clients, jobs, invoices…</div>
+					<div class="topbar__account">
+						<span id="account">Avery Morgan · Owner</span><span class="topbar__avatar">AM</span>
+					</div>
+				</header>
+				<div id="recovery" class="recovery" hidden>
+					<div class="recovery__card">
+						<h2 id="recovery-title">We couldn’t load your workspace design</h2>
+						<p id="recovery-copy">
+							Your work is safe. Try again to load the design selected for this business.
+						</p>
+						<button class="button button--primary" data-action="fresh-retry">Try Again</button>
+						<button class="button button--tertiary" data-action="support">Contact Uplift</button>
+					</div>
+				</div>
+				<main id="appearance" class="workspace">
+					<p class="breadcrumbs">Settings &nbsp;/&nbsp; Appearance</p>
+					<div class="page-head">
+						<div>
+							<h2>Appearance</h2>
+							<p>
+								Choose how this business workspace looks for the whole team, and how light or dark
+								it looks on this device.
+							</p>
+						</div>
+						<span id="role" class="role">Owner</span>
+					</div>
+					<div id="messages" aria-live="polite"></div>
+					<section id="organization" class="panel" aria-labelledby="organization-title">
+						<div class="panel__head">
+							<div>
+								<h3 id="organization-title">Design for everyone</h3>
+								<p>
+									Saving a different design changes the workspace for everyone at North Shore
+									Heating, Cooling &amp; Home Services. Teammates already working can apply it when
+									they are ready.
+								</p>
+							</div>
+							<span id="saved" class="saved">Saved: Classic</span>
+						</div>
+						<div class="theme-grid" role="radiogroup" aria-labelledby="organization-title">
+							<label class="theme"
+								><input type="radio" name="theme" value="classic" /><span
+									class="theme__preview"
+								></span
+								><span class="theme__body"
+									><span class="theme__radio"></span
+									><span
+										><span class="theme__title">Classic</span
+										><span class="theme__desc"
+											>The familiar CRM layout your team uses today.</span
+										></span
+									></span
+								></label
+							>
+							<label class="theme theme--botanical"
+								><input type="radio" name="theme" value="botanical" /><span
+									class="theme__preview"
+								></span
+								><span class="theme__body"
+									><span class="theme__radio"></span
+									><span
+										><span class="theme__title"
+											>Botanical <span class="theme__tag">Prototype preview</span></span
+										><span class="theme__desc"
+											>A calmer presentation using the same records, features, and
+											permissions.</span
+										></span
+									></span
+								></label
+							>
+						</div>
+						<div class="actions">
+							<button class="button button--tertiary" data-action="cancel">Cancel</button
+							><button class="button button--secondary" data-action="preview">Preview</button
+							><button id="save" class="button button--primary" data-action="save-start">
+								Save Theme for Everyone
+							</button>
+						</div>
+					</section>
+					<section class="panel" aria-labelledby="mode-title">
+						<div class="panel__head">
+							<div>
+								<h3 id="mode-title">Light or dark on this device</h3>
+								<p>
+									This is personal to you on this device. It does not change the organization design
+									or interrupt open work.
+								</p>
+							</div>
+						</div>
+						<div class="modes" role="radiogroup" aria-labelledby="mode-title">
+							<label class="mode"
+								><input type="radio" name="mode" value="follow" /><strong>Follow device</strong
+								><span>Match this device</span></label
+							><label class="mode"
+								><input type="radio" name="mode" value="light" /><strong>Light</strong
+								><span>Always light here</span></label
+							><label class="mode"
+								><input type="radio" name="mode" value="dark" /><strong>Dark</strong
+								><span>Always dark here</span></label
+							>
+						</div>
+					</section>
+				</main>
+			</div>
+		</div>
+		<section class="lab" aria-labelledby="lab-title">
+			<div class="lab__head">
+				<div>
+					<h2 id="lab-title">Prototype controls</h2>
+					<p>
+						Use a guided walkthrough or free play. The readable state updates after every action.
+					</p>
+				</div>
+				<button class="button button--secondary" data-action="reset">Reset Demo</button>
+			</div>
+			<div class="lab__grid">
+				<section class="lab-card">
+					<h3>Current state</h3>
+					<dl id="state" class="state"></dl>
+					<p id="last-change" class="last-change"></p>
+				</section>
+				<section class="lab-card">
+					<h3>Free play</h3>
+					<div class="free">
+						<button class="button button--secondary" data-action="owner">Act as owner</button
+						><button class="button button--secondary" data-action="staff">Act as staff</button
+						><button class="button button--secondary" data-action="stage">Stage Botanical</button
+						><button class="button button--secondary" data-action="save-success">
+							Save succeeds</button
+						><button class="button button--secondary" data-action="save-conflict">
+							Another admin saves first</button
+						><button class="button button--secondary" data-action="save-fail">
+							Save definitely fails</button
+						><button class="button button--secondary" data-action="save-uncertain">
+							Response is lost</button
+						><button class="button button--secondary" data-action="remote">
+							Discover Botanical</button
+						><button class="button button--secondary" data-action="draft">
+							Open unsaved job edit</button
+						><button class="button button--secondary" data-action="safe">Finish open work</button
+						><button class="button button--secondary" data-action="prepare-fail">
+							Preparation fails</button
+						><button class="button button--secondary" data-action="prepare-success">
+							Preparation succeeds</button
+						><button class="button button--secondary" data-action="fresh-fail">
+							Fresh visit cannot read choice</button
+						><button class="button button--secondary" data-action="fresh-invalid">
+							Fresh visit finds invalid choice
+						</button>
+					</div>
+				</section>
+			</div>
+			<section class="lab-card walkthrough">
+				<div id="tabs" class="tabs" role="tablist" aria-label="Guided walkthroughs"></div>
+				<div id="walkthrough"></div>
+			</section>
+		</section>
+		<div id="modal" class="modal" hidden>
+			<section class="modal__card" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+				<header class="modal__head">
+					<div>
+						<h2 id="preview-title">Botanical design preview</h2>
+						<p id="preview-subtitle">Fictional dashboard · Follow device</p>
+					</div>
+					<button class="modal__close" aria-label="Close preview" data-action="close">×</button>
+				</header>
+				<div class="modal__label">
+					Preview only — links and actions are disabled, and no business data is shown.
+				</div>
+				<div id="preview" class="preview">
+					<nav class="preview__nav">
+						<strong>Willow &amp; Pine</strong><span>Dashboard</span><span>Clients</span
+						><span>Schedule</span><span>Jobs</span>
+					</nav>
+					<div class="preview__main">
+						<h3>Good morning, Maya</h3>
+						<p>Here is what needs your attention today.</p>
+						<div class="preview__stats">
+							<article class="preview__stat"><small>Visits today</small><strong>8</strong></article>
+							<article class="preview__stat">
+								<small>Quotes awaiting reply</small><strong>3</strong>
+							</article>
+							<article class="preview__stat">
+								<small>Invoices due</small><strong>$2,480</strong>
+							</article>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+		<script>
+			const initial = () => ({
+				role: 'owner',
+				saved: 'classic',
+				staged: 'classic',
+				applied: 'classic',
+				latest: 'classic',
+				mode: 'follow',
+				modal: false,
+				saving: false,
+				saveMessage: '',
+				notice: null,
+				safety: 'safe',
+				preparing: false,
+				applyMessage: '',
+				fresh: 'ready',
+				changed: 'The demo is ready.'
+			});
+			const cap = (s) => s[0].toUpperCase() + s.slice(1);
+			function reduce(s, a) {
+				let n = { ...s, changed: a.label || a.type };
+				switch (a.type) {
+					case 'RESET':
+						return initial();
+					case 'ROLE':
+						n.role = a.role;
+						n.changed =
+							a.role === 'staff'
+								? 'Staff can use personal appearance, but organization controls are hidden.'
+								: 'The owner can manage the organization design.';
+						return n;
+					case 'STAGE':
+						if (s.role === 'staff')
+							return { ...s, changed: 'Staff cannot stage an organization design.' };
+						n.staged = a.design;
+						n.saveMessage = '';
+						return n;
+					case 'CANCEL':
+						n.staged = s.saved;
+						n.saveMessage = '';
+						n.changed = 'The staged choice was discarded.';
+						return n;
+					case 'MODAL':
+						n.modal = a.open;
+						n.changed = a.open
+							? `Opened a read-only ${s.staged} preview.`
+							: 'Closed the preview. The staged choice remains.';
+						return n;
+					case 'MODE':
+						n.mode = a.mode;
+						n.changed = `${cap(a.mode)} is now used on this device.`;
+						return n;
+					case 'SAVE_START':
+						if (s.role === 'staff' || s.staged === s.saved)
+							return { ...s, changed: 'There is no authorized change to save.' };
+						n.saving = true;
+						n.saveMessage = '';
+						n.changed = 'Saving is in progress. Duplicate submission is blocked.';
+						return n;
+					case 'SAVE_SUCCESS':
+						n.saved = s.staged;
+						n.latest = s.staged;
+						n.notice = s.staged === s.applied ? null : s.staged;
+						n.saving = false;
+						n.saveMessage = 'success';
+						n.changed = `Saved ${cap(s.staged)} for everyone. This session still uses ${cap(s.applied)}.`;
+						return n;
+					case 'SAVE_CONFLICT':
+						n.saved = 'classic';
+						n.latest = 'classic';
+						n.saving = false;
+						n.saveMessage = 'conflict';
+						n.changed =
+							'Another administrator saved Classic first. Botanical remains staged for review.';
+						return n;
+					case 'SAVE_FAIL':
+						n.saving = false;
+						n.saveMessage = 'fail';
+						n.changed = 'The save definitely failed. Saved and staged choices were kept.';
+						return n;
+					case 'SAVE_UNCERTAIN':
+						n.saving = false;
+						n.saveMessage = 'uncertain';
+						n.changed = 'The response was lost. The saved choice was re-read before retry.';
+						return n;
+					case 'REMOTE':
+						n.latest = a.design;
+						n.saved = a.design;
+						n.notice = a.design === s.applied ? null : a.design;
+						n.changed = `${cap(a.design)} is ready, while this session remains in ${cap(s.applied)}.`;
+						return n;
+					case 'SAFETY':
+						n.safety = a.value;
+						n.applyMessage = '';
+						n.changed =
+							a.value === 'safe' ? 'Open work is finished.' : 'An unsaved job editor is open.';
+						return n;
+					case 'APPLY':
+						if (!s.notice) return { ...s, changed: 'There is no newer design to apply.' };
+						if (s.safety !== 'safe') {
+							n.applyMessage = 'blocked';
+							n.changed = 'Apply was blocked without touching the unsaved job.';
+							return n;
+						}
+						n.preparing = true;
+						n.applyMessage = '';
+						n.changed = `Preparing ${cap(s.notice)} while ${cap(s.applied)} stays usable.`;
+						return n;
+					case 'PREPARE_FAIL':
+						n.preparing = false;
+						n.applyMessage = 'fail';
+						n.changed = 'Preparation failed. The current workspace stayed usable.';
+						return n;
+					case 'PREPARE_SUCCESS':
+						if (!s.notice) return s;
+						n.applied = s.notice;
+						n.saved = s.notice;
+						n.latest = s.notice;
+						n.notice = null;
+						n.preparing = false;
+						n.applyMessage = 'success';
+						n.changed = `Applied ${cap(n.applied)} on the same page.`;
+						return n;
+					case 'FRESH':
+						n.fresh = a.value;
+						n.modal = false;
+						n.changed =
+							a.value === 'failed'
+								? 'A fresh visit could not read the saved choice. No fallback was guessed.'
+								: 'The saved design is unsupported. It was not overwritten.';
+						return n;
+					case 'FRESH_RETRY':
+						n.fresh = 'ready';
+						n.applied = s.latest;
+						n.notice = null;
+						n.changed = `Retry succeeded. The fresh visit opened in ${cap(n.applied)}.`;
+						return n;
+					default:
+						return n;
+				}
+			}
+			const scenarios = [
+				{
+					id: 'normal',
+					name: 'Normal change',
+					desc: 'Preview, save, then apply after confirming there is no unfinished work.',
+					steps: [
+						['stage', 'Stage Botanical', 'Nothing changes yet.'],
+						['preview', 'Open preview', 'Fictional and read-only.'],
+						['close', 'Return to settings', 'The staged choice remains.'],
+						['save-start', 'Start saving', 'Duplicate submission is blocked.'],
+						['save-success', 'Confirm the save', 'A non-blocking notice appears.'],
+						['apply', 'Apply when ready', 'Classic stays while preparation runs.'],
+						['prepare-success', 'Finish preparation', 'The same page remains open.']
+					]
+				},
+				{
+					id: 'conflict',
+					name: 'Admin conflict',
+					desc: 'Another administrator saves first; the latest saved design wins while this staged choice remains.',
+					steps: [
+						['stage', 'Stage Botanical', 'Local choice differs from saved Classic.'],
+						['save-start', 'Start saving', 'The server checks the revision.'],
+						['save-conflict', 'Reveal the conflict', 'Classic stays saved.']
+					]
+				},
+				{
+					id: 'failure',
+					name: 'Save failures',
+					desc: 'Compare a confirmed failure with a lost response that requires a fresh read.',
+					steps: [
+						['stage', 'Stage Botanical', 'Ready to save.'],
+						['save-start', 'Start saving', 'Progress is visible.'],
+						['save-fail', 'Show confirmed failure', 'The old save stays authoritative.'],
+						['save-start', 'Retry', 'The staged choice remains.'],
+						['save-uncertain', 'Lose the response', 'The saved choice is re-read.']
+					]
+				},
+				{
+					id: 'blocked',
+					name: 'Unsaved work',
+					desc: 'Apply never saves or discards a job edit, and a preparation failure leaves Classic usable.',
+					steps: [
+						['remote', 'Discover Botanical', 'The notice appears.'],
+						['draft', 'Open a job edit', 'The job page owns Save and Cancel.'],
+						['apply', 'Try to apply', 'The switch is blocked.'],
+						['safe', 'Finish the edit', 'Safety can pass.'],
+						['apply', 'Try again', 'Botanical starts preparing.'],
+						['prepare-fail', 'Fail preparation', 'Classic remains usable.'],
+						['apply', 'Retry', 'Preparation restarts.'],
+						['prepare-success', 'Finish preparation', 'Botanical is applied.']
+					]
+				},
+				{
+					id: 'staff',
+					name: 'Staff access',
+					desc: 'Staff can choose light or dark but cannot manage the organization design.',
+					steps: [
+						['staff', 'Switch to staff', 'Organization controls disappear.'],
+						['mode-dark', 'Choose Dark', 'Only this device changes.'],
+						['remote', 'Discover Botanical', 'Staff still receives the safe notice.']
+					]
+				},
+				{
+					id: 'recovery',
+					name: 'Fresh visit',
+					desc: 'A fresh visit waits for the authoritative choice instead of guessing or overwriting it.',
+					steps: [
+						['fresh-fail', 'Fail the read', 'A retry screen replaces the workspace.'],
+						['fresh-retry', 'Retry successfully', 'The saved choice opens.'],
+						['fresh-invalid', 'Find unsupported choice', 'Recovery offers retry and support.'],
+						['fresh-retry', 'Recover', 'A supported design opens.']
+					]
+				}
+			];
+			const actions = {
+				reset: { type: 'RESET' },
+				owner: { type: 'ROLE', role: 'owner' },
+				staff: { type: 'ROLE', role: 'staff' },
+				stage: {
+					type: 'STAGE',
+					design: 'botanical',
+					label: 'Botanical was staged. Nothing has been saved.'
+				},
+				cancel: { type: 'CANCEL' },
+				preview: { type: 'MODAL', open: true },
+				close: { type: 'MODAL', open: false },
+				'mode-dark': { type: 'MODE', mode: 'dark' },
+				'save-start': { type: 'SAVE_START' },
+				'save-success': { type: 'SAVE_SUCCESS' },
+				'save-conflict': { type: 'SAVE_CONFLICT' },
+				'save-fail': { type: 'SAVE_FAIL' },
+				'save-uncertain': { type: 'SAVE_UNCERTAIN' },
+				remote: { type: 'REMOTE', design: 'botanical' },
+				draft: { type: 'SAFETY', value: 'draft' },
+				safe: { type: 'SAFETY', value: 'safe' },
+				apply: { type: 'APPLY' },
+				'prepare-fail': { type: 'PREPARE_FAIL' },
+				'prepare-success': { type: 'PREPARE_SUCCESS' },
+				'fresh-fail': { type: 'FRESH', value: 'failed' },
+				'fresh-invalid': { type: 'FRESH', value: 'invalid' },
+				'fresh-retry': { type: 'FRESH_RETRY' },
+				support: { type: 'NOOP', label: 'This prototype does not contact anyone.' }
+			};
+			let state = initial(),
+				scenario = 'normal',
+				step = 0,
+				lastFocus = null;
+			const banner = (tone, title, copy, buttons = '') =>
+				`<div class="banner banner--${tone}" tabindex="-1"><div class="banner__copy"><strong>${title}</strong>${copy}</div>${buttons ? `<div class="banner__actions">${buttons}</div>` : ''}</div>`;
+			function render() {
+				document.querySelector('#organization').hidden = state.role === 'staff';
+				document.querySelector('#role').textContent = cap(state.role);
+				document.querySelector('#account').textContent =
+					state.role === 'staff' ? 'Jordan Lee · Staff' : 'Avery Morgan · Owner';
+				document.querySelector('#saved').textContent = `Saved: ${cap(state.saved)}`;
+				document
+					.querySelectorAll('[name="theme"]')
+					.forEach((x) => (x.checked = x.value === state.staged));
+				document
+					.querySelectorAll('[name="mode"]')
+					.forEach((x) => (x.checked = x.value === state.mode));
+				const save = document.querySelector('#save');
+				save.disabled = state.role === 'staff' || state.staged === state.saved || state.saving;
+				save.ariaBusy = String(state.saving);
+				save.textContent = state.saving ? 'Saving…' : 'Save Theme for Everyone';
+				let m = '';
+				if (state.notice)
+					m += banner(
+						'info',
+						`New design ready: ${cap(state.notice)}`,
+						`Keep working in ${cap(state.applied)}, or apply when this tab has no unfinished work.`,
+						`<button class="button button--primary" data-action="apply">Apply Now</button><button class="button button--tertiary" data-action="later">Later</button>`
+					);
+				if (state.saveMessage === 'success')
+					m += banner(
+						'success',
+						'Design saved for everyone',
+						'Fresh visits use it; active sessions apply when ready.'
+					);
+				if (state.saveMessage === 'conflict')
+					m += banner(
+						'warning',
+						'The saved design changed while you were here',
+						'Classic is latest. Botanical remains staged for review.'
+					);
+				if (state.saveMessage === 'fail')
+					m += banner(
+						'error',
+						'The design was not saved',
+						'The previous saved design and your staged choice remain.'
+					);
+				if (state.saveMessage === 'uncertain')
+					m += banner(
+						'warning',
+						'We could not confirm the result',
+						`The saved choice was checked again and is ${cap(state.saved)}.`
+					);
+				if (state.applyMessage === 'blocked')
+					m += banner(
+						'warning',
+						'Finish your open job edit first',
+						'Use that page’s Save or Cancel. This notice will not touch the job.'
+					);
+				if (state.applyMessage === 'fail')
+					m += banner(
+						'error',
+						`${cap(state.applied)} is still in use`,
+						'The new design could not be prepared.',
+						`<button class="button button--primary" data-action="apply">Retry</button>`
+					);
+				if (state.applyMessage === 'success')
+					m += banner(
+						'success',
+						`${cap(state.applied)} is now applied`,
+						'You stayed on the same page with the same state.'
+					);
+				document.querySelector('#messages').innerHTML = m;
+				document.querySelector('#appearance').hidden = state.fresh !== 'ready';
+				document.querySelector('#recovery').hidden = state.fresh === 'ready';
+				document.querySelector('#recovery-title').textContent =
+					state.fresh === 'invalid'
+						? 'This workspace design needs help'
+						: 'We couldn’t load your workspace design';
+				document.querySelector('#recovery-copy').textContent =
+					state.fresh === 'invalid'
+						? 'The saved design is unavailable. Retry, or contact Uplift so it can be recovered safely.'
+						: 'Your work is safe. Try again to load the design selected for this business.';
+				document.querySelector('#modal').hidden = !state.modal;
+				document.querySelector('#preview').className =
+					`preview${state.staged === 'botanical' ? ' preview--botanical' : ''}`;
+				document.querySelector('#preview-title').textContent =
+					`${cap(state.staged)} design preview`;
+				document.querySelector('#preview-subtitle').textContent =
+					`Fictional dashboard · ${cap(state.mode)} appearance`;
+				const rows = [
+					['Role', cap(state.role)],
+					['Saved organization design', cap(state.saved)],
+					['Staged choice', cap(state.staged)],
+					['Applied in this session', cap(state.applied)],
+					['Personal appearance', cap(state.mode)],
+					['Organization notice', state.notice ? cap(state.notice) : 'None'],
+					['Workspace safety', state.safety === 'safe' ? 'Safe to switch' : 'Unsaved job edit'],
+					['Save request', state.saving ? 'Saving' : 'Idle'],
+					['Design preparation', state.preparing ? 'Preparing' : 'Idle'],
+					[
+						'Fresh visit',
+						state.fresh === 'ready'
+							? 'Ready'
+							: state.fresh === 'failed'
+								? 'Could not read choice'
+								: 'Unsupported saved choice'
+					]
+				];
+				document.querySelector('#state').innerHTML = rows
+					.map((r) => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`)
+					.join('');
+				document.querySelector('#last-change').textContent = state.changed;
+				const active = scenarios.find((x) => x.id === scenario);
+				document.querySelector('#tabs').innerHTML = scenarios
+					.map(
+						(x) =>
+							`<button class="tab" role="tab" aria-selected="${x.id === scenario}" data-scenario="${x.id}">${x.name}</button>`
+					)
+					.join('');
+				document.querySelector('#walkthrough').innerHTML =
+					`<h3>${active.name}</h3><p>${active.desc}</p><div class="steps">${active.steps.map((x, i) => `<div class="step" data-done="${i < step}"><span class="step__n">${i + 1}</span><div><strong>${x[1]}</strong><small>${x[2]}</small></div><button class="button button--${i === step ? 'primary' : 'secondary'}" data-action="${x[0]}" data-step="${i}" ${i > step ? 'disabled' : ''}>${i < step ? 'Repeat' : i === step ? 'Do this' : 'Waiting'}</button></div>`).join('')}</div>`;
+			}
+			const dispatch = (a) => {
+				state = reduce(state, a);
+				render();
+			};
+			document.addEventListener('change', (e) => {
+				if (e.target.matches('[name="theme"]'))
+					dispatch({
+						type: 'STAGE',
+						design: e.target.value,
+						label: `${cap(e.target.value)} was staged. Nothing has been saved.`
+					});
+				if (e.target.matches('[name="mode"]')) dispatch({ type: 'MODE', mode: e.target.value });
+			});
+			document.addEventListener('click', (e) => {
+				const tab = e.target.closest('[data-scenario]');
+				if (tab) {
+					scenario = tab.dataset.scenario;
+					step = 0;
+					state = initial();
+					render();
+					return;
+				}
+				const b = e.target.closest('[data-action]');
+				if (!b || b.disabled) return;
+				if (b.dataset.action === 'later') {
+					state = { ...state, notice: null, changed: 'The notice was dismissed for this demo.' };
+					render();
+					return;
+				}
+				if (b.dataset.action === 'preview') lastFocus = b;
+				if (b.dataset.step !== undefined && Number(b.dataset.step) === step) step++;
+				dispatch(actions[b.dataset.action]);
+				if (b.dataset.action === 'preview')
+					setTimeout(() => document.querySelector('.modal__close').focus());
+				if (b.dataset.action === 'close')
+					setTimeout(() =>
+						(lastFocus?.isConnected
+							? lastFocus
+							: document.querySelector('[data-action="preview"]')
+						)?.focus()
+					);
+			});
+			document.addEventListener('keydown', (e) => {
+				if (!state.modal) return;
+				const close = document.querySelector('.modal__close');
+				if (e.key === 'Escape') {
+					e.preventDefault();
+					dispatch(actions.close);
+					setTimeout(() =>
+						(lastFocus?.isConnected
+							? lastFocus
+							: document.querySelector('[data-action="preview"]')
+						)?.focus()
+					);
+				} else if (e.key === 'Tab') {
+					e.preventDefault();
+					close.focus();
+				}
+			});
+			render();
+		</script>
+	</body>
+</html>
