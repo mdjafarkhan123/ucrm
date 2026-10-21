@@ -86,3 +86,10 @@ Redraw 2026-10-21 (Jafar: "design like the classic design… use other color wit
 classic.pen's Projected profit layout (profit + margin pill, "On $X of work", one cost/profit bar, legend with
 shares) on an ink-blue card. New Pencil variables, not yet in code: `color-money-start` #032b3a,
 `color-money-end` #0b4559, `color-money-border` #ffffff2e (edge stays visible in dark mode). `color-feature-deep` is unused now.
+Redraw 2 2026-10-21: Jafar deleted board `UN1hM` and chose "make it change with the record" — one shared card
+whose frame stays fixed while its title, big number, bar and rows follow the record, like the Job/Quote/Invoice
+details cards in classic.pen (`X02qby`, `CmMUl`, `CTXLC`). New board `K5Ps7x` "Concept · Batch 35 · Shared money
+summary card · A vs B": A (refine the live green Job total card: leads with what the client pays, team-only
+profit panel) and B (classic layout on ink blue: profit-led on job and quote, balance-due-led on invoice with
+"This invoice / Left to bill on the job" bar). Each shows New job, New quote, New invoice (deposit stage), nothing
+priced, losing money, no cost access; dark mode row. Waiting for Jafar's pick.
