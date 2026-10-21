@@ -6,7 +6,7 @@
 **Where:** branch `claude/build-batch54`, folder `/home/jafar/Ucrm/.worktrees/build-batch54` (node_modules linked,
 `.env` copied), claim `bd9e7bb472e1` (owner `claude-batch54-build`, area `marketing`) — keep it until merged.
 
-## Built (all uncommitted work is now committed on the branch)
+## Built
 
 - `marketing/VariableField` (new): tag text field; saved text keeps `{{token}}`; one Backspace/Delete removes a
   tag; caret spaces (zero-width) around tags; paste is plain text; limit counts the saved text.
@@ -22,8 +22,7 @@
 
 ## Checked live (Playwright, Raad LTD owner, 1440 light)
 
-Empty step; Variable menu; tag in subject; preview inbox line shows "Alex, …"; counts; Backspace/Delete/Home
-behaviour around a tag (fixed twice).
+Empty step; Variable menu; tag in subject; inbox line shows "Alex, …"; counts; Backspace/Delete/Home around a tag.
 
 ## Next
 
@@ -48,4 +47,3 @@ behaviour around a tag (fixed twice).
 - At 1440 with the sidebar the column is about 1050, so the email shows about 562 wide, not 600.
 - The "N left" count uses the saved length (a variable counts as its `{{…}}` text) because the server's limit does.
 
-Stale ticks seen (evidence exists, only the ticks are old): Batches 14, 15, 46, 50 in the lists.
