@@ -183,3 +183,29 @@ moves, rules, warnings and blockers as the live app.
   Couldn't check / blocked: a critical notice strip (`circle-alert` / `ban`) with the live words; when blocked
   the moves stay and Merge clients is disabled. Nothing to move: the live line replaces the tiles. Merging: the
   spinner takes the merge icon's place, Cancel is disabled.
+
+## Collect payment pop-up
+
+Recording money received and applying it to a client's bills, and Fix payment (board `b5ZAe`, A, Jafar
+2026-10-21). Same fields, words and buttons as the live app; Payment method stays a dropdown.
+
+- Large pop-up (940). Header: 40 tile in `--color-invoice` (`credit-card`), "Collect payment" ("Fix payment"),
+  a 12 quiet line naming the invoice and client ("Invoice #1042 · Sarah Lee"; Fix: "$1,500.00 payment · Sarah
+  Lee"). Footer: Cancel, Save and email receipt (secondary, `mail`), Collect payment (main, `check`). Fix: no
+  receipt button; Save corrected payment.
+- Body splits in two. Left, the payment (padding 20, gap 16): Amount received as a 56 high money box (sign block
+  48 wide, sign 18/600, amount 24/700 -0.4 at the right); Payment method (16 `landmark` in `--color-invoice`)
+  and Payment date (16 `calendar-days` in `--color-time`) side by side; Reference # (16 `hash`); Details as a
+  big text box. Fix: the live intro line 14 quiet on top, and "Why is it being fixed? (optional)" last.
+- Right, a 400 panel, `--color-invoice--surface` with a 1px `--surface-edge` line on its left, padding 20, gap 12:
+  a 32 white tile (`receipt`) and "Apply to invoices" 16/600; one white card per bill (radius 12, 1px
+  `--color-invoice--surface-edge`, padding 12 12 12 14, gap 12): the checkbox, "Invoice #1042" 14/600 over the
+  live line 12 quiet ("This invoice · owes $1,250.00", "Due Oct 3 · owes $480.00"), and when ticked a 120 small
+  money box; a ticked card's edge is 1.5px `--color-invoice`.
+- Foot card (white, radius 12, padding 14, gap 12): an 8 high bar, the applied part `--color-invoice` and the
+  credit part `--color-client`, 3 apart, radius 4; then "Applied" and "Kept as client credit" 13/500 with 8 dots
+  in those colours and their amounts 14/700 at the right. No credit: the bar is all blue and the credit line goes.
+- Other bills loading: a bone card under the pinned bill. Amount missing: the big box gets the field error ("Enter
+  how much was paid."). Over what a bill owes: the card's edge and its box turn `--color-critical`, the live
+  error under its words. Couldn't save: a critical notice strip at the foot of the left side, fields kept.
+  Saving: only the pressed button spins; the other two are disabled.
