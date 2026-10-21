@@ -82,3 +82,40 @@ A client's automatic-message ticks (board `DXj9z` Part 2, A, Jafar 2026-10-20).
   a 16 `shield-check` in `--color-growth`, words 12 secondary.
 - Do not disturb: a warning notice strip (`moon`) at the top and every group row at 50%. No marketing: an
   informative notice strip (`megaphone-off`), rows unchanged.
+
+## Customer group pop-up
+
+Marketing's New / Edit customer group (board `PLExJ`, B, Jafar 2026-10-21). Same fields, conditions and words
+as the live app.
+
+- Large pop-up (940). Header: 40 tile in `--color-growth` (`users`), the title. Footer: Cancel, then Save group
+  (Save changes when editing).
+- Body splits in two: the form at the left (padding 20, gap 20) and a 300 recipients panel at the right, full
+  height, `--color-growth--surface` with a 1px `--surface-edge` line on its left.
+- Form: Name and Description, then "Match customers who" (16 `funnel` in `--color-growth`, 16/600 title, 12 quiet
+  hint) over one list box: white, 1px `--color-border`, radius 12, clipped.
+- Condition row: padding 12 8 12 14, gap 12, a hairline under it. Left 172: a 24 tile in the colour of what the
+  condition checks (client things `--color-client`; lead source `--color-request` `inbox`; services, work type and
+  last completed Job `--color-job`; upcoming work `--color-time`; always include `--color-success` `user-plus`;
+  always exclude `--color-critical` `user-x`) and the label 13/600 heading. Right: the condition's controls, 36
+  high. Last: a 32 quiet trash icon `--color-icon-secondary` (red on hover).
+- Picked values: a 28 chip, white, 1px `--color-border--interactive`, radius 8, padding 0 4 0 10, the value 13/500
+  heading and a 20 × (radius 6). Tags keep the tag look. Add / Add tag: a quiet 28 button, 14 `plus` and 13/600 in
+  `--color-interactive`.
+- The list box ends in a `--color-surface--background--subtle` band with "Add a condition…" as a quiet green
+  button (16 `circle-plus`, 14 chevron); it opens the dropdown list, each line with its condition's 24 tile.
+- No conditions: one row with a 16 `users` in `--color-growth` and the live sentence, then the band.
+- Recipients panel (padding 20, gap 16): a 32 white tile (`users`, `--color-growth`), "Recipients" 16/600 and the
+  12 hint in `--color-growth--onSurface`. A white card (radius 12, 1px `--surface-edge`, padding 16): eligible
+  count 40/700 (-1) with an 18 `mail-check` in `--color-success`, "Eligible to receive email" 13/600
+  `--color-success--onSurface`; under a hairline, Match the rules (`users`) and Excluded (`user-minus`) 13 with
+  figures 14/700, then each exclusion reason 12 quiet with its count 12/600, indented 24.
+- View customers (Hide customers when open): a full-width secondary button. The list opens in the panel under the
+  counts: the filter select, white rows (name 13/600, email 12 quiet, an excluded customer's reason as a grey
+  pill), Load more as a quiet button.
+- Counting: bones in `--color-growth--surface-edge` inside the white card. Couldn't count / couldn't load: the
+  small error (critical tile, words, Try again) in a white card. Nothing found: one 12 quiet line in a white card.
+- Search picker and type-and-add box open the dropdown list (`inputs.md`); typing "Searching…", "Start typing to
+  search.", "No matches for “…”." and the red "Could not search. Try again." are 13 lines in the list. The
+  type-and-add pop-over is 280 wide, radius 12: a text box, the suggestions, "Press Enter to add." 12 quiet.
+- Name missing: the field error. Someone else changed the group: a critical notice strip at the top of the form.

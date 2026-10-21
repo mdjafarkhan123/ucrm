@@ -41,11 +41,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jafar/booking/BookingMonth` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
 | `jafar/booking/BookingTimePicker` | loading | ✅ Batch 30 `TC3iU` A 2026-10-20 | ⬜ |
 | `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Merged 2026-10-19 |
-| `marketing/AsyncMultiPicker` | loading | 🟡 Batch 37 `PLExJ` A vs B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupDialog` | 🔁F pop-up | 🟡 Batch 37 `PLExJ` A vs B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupPreview` | loading | 🟡 Batch 37 `PLExJ` A vs B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupRuleBuilder` |  | 🟡 Batch 37 `PLExJ` A vs B 2026-10-21 | ⬜ |
-| `marketing/FreeTextChipInput` |  | 🟡 Batch 37 `PLExJ` A vs B 2026-10-21 | ⬜ |
+| `marketing/AsyncMultiPicker` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
+| `marketing/CustomerGroupDialog` | 🔁F pop-up | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
+| `marketing/CustomerGroupPreview` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
+| `marketing/CustomerGroupRuleBuilder` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
+| `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ⬜ |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
