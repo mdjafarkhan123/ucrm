@@ -41,16 +41,16 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jafar/booking/BookingMonth` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jafar/booking/BookingTimePicker` | loading | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Merged 2026-10-19 |
-| `marketing/AsyncMultiPicker` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupDialog` | 🔁F pop-up | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupPreview` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
-| `marketing/CustomerGroupRuleBuilder` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
-| `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
+| `marketing/AsyncMultiPicker` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
+| `marketing/CustomerGroupDialog` | 🔁F pop-up | ✅ Batch 37 `PLExJ` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
+| `marketing/CustomerGroupPreview` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
+| `marketing/CustomerGroupRuleBuilder` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
+| `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ✅ Built 2026-10-21 |
-| `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ⬜ |
+| `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
 | `settings/WeeklyHoursEditor` |  | ✅ Batch 39 `DhRBV` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch39/`) |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
-| `ui/SignaturePad` |  | ✅ Batch 40 `alWwd` A 2026-10-21 | ⬜ |
+| `ui/SignaturePad` |  | ✅ Batch 40 `alWwd` A 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarMonthGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
