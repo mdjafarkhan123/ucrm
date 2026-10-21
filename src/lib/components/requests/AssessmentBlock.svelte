@@ -749,7 +749,7 @@
 		}
 
 		&__head-day {
-			font-size: 17px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 			line-height: 1.1;
 		}
@@ -943,13 +943,13 @@
 			}
 		}
 		&__tile-weekday {
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 600;
 			letter-spacing: 0.6px;
 		}
 		&__tile-day {
 			margin-top: 3px;
-			font-size: 22px;
+			font-size: var(--typography--fontSize-larger);
 			font-weight: 700;
 			letter-spacing: -0.4px;
 		}
@@ -974,7 +974,7 @@
 			gap: var(--space-small);
 			margin: 0;
 			color: var(--color-heading);
-			font-size: 15px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 		}
 

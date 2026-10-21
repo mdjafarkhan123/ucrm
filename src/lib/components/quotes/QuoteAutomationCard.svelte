@@ -361,7 +361,7 @@
 
 	.quote-automation__name {
 		color: var(--color-heading);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 600;
 		overflow: hidden;
 		text-overflow: ellipsis;

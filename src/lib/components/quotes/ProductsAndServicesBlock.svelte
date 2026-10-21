@@ -1850,7 +1850,7 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-base);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 
 			dt {
@@ -1873,7 +1873,7 @@
 				}
 				dd {
 					color: var(--color-heading);
-					font-size: 18px;
+					font-size: var(--typography--fontSize-large);
 					font-weight: 700;
 					letter-spacing: -0.3px;
 				}
@@ -2192,7 +2192,7 @@
 		thead th {
 			padding-block: 10px;
 			color: var(--color-text--secondary);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 600;
 			letter-spacing: 0.6px;
 			text-transform: uppercase;
@@ -2218,7 +2218,7 @@
 			border: var(--border-base) solid var(--color-border);
 			border-radius: 999px;
 			background: var(--color-surface--background--subtle);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-small);
 		}
 		&__choice-icon {
 			display: inline-flex;
@@ -2367,7 +2367,7 @@
 			align-items: center;
 			gap: 10px;
 			color: var(--color-heading);
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 
 			&::before {
@@ -2544,7 +2544,7 @@
 			gap: 10px;
 			padding: var(--space-small) var(--space-smaller) 0;
 			color: var(--color-heading);
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 
 			&::before {
@@ -2587,7 +2587,7 @@
 			border-radius: var(--radius-base);
 			color: var(--color-heading);
 			background: var(--color-surface--background);
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 			font-variant-numeric: tabular-nums;
 			white-space: nowrap;

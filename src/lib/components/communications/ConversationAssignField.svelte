@@ -93,7 +93,7 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: 10px;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
 		background: var(--color-surface);
 		cursor: pointer;
@@ -132,7 +132,7 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: 10px;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
 	}
 </style>

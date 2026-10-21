@@ -625,7 +625,7 @@
 			h3 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 16px;
+				font-size: var(--typography--fontSize-large);
 				font-weight: 600;
 			}
 		}
@@ -643,7 +643,7 @@
 		&__total-amount {
 			margin: 0;
 			color: var(--color-heading);
-			font-size: 40px;
+			font-size: var(--typography--fontSize-jumbo);
 			font-weight: 700;
 			letter-spacing: -1px;
 			font-variant-numeric: tabular-nums;
@@ -680,7 +680,7 @@
 			align-items: center;
 			gap: var(--space-small);
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 
 			strong {
@@ -715,7 +715,7 @@
 			padding-top: 14px;
 			border-top: var(--border-base) solid var(--color-border);
 			color: var(--color-warning);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
 
 			// The icon keeps the state colour; the amount takes its on-surface shade so it reads on white.

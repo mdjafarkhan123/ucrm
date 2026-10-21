@@ -295,7 +295,7 @@
 		}
 
 		&__weekday {
-			font-size: 10px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 			letter-spacing: 0.6px;
 			text-transform: uppercase;
@@ -303,7 +303,7 @@
 		}
 
 		&__day {
-			font-size: 20px;
+			font-size: var(--typography--fontSize-larger);
 			font-variant-numeric: tabular-nums;
 			font-weight: 700;
 			line-height: 1.1;
@@ -327,7 +327,7 @@
 		&__link {
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: 15px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 			text-decoration: none;
 			text-overflow: ellipsis;
@@ -346,7 +346,7 @@
 
 		&__when {
 			color: var(--color-text--secondary);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 
@@ -355,7 +355,7 @@
 			align-items: center;
 			gap: 6px;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 
@@ -376,7 +376,7 @@
 
 		&__unassigned {
 			color: var(--color-text--secondary);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 		}
 
 		&__avatars {
@@ -404,7 +404,7 @@
 			place-items: center;
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background--subtle) !important;
-			font-size: 11px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 		}
 

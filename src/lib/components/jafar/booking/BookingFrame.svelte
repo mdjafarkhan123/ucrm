@@ -110,7 +110,7 @@
 		align-items: center;
 		gap: 10px;
 		color: var(--color-heading);
-		font-size: 18px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 700;
 	}
 

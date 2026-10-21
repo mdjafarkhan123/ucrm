@@ -177,7 +177,7 @@
 
 		&__label {
 			color: var(--color-heading);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 		}
 
@@ -198,7 +198,7 @@
 
 		// Reason names read as the row's main text; the status and menu sit at the far end.
 		:global(.data-table--card tbody th) {
-			font-size: 14px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 		:global(.data-table--card tbody tr:last-child th),
@@ -226,7 +226,7 @@
 			padding: 16px 24px;
 			background: var(--color-surface--background--subtle);
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			line-height: 1.6;
 		}
 

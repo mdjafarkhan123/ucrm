@@ -234,7 +234,7 @@
 
 		&__name {
 			color: var(--color-heading);
-			font-size: 15px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 		}
 

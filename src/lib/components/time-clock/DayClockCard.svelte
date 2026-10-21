@@ -212,13 +212,13 @@
 			h2 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 			p {
 				margin: 0;
 				color: var(--color-text--secondary);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 				font-weight: 500;
 			}
 			a {
@@ -238,7 +238,7 @@
 		&__running :global(.running-clock) {
 			padding: 0;
 			background: none;
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			font-variant-numeric: tabular-nums;
 		}

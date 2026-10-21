@@ -404,7 +404,7 @@
 		gap: var(--space-smaller);
 		border-radius: var(--radius-small);
 		color: var(--color-interactive);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 		text-decoration: none;
 
@@ -459,7 +459,7 @@
 	.context-rail__eyebrow {
 		margin: var(--space-smaller) 0 calc(var(--space-smaller) * -1);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -498,7 +498,7 @@
 	.context-rail__job-kicker {
 		flex: 1;
 		color: var(--color-base-blue--500);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -512,7 +512,7 @@
 		border: var(--border-base) solid rgb(255 255 255 / 0.08);
 		border-radius: 10px;
 		background: rgb(255 255 255 / 0.08);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 700;
 	}
 
@@ -535,7 +535,7 @@
 		}
 
 		span {
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 	}
@@ -551,7 +551,7 @@
 			display: flex;
 			align-items: center;
 			gap: 10px;
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 		}
 
 		div > span {
@@ -658,7 +658,7 @@
 
 		dt {
 			color: var(--color-text--secondary);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 500;
 		}
 

@@ -45,7 +45,7 @@
 			transform: none;
 			padding: 0;
 			background: transparent;
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 		}
 		:global(.section-block legend.section-block__title) {
 			float: left;

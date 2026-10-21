@@ -743,13 +743,13 @@
 	.quote-deposit__pad {
 		margin: 0;
 		padding: 0 20px 18px;
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.quote-deposit__pill {
 		padding: 3px 9px;
 		border-radius: 999px;
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 
 		&--awaiting {
@@ -777,7 +777,7 @@
 
 	.quote-deposit__amount {
 		color: var(--color-heading);
-		font-size: 22px;
+		font-size: var(--typography--fontSize-larger);
 		font-variant-numeric: tabular-nums;
 		font-weight: 700;
 		letter-spacing: -0.5px;
@@ -786,7 +786,7 @@
 
 	.quote-deposit__of {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 

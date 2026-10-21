@@ -321,7 +321,7 @@
 			h3 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 16px;
+				font-size: var(--typography--fontSize-large);
 				font-weight: 600;
 			}
 
@@ -350,7 +350,7 @@
 			align-items: center;
 			gap: 10px;
 			color: var(--color-heading);
-			font-size: 40px;
+			font-size: var(--typography--fontSize-jumbo);
 			font-weight: 700;
 			letter-spacing: -1px;
 			line-height: 1.1;

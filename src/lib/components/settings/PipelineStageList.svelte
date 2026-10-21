@@ -303,7 +303,7 @@
 		&__note {
 			flex: 0 0 auto;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 		}
 
 		// A locked row: the name on the left, its warning days on the right, wrapping under on a phone.
@@ -335,7 +335,7 @@
 
 		&__hint {
 			margin: 0;
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__days-error {

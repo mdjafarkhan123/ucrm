@@ -573,7 +573,7 @@
 
 		&__weekday {
 			color: var(--color-heading);
-			font-size: 18px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 
 			&--quiet {
@@ -586,7 +586,7 @@
 			align-items: center;
 			gap: var(--space-small);
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
 
 			&--quiet {

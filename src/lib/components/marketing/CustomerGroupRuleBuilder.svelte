@@ -383,7 +383,7 @@
 		gap: var(--space-small);
 		margin: 0;
 		color: var(--color-heading);
-		font-size: 16px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 600;
 	}
 

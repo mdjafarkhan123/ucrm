@@ -93,25 +93,25 @@
 			margin-bottom: var(--space-large);
 			:global(.breadcrumbs) {
 				margin-bottom: 6px;
-				font-size: 13px;
+				font-size: var(--typography--fontSize-label);
 				font-weight: 600;
 			}
 			:global(.breadcrumbs a svg) {
 				display: none;
 			}
 			:global(.page-header h1) {
-				font-size: 36px;
+				font-size: var(--typography--fontSize-jumbo);
 				font-weight: 900;
 			}
 			:global(.page-header__description) {
 				max-width: none;
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 			}
 		}
 		&--communication {
 			:global(.breadcrumbs) {
 				margin-bottom: 4px;
-				font-size: 13px;
+				font-size: var(--typography--fontSize-label);
 				font-weight: 600;
 			}
 			:global(.breadcrumbs a svg) {
@@ -121,12 +121,12 @@
 				gap: var(--space-smaller);
 			}
 			:global(.page-header h1) {
-				font-size: 36px;
+				font-size: var(--typography--fontSize-jumbo);
 				line-height: var(--typography--lineHeight-tight);
 			}
 			:global(.page-header__description) {
 				max-width: none;
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 			}
 		}
 		&--compact-description :global(.page-header__copy) {
@@ -150,7 +150,7 @@
 			flex-wrap: wrap;
 		}
 		.settings-page-header--communication :global(.page-header h1) {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 	}
 </style>

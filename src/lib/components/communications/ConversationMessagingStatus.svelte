@@ -233,7 +233,7 @@
 	.messaging__label {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -279,7 +279,7 @@
 		align-items: center;
 		gap: 6px;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}
@@ -313,7 +313,7 @@
 	.messaging__note {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.45;
 	}
 
@@ -322,7 +322,7 @@
 		padding-left: var(--space-small);
 		border-left: 2px solid var(--color-border);
 		color: var(--color-text);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		overflow-wrap: anywhere;
 	}
 

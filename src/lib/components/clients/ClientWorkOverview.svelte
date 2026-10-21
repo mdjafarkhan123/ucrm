@@ -284,7 +284,7 @@
 		&__title {
 			overflow: hidden;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -305,14 +305,14 @@
 
 			&--address {
 				color: var(--color-text);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-small);
 				font-weight: 500;
 			}
 		}
 
 		&__date {
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 

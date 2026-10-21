@@ -93,7 +93,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-slim);
-		font-size: 18px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 700;
 	}
 
@@ -141,7 +141,7 @@
 
 	.jafar-auth__brand-name {
 		margin: 0;
-		font-size: 48px;
+		font-size: var(--typography--fontSize-extravagant);
 		font-weight: 700;
 		letter-spacing: -1.2px;
 		line-height: 1.05;
@@ -151,7 +151,7 @@
 		max-width: 420px;
 		margin: 0;
 		color: var(--color-feature--text--secondary);
-		font-size: 16px;
+		font-size: var(--typography--fontSize-large);
 		line-height: 1.5;
 	}
 
@@ -186,7 +186,7 @@
 	.jafar-auth__title {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: 28px;
+		font-size: var(--typography--fontSize-display);
 		font-weight: 700;
 		letter-spacing: -0.6px;
 		line-height: 1.2;
@@ -195,7 +195,7 @@
 	.jafar-auth__intro {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: 15px;
+		font-size: var(--typography--fontSize-large);
 		line-height: 1.5;
 	}
 

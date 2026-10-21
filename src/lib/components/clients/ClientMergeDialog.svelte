@@ -418,7 +418,7 @@
 
 			strong {
 				color: var(--color-heading);
-				font-size: 18px;
+				font-size: var(--typography--fontSize-large);
 				font-weight: 700;
 				line-height: 1.2;
 			}

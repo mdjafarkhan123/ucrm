@@ -528,7 +528,7 @@
 
 			:global(.money-input__currency) {
 				min-width: 48px;
-				font-size: 18px;
+				font-size: var(--typography--fontSize-large);
 			}
 		}
 
@@ -570,7 +570,7 @@
 			h3 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 16px;
+				font-size: var(--typography--fontSize-large);
 				font-weight: 600;
 			}
 		}

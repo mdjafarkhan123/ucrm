@@ -136,7 +136,7 @@
 		:global(.avatar--base) {
 			width: 30px;
 			height: 30px;
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 		}
 	}
@@ -156,7 +156,7 @@
 
 	.message__sender {
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 	}
 
@@ -173,7 +173,7 @@
 		--message-accent: var(--color-informative--onSurface);
 		color: var(--color-text);
 		background: var(--color-surface);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		line-height: 1.5;
 		overflow-wrap: anywhere;
 	}
@@ -246,7 +246,7 @@
 		gap: 5px;
 		padding: 0 var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 

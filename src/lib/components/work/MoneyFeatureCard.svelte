@@ -363,7 +363,7 @@
 		}
 		&__note {
 			color: var(--color-feature--text--secondary);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 		&__breakdown {
@@ -402,7 +402,7 @@
 			display: grid;
 			gap: var(--space-small);
 			margin: 0;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 		}
 		&__legend-row {
 			display: flex;
@@ -440,7 +440,7 @@
 			padding: 4px 9px;
 			border-radius: 999px;
 			background: var(--color-feature--subtle);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
 		}
 		&__badge-icon,
@@ -465,7 +465,7 @@
 			border-radius: 999px;
 			color: var(--color-feature--start);
 			background: var(--color-feature--text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 700;
 		}
 		&__foot {
@@ -478,7 +478,7 @@
 			display: grid;
 			gap: 12px;
 			margin: 0;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 
 			dd {
 				font-weight: 700;
@@ -491,7 +491,7 @@
 			padding: 12px;
 			border-radius: var(--radius-base);
 			background: var(--color-feature--subtle);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 
 			&:empty {
@@ -528,7 +528,7 @@
 			border: var(--border-base) solid var(--color-feature--border);
 			border-radius: var(--radius-base);
 			background: var(--color-feature--subtle);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 
 			dt {
 				color: var(--color-feature--text--secondary);

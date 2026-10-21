@@ -161,7 +161,7 @@
 			min-width: 0;
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: 15px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 800;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -173,7 +173,7 @@
 			border-radius: 8px;
 			color: var(--color-interactive);
 			background: var(--color-success--surface);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 			letter-spacing: 0.4px;
 			text-transform: uppercase;
@@ -182,7 +182,7 @@
 		&__tagline {
 			margin: 0;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.45;
 		}
@@ -202,7 +202,7 @@
 			align-items: flex-start;
 			gap: 8px;
 			color: var(--color-text);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.35;
 		}

@@ -355,7 +355,7 @@
 
 		&__signer {
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__meta {

@@ -399,7 +399,7 @@
 		&__duration {
 			flex: 0 0 90px;
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			text-align: right;
 			font-variant-numeric: tabular-nums;
 		}
@@ -454,7 +454,7 @@
 
 			span {
 				color: var(--color-text--secondary);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 			}
 
 			strong {

@@ -645,7 +645,7 @@
 			h3 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 16px;
+				font-size: var(--typography--fontSize-large);
 				font-weight: 600;
 			}
 		}
@@ -711,7 +711,7 @@
 		&__decision-text {
 			margin: 0;
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			line-height: 1.45;
 		}
 

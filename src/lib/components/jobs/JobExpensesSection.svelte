@@ -354,7 +354,7 @@
 			flex: 0 0 90px;
 			overflow: hidden;
 			color: var(--color-text);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			text-align: right;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -393,7 +393,7 @@
 
 			span {
 				color: var(--color-text--secondary);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 			}
 
 			strong {
