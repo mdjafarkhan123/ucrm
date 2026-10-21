@@ -179,11 +179,13 @@ One card for all six records (Pencil: "Record header · C · White top", approve
   `--color-conversation`. The address opens in Google Maps and gives way first. No call / text / email buttons.
   The client page puts its address (18 pin, `-base` 500 heading) here, with Message and Request a review at the
   right.
-- **Facts:** padding 20 24, up to four facts in one row, 24 apart; each takes the room its words need and the
-  spare room goes between them, with a 1px `--color-border` line and 20 inset before each fact after the first.
-  Each: a 40 tile at the left (radius 10, 20 icon, the fact's own colour family), 12 gap, then the label
-  `-small` 500 `--color-text--secondary` over the value `-base` 600 heading, 4 apart. A value too long for its
-  room ends in "…". A missing value says what it waits for in `--color-text--secondary`.
+- **Facts:** padding 20 24, up to four facts in one row, 12 apart; each takes the room its words need and the
+  spare room goes between them, with a 1px `--color-border` line and 12 inset before each fact after the first.
+  Each: a 40 tile at the left (radius 10, 20 icon, the fact's own colour family), 10 gap, then the label
+  `-small` 500 `--color-text--secondary` over the value `-base` 600 heading, 4 apart. When the row is too
+  narrow (the live main column is 771 wide at 1440) only a long value (over 14 characters, such as an email)
+  ends in "…", with its full text on hover; labels and short values stay whole. A missing value says what it
+  waits for in `--color-text--secondary`.
 - **Foot:** the Request → Paid track (padding 12 24, `--color-surface--background--subtle`, 1px line on top;
   32 step tiles, label `-label` 600, 700 on the current step, sub `-overline` quiet, 2px joining lines) or the
   client's tab band (`tabs.md`).
