@@ -383220,6 +383220,2561 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "t0L1xo",
+      "x": 30553,
+      "y": -1273,
+      "name": "Concept · Batch 51 · New campaign · Goal step · Approved A · 2026-10-21",
+      "width": 1600,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "text",
+          "id": "wAj2H",
+          "name": "Board title",
+          "fill": "$color-heading",
+          "content": "Batch 51 · New campaign · Goal step · Approved A",
+          "fontFamily": "$font-family",
+          "fontSize": 28,
+          "fontWeight": "700",
+          "letterSpacing": -0.6
+        },
+        {
+          "type": "text",
+          "id": "v36ivD",
+          "name": "Board scope",
+          "fill": "$color-text-secondary",
+          "textGrowth": "fixed-width",
+          "width": 1440,
+          "content": "The first step of making an email campaign (marketing/CampaignJourney, CampaignStepper, CampaignGoalStep). Same words, goals, name box and buttons as the live app; only the look changes. Followed: Mailchimp's campaign checklist (fill steps in any order, each shows its state) and Jobber / Housecall Pro's goal-first start. Customers, Email, Delivery and Review follow in later batches.",
+          "lineHeight": 1.5,
+          "fontFamily": "$font-family",
+          "fontSize": 14
+        },
+        {
+          "type": "frame",
+          "id": "LRNFI",
+          "name": "Option A",
+          "width": 1440,
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "FUqKY",
+              "name": "Option name",
+              "fill": "$color-heading",
+              "content": "Approved A · Setup steps, one column (Jafar 2026-10-21)",
+              "fontFamily": "$font-family",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "Xe4pN",
+              "name": "Option description",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1440,
+              "content": "The approved setup-steps page (Import): one centred column, the five steps across the top with their tiles stacked over the words, then one card for the current step with its footer bar.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-family",
+              "fontSize": 14
+            },
+            {
+              "type": "frame",
+              "id": "aIuQ2",
+              "name": "New campaign · A · 1440",
+              "clip": true,
+              "width": 1440,
+              "height": 1000,
+              "fill": "$color-surface-background",
+              "layout": "none",
+              "children": [
+                {
+                  "id": "LM23n",
+                  "type": "ref",
+                  "ref": "giszF",
+                  "name": "Shared sidebar · Marketing active",
+                  "x": 12,
+                  "y": 12,
+                  "height": 976,
+                  "descendants": {
+                    "C5QjxN": {
+                      "content": "Raad LTD"
+                    },
+                    "xN449": {
+                      "fontSize": 12
+                    },
+                    "Fgqp1": {
+                      "fontSize": 12
+                    },
+                    "hFPu0": {
+                      "fontSize": 12
+                    },
+                    "ZZUrT": {
+                      "fontSize": 12
+                    },
+                    "LGJZj": {
+                      "fill": []
+                    },
+                    "wO4mP": {
+                      "fill": "$color-job"
+                    },
+                    "XUCig": {
+                      "fill": "$color-heading",
+                      "fontWeight": "500"
+                    },
+                    "v8Oecq": {
+                      "fontSize": 12
+                    },
+                    "kbv3w": {
+                      "fill": "$color-interactive"
+                    },
+                    "gftgc": {
+                      "fill": "$color-surface"
+                    },
+                    "qb0E5": {
+                      "fill": "$color-surface",
+                      "fontWeight": "600"
+                    }
+                  }
+                },
+                {
+                  "id": "j2mXGA",
+                  "type": "ref",
+                  "ref": "f6yCWy",
+                  "name": "Shared top bar",
+                  "x": 260,
+                  "y": 12,
+                  "width": 1156,
+                  "height": 64,
+                  "descendants": {
+                    "cRmHB": {
+                      "fontSize": 12
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "QW8YA",
+                  "x": 466,
+                  "y": 100,
+                  "name": "Column",
+                  "width": 760,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mDghV",
+                      "name": "Breadcrumb trail",
+                      "fill": "$color-surface",
+                      "cornerRadius": 999,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "gap": 2,
+                      "padding": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "jStg0",
+                          "name": "Step · Marketing",
+                          "cornerRadius": 999,
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            12,
+                            4,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "dXqCq",
+                              "name": "Back circle",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-heading",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "xI2vH",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "arrow-left",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "d6AMb",
+                              "name": "Label",
+                              "fill": "$color-text-secondary",
+                              "content": "Campaigns",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "D7ZhTE",
+                          "name": "Chevron",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$color-icon-secondary"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Wsqzv",
+                          "name": "Step · current",
+                          "fill": "$color-surface-background",
+                          "cornerRadius": 999,
+                          "gap": 6,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "b8aZna",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "megaphone",
+                              "library": "lucide",
+                              "fill": "$color-heading"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dqLH6",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "New campaign",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qCmjx",
+                      "name": "Page header",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XkMsT",
+                          "name": "Tile",
+                          "width": 40,
+                          "height": 40,
+                          "fill": "$color-growth-surface",
+                          "cornerRadius": 10,
+                          "stroke": "$color-growth-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "jEPdO",
+                              "name": "Icon",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "megaphone",
+                              "library": "lucide",
+                              "fill": "$color-growth"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gtf82",
+                          "name": "Title block",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Sm5NN",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "New campaign",
+                              "fontFamily": "$font-family",
+                              "fontSize": 24,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.5
+                            },
+                            {
+                              "type": "text",
+                              "id": "ucAnv",
+                              "name": "Description",
+                              "fill": "$color-text-secondary",
+                              "content": "Email a group of your customers in five short steps.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rKATw",
+                          "name": "Actions",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SREad",
+                              "name": "Save state",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "imFcf",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "cloud-check",
+                                  "library": "lucide",
+                                  "fill": "$color-success"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "doLrr",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "All changes saved",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "V9iKg",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Save draft",
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "save"
+                                },
+                                "Dpmda": {
+                                  "content": "Save draft"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U5UmOz",
+                      "name": "Step track",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bAQaO",
+                          "name": "Step 1 · Goal",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "y5OKb",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-interactive",
+                              "cornerRadius": 8,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "uzwGv",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "target",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vGxDh",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "uWrk5",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Goal",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "DRDw5",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Why this campaign",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "d3vMNn",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Kop9e",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CbdQm",
+                          "name": "Step 2 · Customers",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bJZg8",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "oqFx1",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "a4pERa",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "atruO",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Customers",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "tPT2f",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Who receives it",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gq9x5",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "pteYy",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "t4aam",
+                          "name": "Step 3 · Email",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "B7vii",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "CKjrI",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "mail",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ol7V2",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "DGCSo",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Email",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "i8bdl",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Build the message",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bktap",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bSmh6",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GWJOw",
+                          "name": "Step 4 · Delivery",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "DvMf3",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "w39uPc",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-clock",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BnCqD",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tQGaM",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Delivery",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rgXOh",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "When it sends",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "usJM0",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "r8OAO9",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Cuz13",
+                          "name": "Step 5 · Review",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tCpbY",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "i30JuT",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xpt54",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "U47qa",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Review",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wr1xW",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Check and launch",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dADMY",
+                      "name": "Step card · Goal",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "T2VV1M",
+                          "type": "ref",
+                          "ref": "hHVVU",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "S2bkqw": {
+                              "fill": "$color-growth-surface",
+                              "stroke": "$color-growth-surface-edge"
+                            },
+                            "M4w5I": {
+                              "icon": "target",
+                              "fill": "$color-growth"
+                            },
+                            "rdm2s": {
+                              "content": "What is this campaign for?"
+                            },
+                            "qXDmB": {
+                              "content": "Each goal suggests who to email and how the message reads. You can change your mind later."
+                            },
+                            "I1guOa": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tmLVe",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "TVRBz",
+                              "name": "Goal tiles",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "C8w5wR",
+                                  "name": "Row 1",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "Uj3Xe",
+                                      "name": "Goal · Bring past customers back · chosen",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-interactive",
+                                      "strokeWidth": 1.5,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "s4DjPK",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "ACway",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "rotate-ccw",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "QVIbq",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "pxfGW",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Bring past customers back",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KAEX0",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Reach customers who have not booked in a while and invite them back.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Bo7Sj",
+                                          "name": "Radio · chosen",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-interactive",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "H28G8C",
+                                              "name": "Centre",
+                                              "width": 8,
+                                              "height": 8,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 4
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "hm2mG",
+                                      "name": "Goal · Promote a seasonal or additional service",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "u5BFR1",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "GqnY9",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "tag",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "OBl2T",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "IjtLr",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Promote a seasonal or additional service",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "M2IWix",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Tell existing customers about a seasonal or additional service.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "YQATX",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "J06ek",
+                                  "name": "Row 2",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "aX6xx",
+                                      "name": "Goal · Send an announcement",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "s3YeM",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "jPSGY",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "megaphone",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "R8CF1",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Sq09y",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Send an announcement",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "tkFEF",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Share news — a price change, new hours, or something new you offer.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "A5lew0",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "t49si",
+                                      "name": "Goal · Start from a blank campaign",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "QOrI9",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "lfS8x",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "file",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "uHm8C",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "RcECS",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Start from a blank campaign",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "PaQkC",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Build the email yourself with no starting content.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "T9920",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "id": "rCBpT",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Campaign name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Campaign name (only your team sees this)"
+                                },
+                                "X0Di91": {
+                                  "content": "Spring tune-up reminder"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bH9hB",
+                          "name": "Footer bar",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            16,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "y81IhI",
+                              "name": "Hint",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Use Save draft above to keep this for later.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 12
+                            },
+                            {
+                              "id": "DODtT",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Continue",
+                              "descendants": {
+                                "P99oLT": {
+                                  "icon": "arrow-right"
+                                },
+                                "vaRXs": {
+                                  "content": "Continue"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aNDje",
+          "name": "Dark mode",
+          "theme": {
+            "mode": "dark"
+          },
+          "width": 1504,
+          "fill": "$color-surface-background",
+          "cornerRadius": "$radius-large",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "Le3Km",
+              "name": "Dark label",
+              "fill": "$color-heading",
+              "content": "Dark mode",
+              "fontFamily": "$font-family",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "iBiR8",
+              "name": "A label",
+              "fill": "$color-text-secondary",
+              "content": "A · dark",
+              "fontFamily": "$font-family",
+              "fontSize": 13,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "HPwWq",
+              "name": "New campaign · A · dark",
+              "clip": true,
+              "width": 1440,
+              "height": 1000,
+              "fill": "$color-surface-background",
+              "layout": "none",
+              "children": [
+                {
+                  "id": "YIi1g",
+                  "type": "ref",
+                  "ref": "giszF",
+                  "name": "Shared sidebar · Marketing active",
+                  "x": 12,
+                  "y": 12,
+                  "height": 976,
+                  "descendants": {
+                    "C5QjxN": {
+                      "content": "Raad LTD"
+                    },
+                    "xN449": {
+                      "fontSize": 12
+                    },
+                    "Fgqp1": {
+                      "fontSize": 12
+                    },
+                    "hFPu0": {
+                      "fontSize": 12
+                    },
+                    "ZZUrT": {
+                      "fontSize": 12
+                    },
+                    "LGJZj": {
+                      "fill": []
+                    },
+                    "wO4mP": {
+                      "fill": "$color-job"
+                    },
+                    "XUCig": {
+                      "fill": "$color-heading",
+                      "fontWeight": "500"
+                    },
+                    "v8Oecq": {
+                      "fontSize": 12
+                    },
+                    "kbv3w": {
+                      "fill": "$color-interactive"
+                    },
+                    "gftgc": {
+                      "fill": "$color-surface"
+                    },
+                    "qb0E5": {
+                      "fill": "$color-surface",
+                      "fontWeight": "600"
+                    }
+                  }
+                },
+                {
+                  "id": "zWKiA",
+                  "type": "ref",
+                  "ref": "f6yCWy",
+                  "name": "Shared top bar",
+                  "x": 260,
+                  "y": 12,
+                  "width": 1156,
+                  "height": 64,
+                  "descendants": {
+                    "cRmHB": {
+                      "fontSize": 12
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "WuFDH",
+                  "x": 466,
+                  "y": 100,
+                  "name": "Column",
+                  "width": 760,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZSbPg",
+                      "name": "Breadcrumb trail",
+                      "fill": "$color-surface",
+                      "cornerRadius": 999,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "gap": 2,
+                      "padding": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T1bxxG",
+                          "name": "Step · Marketing",
+                          "cornerRadius": 999,
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            12,
+                            4,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "K23mc2",
+                              "name": "Back circle",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-heading",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "bJ2bY",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "arrow-left",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZjQUK",
+                              "name": "Label",
+                              "fill": "$color-text-secondary",
+                              "content": "Campaigns",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "O9jMA2",
+                          "name": "Chevron",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$color-icon-secondary"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FxPiM",
+                          "name": "Step · current",
+                          "fill": "$color-surface-background",
+                          "cornerRadius": 999,
+                          "gap": 6,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Kl4Fm",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "megaphone",
+                              "library": "lucide",
+                              "fill": "$color-heading"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Z5YBIc",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "New campaign",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "v331cg",
+                      "name": "Page header",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pX86D",
+                          "name": "Tile",
+                          "width": 40,
+                          "height": 40,
+                          "fill": "$color-growth-surface",
+                          "cornerRadius": 10,
+                          "stroke": "$color-growth-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "HA8vX",
+                              "name": "Icon",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "megaphone",
+                              "library": "lucide",
+                              "fill": "$color-growth"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OLIPm",
+                          "name": "Title block",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "lqLus",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "New campaign",
+                              "fontFamily": "$font-family",
+                              "fontSize": 24,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.5
+                            },
+                            {
+                              "type": "text",
+                              "id": "P4Hzjl",
+                              "name": "Description",
+                              "fill": "$color-text-secondary",
+                              "content": "Email a group of your customers in five short steps.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZB4a4",
+                          "name": "Actions",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lbsbI",
+                              "name": "Save state",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "tIM4T",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "cloud-check",
+                                  "library": "lucide",
+                                  "fill": "$color-success"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "lK0I3",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "All changes saved",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "s1hzx",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Save draft",
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "save"
+                                },
+                                "Dpmda": {
+                                  "content": "Save draft"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Sa7Ic",
+                      "name": "Step track",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "MuX8W",
+                          "name": "Step 1 · Goal",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "mnAMX",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-interactive",
+                              "cornerRadius": 8,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "j4xXFY",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "target",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q99eN",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "AWQMU",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Goal",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "IBc1u",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Why this campaign",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "x3m9go",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "LPCqi",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "olgIP",
+                          "name": "Step 2 · Customers",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "d1aR8",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "h4WAmp",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "U3Jyhh",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Ne6kN",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Customers",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "CrZ1E",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Who receives it",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qsjzf",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lxcXb",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "i2CDso",
+                          "name": "Step 3 · Email",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "KtjWJ",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "G33Qh",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "mail",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jC3yJ",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "n1QSU",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Email",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Kec78",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Build the message",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Fjx4S",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "U3Wl3J",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GUXzk",
+                          "name": "Step 4 · Delivery",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SKXo6",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "mLAWF",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-clock",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JE59I",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TgcEs",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Delivery",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XbKbw",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "When it sends",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "I2ZkE4",
+                          "name": "Line",
+                          "width": "fill_container",
+                          "height": 32,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "zrf3s",
+                              "name": "Bar",
+                              "width": "fill_container",
+                              "height": 2,
+                              "fill": "$color-border",
+                              "cornerRadius": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "clULH",
+                          "name": "Step 5 · Review",
+                          "width": 112,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ZQtOk",
+                              "name": "Tile",
+                              "width": 32,
+                              "height": 32,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Oe9M5",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bqJgV",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 1,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZYZ28",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Review",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "N0xv0x",
+                                  "name": "Sub",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Check and launch",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TvInJ",
+                      "name": "Step card · Goal",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "y7khC",
+                          "type": "ref",
+                          "ref": "hHVVU",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "S2bkqw": {
+                              "fill": "$color-growth-surface",
+                              "stroke": "$color-growth-surface-edge"
+                            },
+                            "M4w5I": {
+                              "icon": "target",
+                              "fill": "$color-growth"
+                            },
+                            "rdm2s": {
+                              "content": "What is this campaign for?"
+                            },
+                            "qXDmB": {
+                              "content": "Each goal suggests who to email and how the message reads. You can change your mind later."
+                            },
+                            "I1guOa": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ULLWe",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Mppe5",
+                              "name": "Goal tiles",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "aZZ79",
+                                  "name": "Row 1",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "a5zoRR",
+                                      "name": "Goal · Bring past customers back · chosen",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-interactive",
+                                      "strokeWidth": 1.5,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "u75ZHB",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "jTyF2",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "rotate-ccw",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "c4SUA",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "H4jKlc",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Bring past customers back",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "f3DqGU",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Reach customers who have not booked in a while and invite them back.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "LK0Oa",
+                                          "name": "Radio · chosen",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-interactive",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "l5sYzh",
+                                              "name": "Centre",
+                                              "width": 8,
+                                              "height": 8,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 4
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "HaWB3",
+                                      "name": "Goal · Promote a seasonal or additional service",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "P4zuLb",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "Vssdo",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "tag",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "l0twW",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "qWOkm",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Promote a seasonal or additional service",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "HYkcm",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Tell existing customers about a seasonal or additional service.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kikid",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "FEeQj",
+                                  "name": "Row 2",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "N5WRNV",
+                                      "name": "Goal · Send an announcement",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "sf4EQ",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "Gh3HX",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "megaphone",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "l86jI",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ArKQC",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Send an announcement",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "v4F7YU",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Share news — a price change, new hours, or something new you offer.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "zizE9",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "I2UMmf",
+                                      "name": "Goal · Start from a blank campaign",
+                                      "width": "fill_container",
+                                      "height": 92,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 14,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "BFqV4",
+                                          "name": "Tile",
+                                          "width": 40,
+                                          "height": 40,
+                                          "fill": "$color-growth-surface",
+                                          "cornerRadius": 10,
+                                          "stroke": "$color-growth-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "uwxSw",
+                                              "name": "Icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "file",
+                                              "library": "lucide",
+                                              "fill": "$color-growth"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "eGw7M",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "m5uPG",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Start from a blank campaign",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "w9M1KX",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Build the email yourself with no starting content.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Cio84",
+                                          "name": "Radio",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 9,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "id": "SYXvI",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Campaign name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Campaign name (only your team sees this)"
+                                },
+                                "X0Di91": {
+                                  "content": "Spring tune-up reminder"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qSn20",
+                          "name": "Footer bar",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            16,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YFtjr",
+                              "name": "Hint",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Use Save draft above to keep this for later.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 12
+                            },
+                            {
+                              "id": "tG1ze",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Continue",
+                              "descendants": {
+                                "P99oLT": {
+                                  "icon": "arrow-right"
+                                },
+                                "vaRXs": {
+                                  "content": "Continue"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
