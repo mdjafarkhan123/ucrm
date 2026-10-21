@@ -33,7 +33,10 @@
 	// What the server last said about the booking: the page's copy until a change answers with a newer one.
 	let changed = $state<ManagedBooking | null>(null);
 	const booking = $derived(changed ?? data.booking);
-	let zone = $state('');
+	// The booking's own zone until the picker (or the visitor) says otherwise. It is there from the first render,
+	// on the server too, because every state shows the call's time straight away.
+	// svelte-ignore state_referenced_locally
+	let zone = $state(data.booking?.visitor_time_zone ?? 'UTC');
 	let locale = $state<string | undefined>(undefined);
 	let picker = $state<BookingTimePicker>();
 
@@ -47,8 +50,6 @@
 
 	onMount(() => {
 		locale = navigator.language || undefined;
-		// The booking's own zone until the picker (or the visitor) says otherwise.
-		zone ||= booking?.visitor_time_zone ?? 'UTC';
 	});
 
 	const isRequest = $derived(booking?.status === 'requested');
