@@ -73,3 +73,7 @@ Board `UN1hM` "Concept · Batch 35 · Money summary card · A vs B": A `VttVX` g
 panel (like Job details `tNdkX`); B `Pqiry` new concept, deeper forest green (new Pencil variable
 `color-feature-deep` #012a17, not yet in code) with a margin ring and two tiles. States: priced job, quote and
 invoice, nothing priced, loss, no cost rights; dark mode `f4UDf`. Jafar asked for his own look, not classic.pen's colours, but bar colours that stand out: cost `color-warning` (amber), profit white on A and `color-success` on B.
+Text colours by meaning (Jafar 2026-10-21, "from contractor perspective"): what you keep `color-success`, item cost
+`color-warning`, customer pays white, loss `color-feature-alert`; B cards use the dark theme tokens so greens stay
+bright on the deep card. B adds a margin status chip (Healthy margin / Below your 35% target / Losing money); the
+target comes from the existing quote target-margin setting, so using it on jobs and invoices needs Jafar's yes.
