@@ -52,7 +52,7 @@
 			value={view}
 			options={views}
 			size="small"
-			tone="plain"
+			surface="page"
 			ariaLabel="Calendar view"
 			onchange={(next) => onview(next as V)}
 		/>

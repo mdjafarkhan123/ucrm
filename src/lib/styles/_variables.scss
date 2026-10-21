@@ -297,9 +297,10 @@
 	--color-payments: var(--color-invoice);
 	--color-payments--surface: var(--color-invoice--surface);
 	--color-payments--onSurface: var(--color-invoice--onSurface);
-	--color-client: var(--color-base-taupe--700);
-	--color-client--surface: var(--color-base-taupe--200);
-	--color-client--onSurface: var(--color-base-taupe--800);
+	--color-client: #8a6a4b;
+	--color-client--surface: #e8dbc8;
+	--color-client--surface-edge: #d6c4aa;
+	--color-client--onSurface: #4a3826;
 	--color-time: var(--color-indigo);
 	--color-time--surface: var(--color-indigo--lightest);
 	--color-time--onSurface: var(--color-indigo--dark);
@@ -518,9 +519,10 @@
 		--color-invoice--onSurface: var(--color-base-lightBlue--300);
 		--color-payments--surface: var(--color-invoice--surface);
 		--color-payments--onSurface: var(--color-invoice--onSurface);
-		--color-client: var(--color-base-blue--200);
-		--color-client--surface: var(--color-base-blue--800);
-		--color-client--onSurface: var(--color-base-blue--300);
+		--color-client: #cfae88;
+		--color-client--surface: #4a3d2f;
+		--color-client--surface-edge: #5e4e3c;
+		--color-client--onSurface: #efe3d2;
 		--color-time: var(--color-indigo--light);
 		--color-time--surface: var(--color-indigo--dark);
 		--color-time--onSurface: var(--color-indigo--lightest);
