@@ -55,7 +55,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarMonthGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarWeekGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
-| `clients/ClientForm` |  | ⬜ | ⬜ |
+| `clients/ClientForm` | New client and Edit client pages · duplicate warnings, couldn't save, edit | 🟡 Batch 42 `fJ8Mx` A/B drawn 2026-10-21, waiting for Jafar | ⬜ |
 | `clients/ClientMergeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `invoices/CollectPaymentDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `jafar/NotificationBell` | loading | ⬜ | ⬜ |
