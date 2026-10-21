@@ -357,11 +357,16 @@ same day, built on branch `claude/batch52-record-header`. Look: `layout.md` → 
 The § Batch 13 hand-off above is replaced where they differ: no coloured top, no status stripe, white tile
 gone (record tile in its own surface), facts icon-left at 40.
 
-**Type scale (Jafar 2026-10-21):** after a Pencil preview at 16 he chose main text 15. Pencil variables and
-`_variables.scss` now match: smaller 12, overline 12, small 14, label 15, base 15, large 18, larger 22,
-largest 26, display 30, stat 34 (`typography.md`). About 7,550 Pencil texts were linked to the size variables
-first. Left for later: ~400 Pencil texts on off-scale sizes (15, 18, 22…) and ~319 hard-coded `font-size` px
-values in code do not follow the scale yet; 89 Pencil texts on 24 boards now clip; the record page loading
+**Facts row at 1440 (found live 2026-10-21):** Pencil's record page frame draws the main column 840 wide, but the
+live column at a 1440 window is 771, so four facts with 40 tiles did not fit and labels ended in "…" (client and
+request pages). Fixed in code and in the drawing: 12 gap and inset, 10 between tile and text, only long values
+give way (`layout.md` → Record header). Check record pages at a 1440 window, not wider.
+
+**Type scale (Jafar 2026-10-21):** first raised everything by about 2 (main text 15), then Jafar gave his own table
+and it replaced that: smaller 12, overline 12, small 14, label 14, base 14, large 16, larger 20, largest 24,
+display 28, stat 34 (`typography.md`). Pencil variables and `_variables.scss` match. About 7,550 Pencil texts were
+linked to the size variables first. Left for later: ~400 Pencil texts on off-scale sizes (15, 18, 22…) and ~319 hard-coded `font-size` px
+values in code do not follow the scale yet; the Pencil texts that clipped at the larger scale need re-checking; the record page loading
 skeleton (Batch 48) still has the old header shape.
 
 ## Batch 10 new behaviour (Jafar, 2026-10-20)

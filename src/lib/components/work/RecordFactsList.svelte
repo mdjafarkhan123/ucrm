@@ -8,11 +8,23 @@
 	import type { RecordFact } from './types';
 
 	let { facts, class: className = '' }: { facts: RecordFact[]; class?: string } = $props();
+
+	// When the row is too narrow for its words (the 1440 page column), a long value ends in "…" first and
+	// short facts keep their labels and values whole. They must give up nothing at all: even half a pixel
+	// less than the text needs turns it into "…". With no long value every fact shares the squeeze.
+	const LONG_VALUE = 14;
+	const isLong = (fact: RecordFact) => (fact.value?.length ?? 0) > LONG_VALUE;
+	const anyLong = $derived(facts.some(isLong));
+	const shrink = (fact: RecordFact) => (!anyLong || isLong(fact) ? 1 : 0);
 </script>
 
 <dl class={`record-facts ${className}`}>
 	{#each facts as fact (fact.label)}
-		<div class="record-facts__fact" class:record-facts__fact--tile={!!fact.icon}>
+		<div
+			class="record-facts__fact"
+			class:record-facts__fact--tile={!!fact.icon}
+			style:flex-shrink={shrink(fact)}
+		>
 			<dt class="record-facts__label">
 				{#if fact.icon}
 					<IconTile
@@ -39,7 +51,7 @@
 	.record-facts {
 		display: flex;
 		justify-content: space-between;
-		gap: var(--space-large);
+		gap: var(--space-slim);
 		margin: 0;
 
 		// The tile sits in the fact's own left gutter, so the label and value stay a plain dt/dd pair.
@@ -54,13 +66,13 @@
 			padding-left: var(--fact-inset);
 
 			& + & {
-				--fact-inset: var(--space-medium);
+				--fact-inset: var(--space-slim);
 				border-left: var(--border-base) solid var(--color-border);
 			}
 
 			&--tile {
 				min-height: 40px;
-				padding-left: calc(var(--fact-inset) + 40px + var(--space-slim));
+				padding-left: calc(var(--fact-inset) + 40px + 10px);
 			}
 		}
 
