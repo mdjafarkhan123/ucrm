@@ -236,6 +236,36 @@ column, centred, blocks 24 apart: the page header, the step track, then one card
     sender (stop 1 with a 1.5px `--color-warning` edge, `--color-warning--surface` tile with `mail-x`, "No sender
     yet", and a warning notice strip under the path with Set up a sender); loading (the path box with white stop
     bones, then bones for the head, three rows and the two mini cards); couldn't load (`page-states.md`, Try again).
+- **New campaign · Review step**, approved B by Jafar 2026-10-21 (Pencil: "Batch 56 · New campaign · Review step ·
+  Approved B", `qCDG0`). The column widens to 1092 as on the Email step; the track shows Goal to Delivery finished,
+  Review current. Card header: Growth `list-checks` tile, "Review before you send". The body splits in two:
+  - Email (left): the Email step's preview well and toolbar, the pill reading "Shown with Sarah's details" (8
+    `--color-success` dot), no editing outline; the email as in the email preview pop-up (`modals.md`).
+  - Launch panel (right, 440, white, padding 20, gap 20, 1px `--color-border` line on its left):
+    - The Customers step's audience meter (count, "customers will get this email", the bar and its key).
+    - "Who, from whom, and where it leads" 16/600, then one list box (1px `--color-border`, radius 12, clipped),
+      a row per fact (padding 12 14, gap 12, hairline between): a 32 tile, the label 12/500 quiet over the value
+      14/600 and an optional 12 quiet line. Goal (Growth `target`), Customer group (Growth `users`, its rules), From
+      (`--color-conversation` `mail`, the address and "replies land in your Inbox"), The button
+      (`--color-informative` `mouse-pointer-click`, its words and where it opens, a 32 `external-link` icon button),
+      Your plan (Growth `gauge`).
+    - "When should it send?" 16/600, then two radio tiles 10 apart (white, radius 12, 1px `--color-border`, padding
+      12 14, gap 12): the 18 radio, a 32 tile (chosen: Growth; not chosen: subtle fill, `--color-icon--secondary`),
+      the title 14/600 over a 12 quiet hint. Send now (`send`), Schedule for later (`calendar-clock`). Chosen: 1.5px
+      `--color-interactive` edge; the chosen Schedule tile holds Day to send and Time (40 boxes, 10 apart) and a
+      14 `globe` with the business time zone 12 quiet.
+    - The informative notice strip "Sent email can't be recalled…".
+    - Actions, 10 apart: the large main button full width (44, `rocket`, "Send to N customers"; scheduled:
+      `calendar-check`, "Schedule for <day> at <time>"), then a full-width secondary "Send a test email to yourself"
+      (`mail-search`). A test result sits under them: a radius-8 box, padding 8 12, a 16 icon and 12/500 words, in
+      `--color-success` (`mail-check`) or `--color-critical` (`mail-x`).
+  - Footer: Back and the hint "Nothing sends until you press Send."; no main button (it is in the panel).
+  - States: staff member (no When block or test button; a subtle box with an `--color-inactive` `lock` tile, "Ready
+    for the owner to send" and why); sending (the main button's spinner); couldn't send (critical notice strip above
+    the actions); needs a fix (the row on `--color-warning--surface` with a white tile, `--onSurface` icon and words
+    and a 20 `triangle-alert`; a warning notice strip; the main button disabled); loading (the email bone,
+    "Loading the preview…", a meter bone in `--color-growth--surface-edge`, list bones); couldn't load
+    (`page-states.md`, Try again).
 
 ## Record pages
 
