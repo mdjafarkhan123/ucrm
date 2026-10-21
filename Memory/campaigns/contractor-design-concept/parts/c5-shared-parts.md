@@ -39,6 +39,7 @@
 | 27 Channel menu and message settings | communications/ComposerChannelMenu, clients/CommunicationSettingsDialog (1b): every state, dark | Approved `DXj9z` A + A 2026-10-20 (B Send-by button and tick tiles deleted). Looks in `chips.md` → Channel pill, `modals.md` → Communication settings pop-up. See § Batch 27 |
 | 28 Questions on a public form | forms/PublicFormQuestion (1b): every question kind, hover, focus, dark | Approved `Y3od0z` B 2026-10-20 (one card per question; A plain deleted). Look in `inputs.md` → Questions on a public form. See § Batch 28 |
 | 29 Import steps | imports/ImportStepper, ImportUploadStep, ImportMapStep, ImportReviewStep (1b): no file yet, map, review, dark | Approved `oxtmi` A 2026-10-20 (steps on one column; B side panel deleted). Look in `layout.md` → Setup steps. See § Batch 29 |
+| 33 Number cards on list pages | data-display/KpiCard replaces work/AttentionCard + MoneyFeatureCard on Clients, Requests, Quotes, Jobs, Invoices; Reviews too | Approved `fzPaM` B 2026-10-21 (free-standing cards in one row, money card is the same card in green; A in-box deleted). Fixed set per page: Clients 4, Quotes 5, Invoices 5, Requests 6, Jobs 6, Reviews 4. 48 tile/24 icon; number with its short label under it, beside the tile (Jafar 2026-10-21); arrow in the top corner; note band kept. Narrow: even rows 6→3+3→2+2+2. Dark mode not drawn yet; `cards.md` Number card + Status tiles to update on build |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
