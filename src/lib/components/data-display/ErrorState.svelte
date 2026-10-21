@@ -8,18 +8,29 @@
 		title = 'Something went wrong',
 		description = 'We could not load this information. Try again.',
 		retry,
-		action
-	}: { title?: string; description?: string; retry?: () => void; action?: Snippet } = $props();
+		action,
+		size = 'base'
+	}: {
+		title?: string;
+		description?: string;
+		retry?: () => void;
+		action?: Snippet;
+		/** `small` fits a narrow side card: a 32 tile, smaller words and a small Try again. */
+		size?: 'base' | 'small';
+	} = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class="error-state" aria-labelledby="error-state-title" role="alert">
-	<IconTile icon={alertIcon} tone="critical" />
+<section class="error-state error-state--{size}" aria-labelledby="error-state-title" role="alert">
+	<IconTile icon={alertIcon} tone="critical" size={size === 'small' ? 32 : 40} />
 	<h2 id="error-state-title">{title}</h2>
 	<p>{description}</p>
 	{#if retry || action}
 		<div class="error-state__action">
-			{#if retry}<Button variant="secondary" onclick={retry}>{@html refreshIcon}Try again</Button
+			{#if retry}<Button
+					variant="secondary"
+					size={size === 'small' ? 'small' : 'base'}
+					onclick={retry}>{@html refreshIcon}Try again</Button
 				>{/if}
 			{#if action}{@render action()}{/if}
 		</div>
@@ -50,6 +61,19 @@
 		max-width: 320px;
 		font-size: var(--typography--fontSize-base);
 		line-height: var(--typography--lineHeight-large);
+	}
+	.error-state--small {
+		gap: var(--space-small);
+		padding: var(--space-small);
+
+		h2 {
+			font-size: var(--typography--fontSize-label);
+			letter-spacing: 0;
+		}
+
+		p {
+			font-size: var(--typography--fontSize-small);
+		}
 	}
 	.error-state__action {
 		display: flex;

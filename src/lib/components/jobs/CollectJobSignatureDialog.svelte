@@ -209,7 +209,7 @@
 			oninput={() => (statementEdited = true)}
 		/>
 
-		<SignaturePad bind:value={signature} idPrefix="job-signature" disabled={saving} />
+		<SignaturePad bind:value={signature} idPrefix="job-signature" record="job" disabled={saving} />
 
 		<div class="collect-job-signature__fields">
 			<Input

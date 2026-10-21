@@ -82,7 +82,7 @@
 		<Popover.Root bind:open>
 			<Popover.Trigger>
 				{#snippet child({ props })}
-					<Button {...props} variant="secondary" size="small">
+					<Button {...props} variant="quiet" size="small" class="free-text-chips__add">
 						{@html plusIcon}
 						Add
 					</Button>
@@ -136,34 +136,55 @@
 			display: inline-flex;
 			align-items: center;
 			gap: var(--space-smaller);
-			padding: 6px 10px;
-			border-radius: var(--radius-large);
-			color: var(--color-inactive--onSurface);
-			background: var(--color-inactive--surface);
-			font-size: var(--typography--fontSize-small);
+			box-sizing: border-box;
+			height: 28px;
+			padding: 0 var(--space-smaller) 0 10px;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-base);
+			color: var(--color-heading);
+			background: var(--color-surface);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
 		}
 
 		&__chip-remove {
 			display: grid;
-			width: 16px;
-			height: 16px;
+			width: 20px;
+			height: 20px;
 			place-items: center;
 			border: 0;
-			border-radius: var(--radius-circle);
-			color: inherit;
+			border-radius: 6px;
+			color: var(--color-icon--secondary);
 			background: transparent;
 			cursor: pointer;
-			opacity: 0.7;
 
 			&:hover {
-				background: rgba(0, 0, 0, 0.08);
-				opacity: 1;
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
 			}
 
 			:global(svg) {
 				display: block;
-				width: 12px;
-				height: 12px;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		:global(.free-text-chips__add) {
+			height: 28px;
+			min-height: 28px;
+			color: var(--color-interactive);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
 			}
 		}
 
@@ -218,9 +239,9 @@
 		width: min(280px, calc(100vw - var(--space-large) * 2));
 		flex-direction: column;
 		gap: var(--space-small);
-		padding: var(--space-base);
+		padding: var(--space-slim);
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: 12px;
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}

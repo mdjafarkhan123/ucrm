@@ -203,41 +203,50 @@
 			display: inline-flex;
 			align-items: center;
 			gap: var(--space-smaller);
-			padding: 6px 10px;
-			border-radius: var(--radius-large);
-			color: var(--color-inactive--onSurface);
-			background: var(--color-inactive--surface);
-			font-size: var(--typography--fontSize-small);
+			box-sizing: border-box;
+			height: 28px;
+			padding: 0 var(--space-smaller) 0 10px;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-base);
+			color: var(--color-heading);
+			background: var(--color-surface);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
 		}
 
 		&__chip-remove {
 			display: grid;
-			width: 16px;
-			height: 16px;
+			width: 20px;
+			height: 20px;
 			place-items: center;
 			border: 0;
-			border-radius: var(--radius-circle);
-			color: inherit;
+			border-radius: 6px;
+			color: var(--color-icon--secondary);
 			background: transparent;
 			cursor: pointer;
-			opacity: 0.7;
 
 			&:hover {
-				background: rgba(0, 0, 0, 0.08);
-				opacity: 1;
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
 			}
 
 			:global(svg) {
 				display: block;
-				width: 12px;
-				height: 12px;
+				width: 14px;
+				height: 14px;
 			}
 		}
 
 		&__control {
 			position: relative;
 			display: flex;
-			min-height: var(--space-largest);
+			box-sizing: border-box;
+			min-height: 36px;
 			align-items: center;
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
@@ -252,7 +261,8 @@
 		&__control :global(input) {
 			width: 100%;
 			min-width: 0;
-			padding: var(--space-small) var(--space-base) var(--space-small) var(--space-largest);
+			padding: 0 var(--space-slim) 0 36px;
+			font-size: var(--typography--fontSize-base);
 			border: 0;
 			outline: 0;
 			color: var(--color-heading);
@@ -262,7 +272,7 @@
 
 		&__search {
 			position: absolute;
-			left: var(--space-base);
+			left: var(--space-slim);
 			display: grid;
 			width: 16px;
 			height: 16px;

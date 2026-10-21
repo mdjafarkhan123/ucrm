@@ -1,6 +1,7 @@
 <script lang="ts">
-	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
@@ -20,6 +21,18 @@
 	} from '$lib/marketing/customer-groups';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
+	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
+	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
+	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
+	import userXIcon from '@tabler/icons/outline/user-x.svg?raw';
 
 	// One AND-only condition list, the same "add a condition" shape as
 	// `settings/automation/RecipeBuilder.svelte`'s If block: start empty, add only the checks this group
@@ -36,6 +49,21 @@
 	type ConditionKey = MarketingGroupRuleConditionKey;
 
 	const CONDITIONS = MARKETING_GROUP_RULE_CONDITIONS;
+
+	// Each condition's tile is coloured by what it checks: the client, where they came from, their work,
+	// their schedule, or a hand-picked include / exclude.
+	const CONDITION_TILES: Record<ConditionKey, { icon: string; tone: string }> = {
+		lifecycle: { icon: userIcon, tone: 'client' },
+		tags: { icon: tagIcon, tone: 'client' },
+		cities: { icon: mapPinIcon, tone: 'client' },
+		lead_sources: { icon: inboxIcon, tone: 'request' },
+		services: { icon: toolIcon, tone: 'job' },
+		work_type: { icon: repeatIcon, tone: 'job' },
+		last_completed_job: { icon: calendarCheckIcon, tone: 'job' },
+		upcoming_work: { icon: calendarClockIcon, tone: 'time' },
+		include_client_ids: { icon: userPlusIcon, tone: 'success' },
+		exclude_client_ids: { icon: userXIcon, tone: 'critical' }
+	};
 
 	function conditionLabel(key: ConditionKey) {
 		return CONDITIONS.find((entry) => entry.key === key)?.label ?? key;
@@ -126,191 +154,268 @@
 	const clientLabelById = $derived(new Map(labels.clients.map((item) => [item.id, item])));
 </script>
 
-<SectionBlock
-	title="Match customers who"
-	icon={filterIcon}
-	hint="Add only the checks this group needs. A customer must pass every one."
-	form
->
-	{#if activeKeys.length === 0}
-		<p class="rule-builder__empty">No conditions yet — this group matches every active customer.</p>
-	{:else}
-		<ul class="rule-builder__rows">
-			{#each activeKeys as key (key)}
-				<li class="rule-builder__row">
-					<div class="rule-builder__row-head">
-						<span class="rule-builder__row-title">{conditionLabel(key)}</span>
-						<Button
-							variant="secondary"
-							variation="destructive"
-							size="small"
-							iconOnly
-							label={`Remove condition: ${conditionLabel(key)}`}
-							onclick={() => removeCondition(key)}
-						>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html trashIcon}
-						</Button>
-					</div>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<section class="rule-builder" aria-labelledby="rule-builder-title">
+	<header class="rule-builder__head">
+		<h3 id="rule-builder-title" class="rule-builder__title">
+			<span class="rule-builder__title-icon" aria-hidden="true">{@html filterIcon}</span>
+			Match customers who
+		</h3>
+		<p class="rule-builder__hint">
+			Add only the checks this group needs. A customer must pass every one.
+		</p>
+	</header>
 
-					{#if key === 'lifecycle'}
-						<div class="rule-builder__checks">
-							<Checkbox
-								id="rule-lifecycle-lead"
-								label="Lead"
-								checked={(rules.lifecycle ?? []).includes('lead')}
-								onchange={(checked) => toggleLifecycle('lead', checked)}
+	<div class="rule-builder__box">
+		{#if activeKeys.length === 0}
+			<p class="rule-builder__empty">
+				<span class="rule-builder__empty-icon" aria-hidden="true">{@html usersIcon}</span>
+				No conditions yet — this group matches every active customer.
+			</p>
+		{:else}
+			<ul class="rule-builder__rows">
+				{#each activeKeys as key (key)}
+					<li class="rule-builder__row">
+						<div class="rule-builder__row-head">
+							<IconTile
+								icon={CONDITION_TILES[key].icon}
+								tone={CONDITION_TILES[key].tone}
+								size={24}
 							/>
-							<Checkbox
-								id="rule-lifecycle-customer"
-								label="Customer"
-								checked={(rules.lifecycle ?? []).includes('customer')}
-								onchange={(checked) => toggleLifecycle('customer', checked)}
-							/>
+							<span class="rule-builder__row-title">{conditionLabel(key)}</span>
 						</div>
-					{:else if key === 'tags'}
-						<ClientTagSelect
-							tagIds={rules.tags ?? []}
-							onChange={(next) => setListOrRemove('tags', next.slice(0, 50))}
-						/>
-					{:else if key === 'cities'}
-						<FreeTextChipInput
-							id="rule-cities"
-							max={50}
-							placeholder="Add a city"
-							values={rules.cities ?? []}
-							onChange={(next) => setListOrRemove('cities', next)}
-						/>
-					{:else if key === 'lead_sources'}
-						<FreeTextChipInput
-							id="rule-lead-sources"
-							max={50}
-							placeholder="Add a lead source"
-							suggestions={LEAD_SOURCES}
-							values={rules.lead_sources ?? []}
-							onChange={(next) => setListOrRemove('lead_sources', next)}
-						/>
-					{:else if key === 'services'}
-						<AsyncMultiPicker
-							id="rule-services"
-							max={50}
-							placeholder="Search the price list"
-							queryKey="services"
-							search={searchCatalogItemsForRule}
-							ids={rules.services ?? []}
-							initialItems={(rules.services ?? [])
-								.map((itemId) => catalogLabelById.get(itemId))
-								.filter((item) => item !== undefined)}
-							onChange={(next) => setListOrRemove('services', next)}
-						/>
-					{:else if key === 'work_type'}
-						<Select
-							id="rule-work-type"
-							ariaLabel="One-off or recurring work"
-							value={rules.work_type ?? 'one_off'}
-							options={[
-								{ value: 'one_off', label: 'One-off work' },
-								{ value: 'recurring', label: 'Recurring work' }
-							]}
-							onchange={(value) => (rules.work_type = value as 'one_off' | 'recurring')}
-						/>
-					{:else if key === 'last_completed_job'}
-						<div class="rule-builder__inline">
-							<Select
-								id="rule-last-completed-mode"
-								ariaLabel="Last completed Job"
-								value={lastCompletedMode}
-								options={[
-									{ value: 'never', label: 'Never completed a Job' },
-									{ value: 'within_days', label: 'Completed within the last…' },
-									{ value: 'before_days', label: 'Completed more than…' }
-								]}
-								onchange={setLastCompletedMode}
-							/>
-							{#if lastCompletedMode !== 'never'}
-								<Input
-									id="rule-last-completed-days"
-									type="number"
-									label="Days"
-									value={lastCompletedDays}
-									min="1"
-									max="3650"
-									onchange={(event: Event) =>
-										setLastCompletedDays(Number((event.target as HTMLInputElement).value) || 1)}
+						<div class="rule-builder__row-controls">
+							{#if key === 'lifecycle'}
+								<div class="rule-builder__checks">
+									<Checkbox
+										id="rule-lifecycle-lead"
+										label="Lead"
+										checked={(rules.lifecycle ?? []).includes('lead')}
+										onchange={(checked) => toggleLifecycle('lead', checked)}
+									/>
+									<Checkbox
+										id="rule-lifecycle-customer"
+										label="Customer"
+										checked={(rules.lifecycle ?? []).includes('customer')}
+										onchange={(checked) => toggleLifecycle('customer', checked)}
+									/>
+								</div>
+							{:else if key === 'tags'}
+								<ClientTagSelect
+									tagIds={rules.tags ?? []}
+									onChange={(next) => setListOrRemove('tags', next.slice(0, 50))}
 								/>
-								<span class="rule-builder__inline-suffix">days ago</span>
+							{:else if key === 'cities'}
+								<FreeTextChipInput
+									id="rule-cities"
+									max={50}
+									placeholder="Add a city"
+									values={rules.cities ?? []}
+									onChange={(next) => setListOrRemove('cities', next)}
+								/>
+							{:else if key === 'lead_sources'}
+								<FreeTextChipInput
+									id="rule-lead-sources"
+									max={50}
+									placeholder="Add a lead source"
+									suggestions={LEAD_SOURCES}
+									values={rules.lead_sources ?? []}
+									onChange={(next) => setListOrRemove('lead_sources', next)}
+								/>
+							{:else if key === 'services'}
+								<AsyncMultiPicker
+									id="rule-services"
+									max={50}
+									placeholder="Search the price list"
+									queryKey="services"
+									search={searchCatalogItemsForRule}
+									ids={rules.services ?? []}
+									initialItems={(rules.services ?? [])
+										.map((itemId) => catalogLabelById.get(itemId))
+										.filter((item) => item !== undefined)}
+									onChange={(next) => setListOrRemove('services', next)}
+								/>
+							{:else if key === 'work_type'}
+								<Select
+									id="rule-work-type"
+									ariaLabel="One-off or recurring work"
+									value={rules.work_type ?? 'one_off'}
+									options={[
+										{ value: 'one_off', label: 'One-off work' },
+										{ value: 'recurring', label: 'Recurring work' }
+									]}
+									onchange={(value) => (rules.work_type = value as 'one_off' | 'recurring')}
+								/>
+							{:else if key === 'last_completed_job'}
+								<div class="rule-builder__inline">
+									<Select
+										id="rule-last-completed-mode"
+										ariaLabel="Last completed Job"
+										value={lastCompletedMode}
+										options={[
+											{ value: 'never', label: 'Never completed a Job' },
+											{ value: 'within_days', label: 'Completed within the last…' },
+											{ value: 'before_days', label: 'Completed more than…' }
+										]}
+										onchange={setLastCompletedMode}
+									/>
+									{#if lastCompletedMode !== 'never'}
+										<Input
+											id="rule-last-completed-days"
+											type="number"
+											aria-label="Days"
+											value={lastCompletedDays}
+											min="1"
+											max="3650"
+											onchange={(event: Event) =>
+												setLastCompletedDays(Number((event.target as HTMLInputElement).value) || 1)}
+										/>
+										<span class="rule-builder__inline-suffix">days ago</span>
+									{/if}
+								</div>
+							{:else if key === 'upcoming_work'}
+								<Select
+									id="rule-upcoming-work"
+									ariaLabel="Upcoming work"
+									value={rules.upcoming_work ? 'yes' : 'no'}
+									options={[
+										{ value: 'yes', label: 'Has upcoming work scheduled' },
+										{ value: 'no', label: 'Has no upcoming work scheduled' }
+									]}
+									onchange={(value) => (rules.upcoming_work = value === 'yes')}
+								/>
+							{:else if key === 'include_client_ids'}
+								<AsyncMultiPicker
+									id="rule-include-clients"
+									max={500}
+									placeholder="Search customers to always include"
+									queryKey="include-clients"
+									search={searchClientsForRule}
+									ids={rules.include_client_ids ?? []}
+									initialItems={(rules.include_client_ids ?? [])
+										.map((clientId) => clientLabelById.get(clientId))
+										.filter((item) => item !== undefined)}
+									onChange={(next) => setListOrRemove('include_client_ids', next)}
+								/>
+							{:else if key === 'exclude_client_ids'}
+								<AsyncMultiPicker
+									id="rule-exclude-clients"
+									max={500}
+									placeholder="Search customers to always exclude"
+									queryKey="exclude-clients"
+									search={searchClientsForRule}
+									ids={rules.exclude_client_ids ?? []}
+									initialItems={(rules.exclude_client_ids ?? [])
+										.map((clientId) => clientLabelById.get(clientId))
+										.filter((item) => item !== undefined)}
+									onChange={(next) => setListOrRemove('exclude_client_ids', next)}
+								/>
 							{/if}
 						</div>
-					{:else if key === 'upcoming_work'}
-						<Select
-							id="rule-upcoming-work"
-							ariaLabel="Upcoming work"
-							value={rules.upcoming_work ? 'yes' : 'no'}
-							options={[
-								{ value: 'yes', label: 'Has upcoming work scheduled' },
-								{ value: 'no', label: 'Has no upcoming work scheduled' }
-							]}
-							onchange={(value) => (rules.upcoming_work = value === 'yes')}
-						/>
-					{:else if key === 'include_client_ids'}
-						<AsyncMultiPicker
-							id="rule-include-clients"
-							max={500}
-							placeholder="Search customers to always include"
-							queryKey="include-clients"
-							search={searchClientsForRule}
-							ids={rules.include_client_ids ?? []}
-							initialItems={(rules.include_client_ids ?? [])
-								.map((clientId) => clientLabelById.get(clientId))
-								.filter((item) => item !== undefined)}
-							onChange={(next) => setListOrRemove('include_client_ids', next)}
-						/>
-					{:else if key === 'exclude_client_ids'}
-						<AsyncMultiPicker
-							id="rule-exclude-clients"
-							max={500}
-							placeholder="Search customers to always exclude"
-							queryKey="exclude-clients"
-							search={searchClientsForRule}
-							ids={rules.exclude_client_ids ?? []}
-							initialItems={(rules.exclude_client_ids ?? [])
-								.map((clientId) => clientLabelById.get(clientId))
-								.filter((item) => item !== undefined)}
-							onChange={(next) => setListOrRemove('exclude_client_ids', next)}
-						/>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
+						<button
+							type="button"
+							class="rule-builder__remove"
+							aria-label={`Remove condition: ${conditionLabel(key)}`}
+							title="Remove condition"
+							onclick={() => removeCondition(key)}
+						>
+							{@html trashIcon}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
-	{#if addableConditions.length > 0}
-		<div class="rule-builder__add">
-			<Select
-				id="rule-add-condition"
-				value=""
-				options={[
-					{ value: '', label: 'Add a condition…' },
-					...addableConditions.map((entry) => ({ value: entry.key, label: entry.label }))
-				]}
-				ariaLabel="Add a condition"
-				onchange={addCondition}
-			/>
-		</div>
-	{/if}
-</SectionBlock>
+		{#if addableConditions.length > 0}
+			<div class="rule-builder__add">
+				<DropdownMenu
+					triggerText="Add a condition…"
+					triggerLeadingIcon={circlePlusIcon}
+					triggerVariant="quiet"
+					triggerSize="small"
+					align="start"
+					contentClass="rule-builder__menu"
+					items={addableConditions.map((entry) => ({
+						key: entry.key,
+						label: entry.label,
+						icon: CONDITION_TILES[entry.key].icon,
+						tile: CONDITION_TILES[entry.key].tone,
+						onSelect: () => addCondition(entry.key)
+					}))}
+				/>
+			</div>
+		{/if}
+	</div>
+</section>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	.rule-builder__empty {
+	:global(.rule-builder__menu) {
+		min-width: 320px;
+	}
+
+	.rule-builder {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-slim);
+	}
+
+	.rule-builder__title {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
 		margin: 0;
+		color: var(--color-heading);
+		font-size: 16px;
+		font-weight: 600;
+	}
+
+	.rule-builder__title-icon {
+		display: inline-flex;
+		color: var(--color-growth);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.rule-builder__hint {
+		margin: 2px 0 0;
 		color: var(--color-text--secondary);
-		font-style: italic;
+		font-size: var(--typography--fontSize-small);
+	}
+
+	.rule-builder__box {
+		overflow: hidden;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-surface);
+	}
+
+	.rule-builder__empty {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		padding: var(--space-base) 14px;
+		border-bottom: var(--border-base) solid var(--color-border);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-label);
+	}
+
+	.rule-builder__empty-icon {
+		display: inline-flex;
+		color: var(--color-growth);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
 	}
 
 	.rule-builder__rows {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -318,55 +423,107 @@
 
 	.rule-builder__row {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		align-items: flex-start;
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-small) var(--space-slim) 14px;
+		border-bottom: var(--border-base) solid var(--color-border);
 	}
 
 	.rule-builder__row-head {
 		display: flex;
+		flex: 0 0 172px;
 		align-items: center;
-		gap: var(--space-small);
+		gap: 10px;
+		min-height: 36px;
 	}
 
 	.rule-builder__row-title {
-		flex: 1 1 auto;
 		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.rule-builder__row-controls {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		justify-content: center;
+		min-width: 0;
+		min-height: 36px;
+
+		:global(.select) {
+			width: 100%;
+		}
+	}
+
+	.rule-builder__remove {
+		display: grid;
+		flex: 0 0 32px;
+		height: 32px;
+		margin-top: 2px;
+		place-items: center;
+		border: 0;
+		border-radius: var(--radius-base);
+		color: var(--color-icon--secondary);
+		background: transparent;
+		cursor: pointer;
+		transition:
+			color var(--timing-base) ease-out,
+			background var(--timing-base) ease-out;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+
+		&:hover {
+			color: var(--color-critical);
+			background: var(--color-critical--surface);
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
 	}
 
 	.rule-builder__checks {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-base);
+		align-items: center;
+		gap: var(--space-large);
+		min-height: 36px;
 	}
 
 	.rule-builder__inline {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: flex-end;
+		align-items: center;
 		gap: var(--space-small);
 
 		:global(.select) {
+			flex: 1 1 200px;
 			width: auto;
-			min-width: 220px;
 		}
 
 		:global(.input) {
-			width: 100px;
+			width: 72px;
 		}
 	}
 
 	.rule-builder__inline-suffix {
-		padding-bottom: var(--space-small);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-label);
 	}
 
 	.rule-builder__add {
-		max-width: 320px;
+		padding: var(--space-small) var(--space-slim);
+		background: var(--color-surface--background--subtle);
+
+		:global(.button) {
+			color: var(--color-interactive);
+			font-weight: 600;
+		}
 	}
 </style>
