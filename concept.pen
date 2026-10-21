@@ -255288,6 +255288,22 @@
           }
         }
       ]
+    },
+    "color-feature-deep": {
+      "type": "color",
+      "value": "#012a17"
+    },
+    "color-money-start": {
+      "type": "color",
+      "value": "#032b3a"
+    },
+    "color-money-end": {
+      "type": "color",
+      "value": "#0b4559"
+    },
+    "color-money-border": {
+      "type": "color",
+      "value": "#ffffff2e"
     }
   },
   "fileToken": "269eca33-e771-47c2-908b-86cba8e82453"
