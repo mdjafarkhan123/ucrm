@@ -1,10 +1,13 @@
 <script lang="ts">
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import ImportStepCard from './ImportStepCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { MatchAction } from '$lib/imports/api';
 	import fileIcon from '@tabler/icons/outline/file-spreadsheet.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
+	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
@@ -24,6 +27,7 @@
 		],
 		sampleHref = '/samples/client-import-sample.csv',
 		rowCap = 5000,
+		tone = 'client',
 		onFile,
 		onContinue
 	}: {
@@ -41,6 +45,8 @@
 		matchOptions?: { value: string; label: string }[];
 		sampleHref?: string;
 		rowCap?: number;
+		/** The import's colour family, for the card header tile. */
+		tone?: string;
 		onFile: (file: File | null) => void;
 		onContinue: () => void;
 	} = $props();
@@ -66,205 +72,176 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class="panel">
-	<header class="panel__head">
-		<h2>{title}</h2>
-		<p>{subtitle}</p>
-	</header>
+<ImportStepCard {title} hint={subtitle} icon={uploadIcon} {tone}>
+	{#if showMatchAction}
+		<div class="field">
+			<Select
+				id="import-match-action"
+				label={matchActionLabel}
+				value={matchAction}
+				options={matchOptions}
+				onchange={(value) => (matchAction = value as MatchAction)}
+			/>
+			<p class="hint">{matchHint}</p>
+		</div>
+	{/if}
 
-	<div class="panel__body">
-		{#if showMatchAction}
-			<div class="field">
-				<Select
-					id="import-match-action"
-					label={matchActionLabel}
-					value={matchAction}
-					options={matchOptions}
-					onchange={(value) => (matchAction = value as MatchAction)}
-				/>
-				<p class="hint">{matchHint}</p>
+	<div class="field">
+		<label class="field__label" for="import-file">Your file</label>
+		<input
+			bind:this={inputEl}
+			id="import-file"
+			type="file"
+			accept=".csv,text/csv,application/vnd.ms-excel"
+			class="visually-hidden"
+			onchange={(event) => pick(event.currentTarget.files)}
+		/>
+
+		{#if file}
+			<div class="file-row">
+				<IconTile icon={fileIcon} tone="success" />
+				<span class="file-row__meta">
+					<b>{file.name}</b>
+					<span>{fileSize(file.size)}</span>
+				</span>
+				<Button
+					variant="secondary"
+					size="small"
+					iconOnly
+					label="Remove file"
+					onclick={() => onFile(null)}
+				>
+					{@html xIcon}
+				</Button>
 			</div>
+		{:else}
+			<button
+				type="button"
+				class="dropzone"
+				class:dropzone--over={dragOver}
+				onclick={() => inputEl?.click()}
+				ondragover={(event) => {
+					event.preventDefault();
+					dragOver = true;
+				}}
+				ondragleave={() => (dragOver = false)}
+				ondrop={onDrop}
+			>
+				<IconTile icon={fileIcon} tone="success" />
+				<span class="dropzone__text">
+					<b>Choose a CSV file or drag it here</b>
+					<span>Up to {rowCap.toLocaleString()} rows per import</span>
+				</span>
+			</button>
 		{/if}
 
-		<div class="field">
-			<label class="field__label" for="import-file">Your file</label>
-			<input
-				bind:this={inputEl}
-				id="import-file"
-				type="file"
-				accept=".csv,text/csv,application/vnd.ms-excel"
-				class="visually-hidden"
-				onchange={(event) => pick(event.currentTarget.files)}
-			/>
-
-			{#if file}
-				<div class="file-row">
-					<IconTile icon={fileIcon} tone="success" />
-					<span class="file-row__meta">
-						<b>{file.name}</b>
-						<span>{fileSize(file.size)}</span>
-					</span>
-					<Button
-						variant="secondary"
-						size="small"
-						iconOnly
-						label="Remove file"
-						onclick={() => onFile(null)}
-					>
-						{@html xIcon}
-					</Button>
-				</div>
-			{:else}
-				<button
-					type="button"
-					class="dropzone"
-					class:dropzone--over={dragOver}
-					onclick={() => inputEl?.click()}
-					ondragover={(event) => {
-						event.preventDefault();
-						dragOver = true;
-					}}
-					ondragleave={() => (dragOver = false)}
-					ondrop={onDrop}
-				>
-					<span class="dropzone__icon" aria-hidden="true">{@html uploadIcon}</span>
-					<span class="dropzone__text"><b>Choose a CSV file</b> or drag it here</span>
-				</button>
-			{/if}
-
-			{#if errorMessage}
-				<p class="field__error" role="alert">{errorMessage}</p>
-			{/if}
-			<p class="hint">
-				Not sure about the format?
-				<a class="link" href={sampleHref} download>Download our sample file</a>
-				· Up to {rowCap.toLocaleString()} rows per import.
-			</p>
-		</div>
+		<a class="sample-link" href={sampleHref} download>
+			<span aria-hidden="true">{@html downloadIcon}</span>
+			Not sure about the format? Download our sample file
+		</a>
 	</div>
 
-	<footer class="panel__foot">
+	{#if errorMessage}
+		<Banner type="error">{errorMessage}</Banner>
+	{/if}
+
+	{#snippet footer()}
 		<span class="foot-hint">Nothing is saved until you finish the last step.</span>
 		<Button variant="primary" {loading} disabled={!file} onclick={onContinue}>
 			Continue <span class="btn-icon" aria-hidden="true">{@html arrowRightIcon}</span>
 		</Button>
-	</footer>
-</section>
+	{/snippet}
+</ImportStepCard>
 
 <style lang="scss">
-	.panel {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-large);
-		box-shadow: var(--shadow-base);
-		overflow: hidden;
-
-		&__head {
-			padding: var(--space-large) var(--space-large) var(--space-base);
-			border-bottom: 1px solid var(--color-border);
-
-			h2 {
-				font-family: var(--typography--fontFamily-display);
-				font-size: var(--typography--fontSize-larger);
-				font-weight: 600;
-				color: var(--color-heading);
-				margin: 0;
-			}
-			p {
-				margin: var(--space-smaller) 0 0;
-				color: var(--color-text--secondary);
-			}
-		}
-
-		&__body {
-			padding: var(--space-large);
-		}
-
-		&__foot {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-slim);
-			padding: var(--space-base) var(--space-large);
-			border-top: 1px solid var(--color-border);
-			background: var(--color-surface--background--subtle);
-		}
-	}
-
 	.field {
-		margin-bottom: var(--space-large);
-
-		&:last-child {
-			margin-bottom: 0;
-		}
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 
 		&__label {
-			display: block;
-			font-weight: 600;
-			font-size: var(--typography--fontSize-small);
 			color: var(--color-heading);
-			margin-bottom: var(--space-small);
-		}
-
-		&__error {
-			margin: var(--space-small) 0 0;
-			font-size: var(--typography--fontSize-small);
-			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
 		}
 	}
 
 	.hint {
-		font-size: var(--typography--fontSize-small);
+		margin: 0;
 		color: var(--color-text--secondary);
-		margin-top: var(--space-small);
+		font-size: var(--typography--fontSize-small);
 	}
-	.link {
+
+	.sample-link {
+		display: inline-flex;
+		align-self: flex-start;
+		align-items: center;
+		gap: 6px;
+		margin-top: 4px;
 		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
 		text-decoration: none;
 
+		:global(svg) {
+			display: block;
+			width: 14px;
+			height: 14px;
+		}
 		&:hover {
 			text-decoration: underline;
+		}
+		&:focus-visible {
+			border-radius: var(--radius-small);
+			outline: none;
+			box-shadow: var(--shadow-focus);
 		}
 	}
 
 	.dropzone {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		gap: var(--space-slim);
 		width: 100%;
+		padding: 28px var(--space-medium);
+		border: 1.5px solid var(--color-border--interactive);
+		border-radius: var(--radius-large);
+		background: var(--color-surface--background);
 		font-family: inherit;
-		font-size: var(--typography--fontSize-base);
-		color: var(--color-text--secondary);
-		background: var(--color-surface--background--subtle);
-		border: 1px dashed var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		padding: var(--space-large);
+		text-align: center;
 		cursor: pointer;
-		text-align: left;
 		transition:
 			border-color 0.12s,
 			background 0.12s;
 
 		&:hover,
 		&--over {
-			background: var(--color-surface--hover);
 			border-color: var(--color-interactive);
+			background: var(--color-surface--hover);
+		}
+		&:active {
+			background: var(--color-surface--active);
 		}
 		&:focus-visible {
 			outline: none;
 			box-shadow: var(--shadow-focus);
 		}
 
-		&__icon :global(svg) {
-			width: 24px;
-			height: 24px;
-			display: block;
-			color: var(--color-icon--secondary);
-		}
-		&__text b {
-			color: var(--color-heading);
-			font-weight: 600;
+		&__text {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+
+			b {
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 600;
+			}
+			span {
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+			}
 		}
 	}
 
@@ -272,9 +249,9 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-slim);
-		border: 1px solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
 		padding: var(--space-slim) var(--space-base);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
 		&__meta {
@@ -283,46 +260,39 @@
 
 			b {
 				display: block;
-				font-weight: 600;
-				color: var(--color-heading);
 				overflow: hidden;
+				color: var(--color-heading);
+				font-weight: 600;
 				text-overflow: ellipsis;
 				white-space: nowrap;
 			}
 			span {
-				font-size: var(--typography--fontSize-small);
 				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
 			}
 		}
 	}
 
 	.foot-hint {
-		font-size: var(--typography--fontSize-small);
 		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.btn-icon :global(svg) {
+		display: block;
 		width: 16px;
 		height: 16px;
-		display: block;
 	}
 
 	.visually-hidden {
 		position: absolute;
 		width: 1px;
 		height: 1px;
-		padding: 0;
 		margin: -1px;
+		padding: 0;
 		overflow: hidden;
 		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
 		border: 0;
-	}
-
-	@media (max-width: 560px) {
-		.panel__foot {
-			flex-direction: column-reverse;
-			align-items: stretch;
-		}
+		white-space: nowrap;
 	}
 </style>

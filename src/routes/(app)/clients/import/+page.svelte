@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import ImportStepper from '$lib/components/imports/ImportStepper.svelte';
+	import ImportPage from '$lib/components/imports/ImportPage.svelte';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import ImportUploadStep from '$lib/components/imports/ImportUploadStep.svelte';
 	import ImportMapStep from '$lib/components/imports/ImportMapStep.svelte';
 	import ImportReviewStep from '$lib/components/imports/ImportReviewStep.svelte';
@@ -119,20 +120,16 @@
 
 <svelte:head><title>Import clients · Contractor CRM</title></svelte:head>
 
-<div class="import-page">
-	<header class="import-page__head">
-		<p class="import-page__eyebrow">Onboarding</p>
-		<h1>Import clients</h1>
-		<p class="import-page__lede">
-			Bring an existing client list in from a spreadsheet — matched to your fields, checked for
-			duplicates, and safe to run twice.
-		</p>
-	</header>
-
-	<ImportStepper current={step} />
-
+<ImportPage
+	title="Import clients"
+	lede="Bring an existing client list in from a spreadsheet — matched to your fields, checked for duplicates, and safe to run twice."
+	icon={userIcon}
+	tone="client"
+	{step}
+>
 	{#if step === 1}
 		<ImportUploadStep
+			tone="client"
 			{file}
 			bind:matchAction
 			errorMessage={uploadError}
@@ -142,6 +139,7 @@
 		/>
 	{:else if step === 2 && batch}
 		<ImportMapStep
+			tone="client"
 			headers={batch.headers}
 			previewRows={batch.preview_rows}
 			bind:mapping
@@ -152,6 +150,7 @@
 		/>
 	{:else if step === 3 && batch && summary}
 		<ImportReviewStep
+			tone="client"
 			{summary}
 			rowCount={batch.row_count}
 			errorMessage={reviewError}
@@ -168,37 +167,4 @@
 			{clientsHref}
 		/>
 	{/if}
-</div>
-
-<style lang="scss">
-	.import-page {
-		max-width: 1040px;
-		margin-inline: auto;
-		padding-block: var(--space-large);
-		padding-inline: var(--space-base);
-
-		&__head {
-			margin-bottom: var(--space-large);
-		}
-		&__eyebrow {
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			letter-spacing: var(--typography--letterSpacing-loose);
-			text-transform: uppercase;
-			color: var(--color-interactive);
-			margin: 0;
-		}
-		h1 {
-			font-family: var(--typography--fontFamily-display);
-			font-size: var(--typography--fontSize-largest);
-			font-weight: 600;
-			color: var(--color-heading);
-			margin: var(--space-smaller) 0 0;
-		}
-		&__lede {
-			margin: var(--space-small) 0 0;
-			color: var(--color-text--secondary);
-			max-width: 60ch;
-		}
-	}
-</style>
+</ImportPage>

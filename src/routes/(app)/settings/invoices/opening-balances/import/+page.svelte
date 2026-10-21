@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import ImportStepper from '$lib/components/imports/ImportStepper.svelte';
+	import ImportPage from '$lib/components/imports/ImportPage.svelte';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import ImportUploadStep from '$lib/components/imports/ImportUploadStep.svelte';
 	import ImportMapStep from '$lib/components/imports/ImportMapStep.svelte';
 	import ImportReviewStep from '$lib/components/imports/ImportReviewStep.svelte';
@@ -113,20 +114,16 @@
 
 <svelte:head><title>Import opening balances · Contractor CRM</title></svelte:head>
 
-<div class="import-page">
-	<header class="import-page__head">
-		<p class="import-page__eyebrow">Financial</p>
-		<h1>Import opening balances</h1>
-		<p class="import-page__lede">
-			Record what a client already owed you, or a credit they already had, from before you started
-			using this CRM — one receivable or credit fact per client, as of a date you choose.
-		</p>
-	</header>
-
-	<ImportStepper current={step} />
-
+<ImportPage
+	title="Import opening balances"
+	lede="Record what a client already owed you, or a credit they already had, from before you started using this CRM — one receivable or credit fact per client, as of a date you choose."
+	icon={receiptIcon}
+	tone="invoice"
+	{step}
+>
 	{#if step === 1}
 		<ImportUploadStep
+			tone="invoice"
 			{file}
 			bind:matchAction
 			showMatchAction={false}
@@ -140,6 +137,7 @@
 		/>
 	{:else if step === 2 && batch}
 		<ImportMapStep
+			tone="invoice"
 			headers={batch.headers}
 			previewRows={batch.preview_rows}
 			bind:mapping
@@ -152,6 +150,8 @@
 		/>
 	{:else if step === 3 && batch && summary}
 		<ImportReviewStep
+			newIcon={receiptIcon}
+			tone="invoice"
 			{summary}
 			rowCount={batch.row_count}
 			newLabel="New balances"
@@ -173,37 +173,4 @@
 			{clientsHref}
 		/>
 	{/if}
-</div>
-
-<style lang="scss">
-	.import-page {
-		max-width: 1040px;
-		margin-inline: auto;
-		padding-block: var(--space-large);
-		padding-inline: var(--space-base);
-
-		&__head {
-			margin-bottom: var(--space-large);
-		}
-		&__eyebrow {
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			letter-spacing: var(--typography--letterSpacing-loose);
-			text-transform: uppercase;
-			color: var(--color-interactive);
-			margin: 0;
-		}
-		h1 {
-			font-family: var(--typography--fontFamily-display);
-			font-size: var(--typography--fontSize-largest);
-			font-weight: 600;
-			color: var(--color-heading);
-			margin: var(--space-smaller) 0 0;
-		}
-		&__lede {
-			margin: var(--space-small) 0 0;
-			color: var(--color-text--secondary);
-			max-width: 60ch;
-		}
-	}
-</style>
+</ImportPage>
