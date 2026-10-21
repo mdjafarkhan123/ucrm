@@ -6,7 +6,7 @@
 - **Stage:** Approved shared parts are being built; further screens are being drawn.
 
 **New Request:** shared top form approved 2026-10-20 for Request, Quote, Job and Invoice; its look is
-B · Coloured top with record-number fact tiles (`NhVGQ`); existing right rails stay. New Job page built 2026-10-21 (shared form `CreateFormHeader`); New Quote approved, waiting to be built; New Invoice next to draw. Blueprint,
+B · Coloured top with record-number fact tiles (`NhVGQ`); existing right rails stay. New Job page built 2026-10-21 (shared form `CreateFormHeader`); New Quote approved, waiting to be built; New Invoice drawn 2026-10-21 (Batch 36 `EBLIe`), waiting for Jafar's pick. Blueprint,
 branch, proof and integration status:
 `parts/new-request-top-form.md`. This supersedes C5's abandoned Batch 31 drafts.
 
