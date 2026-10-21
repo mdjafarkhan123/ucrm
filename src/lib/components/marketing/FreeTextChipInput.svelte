@@ -223,7 +223,7 @@
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			color: var(--color-heading);
-			background: var(--field--fill, var(--color-surface--background));
+			background: var(--color-surface);
 			font: inherit;
 
 			&:focus {

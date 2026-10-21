@@ -35,11 +35,11 @@
 <div class="calendar-bar">
 	<div class="calendar-bar__date">
 		<div class="calendar-bar__stepper">
-			<Button variant="secondary" white iconOnly label={`Previous ${view}`} onclick={() => onstep(-1)}
+			<Button variant="secondary" iconOnly label={`Previous ${view}`} onclick={() => onstep(-1)}
 				>{@html chevronLeftIcon}</Button
 			>
-			<Button variant="secondary" white onclick={ontoday}>Today</Button>
-			<Button variant="secondary" white iconOnly label={`Next ${view}`} onclick={() => onstep(1)}
+			<Button variant="secondary" onclick={ontoday}>Today</Button>
+			<Button variant="secondary" iconOnly label={`Next ${view}`} onclick={() => onstep(1)}
 				>{@html chevronRightIcon}</Button
 			>
 		</div>
@@ -80,6 +80,9 @@
 
 	.calendar-bar__stepper {
 		display: inline-flex;
+		// A joined group is one box with the soft grey edge, not a row of brand-edged buttons.
+		--button--edge: var(--color-border--interactive);
+		--button--edge--hover: var(--color-border--interactive--hover);
 		:global(.button) {
 			border-radius: 0;
 		}

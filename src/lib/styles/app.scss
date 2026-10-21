@@ -180,16 +180,12 @@ a:hover {
 }
 
 // =============================================================================
-// TINTED SURFACE — a record's coloured top (record header, create form, client form). Controls that are grey
-// or page-coloured elsewhere turn white on it, so they never muddy or match the tint. Button, Input, Select,
-// SearchInput and SegmentedControl read these properties; their `white` prop does the same one at a time.
+// TINTED SURFACE — a record's coloured top (record header, create form, client form). A segmented switch's
+// track, grey on a white card, turns white on it so it never muddies the tint; its `white` prop does the same
+// one at a time.
 // =============================================================================
 
 .tinted-surface {
-	--button--grey-fill: var(--color-surface);
-	--button--grey-fill--hover: var(--color-surface--hover);
-	--button--grey-fill--active: var(--color-surface--active);
-	--field--fill: var(--color-surface);
 	--switch--track-fill: var(--color-surface);
 }
 

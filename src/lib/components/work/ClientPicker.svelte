@@ -232,7 +232,7 @@
 		align-items: center;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
-		background: var(--field--fill, var(--color-surface--background));
+		background: var(--color-surface);
 	}
 	.client-picker__control:focus-within {
 		z-index: var(--elevation-base);
