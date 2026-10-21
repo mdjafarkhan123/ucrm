@@ -437,11 +437,7 @@
 			box-sizing: border-box;
 			padding: var(--space-large);
 			background:
-				radial-gradient(
-					ellipse at 50% 0%,
-					rgb(255 255 255 / 0.12),
-					rgb(255 255 255 / 0) 70%
-				),
+				radial-gradient(ellipse at 50% 0%, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0) 70%),
 				var(--color-photo-studio);
 		}
 
@@ -464,7 +460,7 @@
 			width: 200px;
 			margin: 0;
 			color: rgb(255 255 255 / 0.72);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			line-height: 1.45;
 			text-align: center;
 
@@ -614,7 +610,7 @@
 			color: #ffffff;
 			background: transparent;
 			font: inherit;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			cursor: pointer;
 
@@ -729,7 +725,7 @@
 			align-items: center;
 			gap: 6px;
 			color: var(--color-heading);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 
 			:global(svg) {
 				width: 14px;
@@ -759,7 +755,7 @@
 
 			strong {
 				color: var(--color-heading);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-label);
 				font-weight: 600;
 			}
 
@@ -811,7 +807,7 @@
 			border-radius: var(--radius-base);
 			color: var(--color-critical--onSurface);
 			background: var(--color-critical--surface);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 500;
 
 			:global(svg) {

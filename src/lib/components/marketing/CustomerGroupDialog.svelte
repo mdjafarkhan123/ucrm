@@ -6,6 +6,8 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import CustomerGroupRuleBuilder from './CustomerGroupRuleBuilder.svelte';
 	import CustomerGroupPreview from './CustomerGroupPreview.svelte';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import {
 		createCustomerGroupRequest,
 		updateCustomerGroupRequest,
@@ -103,55 +105,76 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <Dialog
 	{open}
 	title={mode === 'create' ? 'New customer group' : 'Edit customer group'}
+	icon={usersIcon}
+	iconTone="growth"
 	size="large"
 	initialFocusId="group-name"
 	{onClose}
 >
 	<div class="group-dialog">
-		<div class="group-dialog__identity">
-			<Input
-				id="group-name"
-				label="Name"
-				required
-				bind:value={name}
-				invalid={Boolean(nameError)}
-				errorMessage={nameError}
-			/>
-			<Textarea
-				id="group-description"
-				label="Description (optional)"
-				rows={2}
-				maxlength={500}
-				bind:value={description}
-			/>
+		<div class="group-dialog__form">
+			{#if formError}
+				<p class="group-dialog__error" role="alert">{@html alertIcon}<span>{formError}</span></p>
+			{/if}
+
+			<div class="group-dialog__identity">
+				<Input
+					id="group-name"
+					label="Name"
+					required
+					bind:value={name}
+					invalid={Boolean(nameError)}
+					errorMessage={nameError}
+				/>
+				<Textarea
+					id="group-description"
+					label="Description (optional)"
+					rows={2}
+					maxlength={500}
+					bind:value={description}
+				/>
+			</div>
+
+			<CustomerGroupRuleBuilder bind:rules {labels} />
 		</div>
 
-		<CustomerGroupRuleBuilder bind:rules {labels} />
-		<CustomerGroupPreview {rules} />
-
-		{#if formError}
-			<p class="group-dialog__error" role="alert">{formError}</p>
-		{/if}
+		<div class="group-dialog__recipients">
+			<CustomerGroupPreview {rules} variant="panel" />
+		</div>
 	</div>
 
-	<div class="group-dialog__actions">
-		<Button variant="secondary" variation="subtle" onclick={onClose} disabled={saving}
-			>Cancel</Button
-		>
-		<Button onclick={save} loading={saving}
-			>{mode === 'create' ? 'Save group' : 'Save changes'}</Button
-		>
-	</div>
+	{#snippet footer()}
+		<div class="group-dialog__actions">
+			<Button variant="secondary" onclick={onClose} disabled={saving}>Cancel</Button>
+			<Button onclick={save} loading={saving}
+				>{mode === 'create' ? 'Save group' : 'Save changes'}</Button
+			>
+		</div>
+	{/snippet}
 </Dialog>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.group-dialog {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-large);
+		align-items: stretch;
+		min-height: 100%;
+		// The recipients panel runs the full height beside the form, so the body's own padding moves inside.
+		margin: calc(var(--space-medium) * -1);
+
+		&__form {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 20px;
+			min-width: 0;
+			padding: 20px;
+		}
 
 		&__identity {
 			display: flex;
@@ -159,21 +182,33 @@
 			gap: var(--space-base);
 		}
 
+		&__recipients {
+			flex: 0 0 300px;
+		}
+
+		&__actions {
+			display: flex;
+			gap: var(--space-small);
+		}
+
 		&__error {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
-			padding: var(--space-small) var(--space-base);
+			padding: var(--space-small) var(--space-slim);
+			border: var(--border-base) solid var(--color-critical--surface-edge);
 			border-radius: var(--radius-base);
 			color: var(--color-critical--onSurface);
 			background: var(--color-critical--surface);
-			font-size: var(--typography--fontSize-small);
-		}
-	}
+			font-size: var(--typography--fontSize-label);
 
-	.group-dialog__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-small);
-		padding: var(--space-base) var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
+			:global(svg) {
+				flex: 0 0 auto;
+				width: 16px;
+				height: 16px;
+				color: var(--color-critical);
+			}
+		}
 	}
 </style>

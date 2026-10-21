@@ -5,12 +5,15 @@
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import Button from './Button.svelte';
+	import IconTile from './IconTile.svelte';
 
 	type MenuItem = {
 		label: string;
 		// Needed only where two items in one menu can carry the same label.
 		key?: string;
 		icon?: string;
+		/** Draws `icon` on a 24 tile in this colour family, for a list of kinds of thing (`job`, `client`…). */
+		tile?: string;
 		onSelect: () => void;
 		destructive?: boolean;
 		disabled?: boolean;
@@ -98,7 +101,9 @@
 		disabled={item.disabled}
 		onSelect={() => item.onSelect()}
 	>
-		{#if item.icon}
+		{#if item.icon && item.tile}
+			<span aria-hidden="true"><IconTile icon={item.icon} tone={item.tile} size={24} /></span>
+		{:else if item.icon}
 			<span class="dropdown-menu__item-icon" aria-hidden="true">{@html item.icon}</span>
 		{/if}
 		<span class="dropdown-menu__item-label">{item.label}</span>
