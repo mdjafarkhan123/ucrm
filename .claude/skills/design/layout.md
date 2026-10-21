@@ -151,6 +151,30 @@ column, centred, blocks 24 apart: the page header, the step track, then one card
   tiles two to a row, 12 apart (white, radius 12, 1px `--color-border`, padding 16, gap 14: a 40 Growth tile, the
   title 14/600 over the description 12 quiet, the 18 circle at the top right; chosen 1.5px `--color-interactive`
   edge), then the name field; the footer bar holds the hint and Continue (main, arrow-right).
+- **New campaign · Customers step**, approved B by Jafar 2026-10-21 (Pencil: "Batch 53 · New campaign ·
+  Customers step · Approved B", `RPlkr`). The step track shows Goal finished and Customers current. Card header:
+  Growth `users` tile. Body (padding 20, gap 20):
+  - Picker row: the Customer group select box, then New group (secondary, `plus`) at its right, bottoms level.
+  - Rule chips: "Matches customers who" 12/500 quiet, then one chip per rule, 8 apart (28 high,
+    `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 0 10, gap 6): a 14 icon in the
+    colour of what the rule checks (as the customer group pop-up) and the words 12/500 heading.
+  - Audience meter: `--color-growth--surface`, 1px `--surface-edge`, radius 16, padding 20, gap 14. Top: a 40
+    white tile with a 20 `mail-check` in `--color-success`, the count `-stat` 700 (-1), "customers will get this
+    email" 14/600 heading over "out of N who match the group's rules" 12 `--color-growth--onSurface`. Then a 10
+    high bar (white track, radius 5, 2 gap): the "will get it" share `--color-success`, the rest `--color-inactive`.
+    Then the key: 8 dots with "N will get it" and "N left out" 12/500.
+  - Why N are left out: 14/600 title over a 12 quiet hint, View customers (secondary, `eye`; Hide customers with
+    `eye-off`) at the right. One list box (white, 1px `--color-border`, radius 12, clipped), a row per reason
+    (padding 12 16, gap 12, hairline between): a 28 tile (radius 8; a reason the owner can fix in `--color-warning`,
+    the rest `--color-inactive`), the reason 14/500 over a 12 quiet tip, the count 14/700 at the right.
+  - Customer list (open): "Customers in this group" 14/600 with the filter select (200) at the right, then a list
+    box of rows (padding 10 16): name 14/600 over email 12 quiet; at the right an excluded customer's reason as a
+    grey pill, others a 14 `mail-check` with "Will get it" 12/500 `--color-success--onSurface`. Load more in a
+    `--color-surface--background--subtle` footer.
+  - Footer: Back, the hint "N customers will get this email." (empty while loading), Continue.
+  - States: loading groups (bones for every block, the meter as one radius-16 block); counting (meter bones in
+    `--color-growth--surface-edge`, hint "Counting who will get this email…"); no groups (Empty, Growth tile, New
+    group main); couldn't load (`page-states.md`, Try again).
 
 ## Record pages
 
