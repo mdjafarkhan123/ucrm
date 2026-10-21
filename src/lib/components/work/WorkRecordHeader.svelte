@@ -159,13 +159,11 @@
 <section
 	class={`record-header ${className}`}
 	style:--record-tone={`var(--color-${tone})`}
-	style:--record-surface={tone === 'client'
-		? 'var(--color-client--surface-edge)'
-		: `var(--color-${tone}--surface)`}
+	style:--record-surface={`var(--color-${tone}--surface)`}
 	style:--record-status={`var(--color-${statusTone})`}
 	aria-label="{recordType} summary"
 >
-	<div class="record-header__top">
+	<div class="record-header__top tinted-surface">
 		<div class="record-header__row">
 			<IconTile {icon} {tone} size={40} white />
 			<div class="record-header__status">

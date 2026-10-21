@@ -35,11 +35,11 @@
 <div class="calendar-bar">
 	<div class="calendar-bar__date">
 		<div class="calendar-bar__stepper">
-			<Button variant="secondary" iconOnly label={`Previous ${view}`} onclick={() => onstep(-1)}
+			<Button variant="secondary" white iconOnly label={`Previous ${view}`} onclick={() => onstep(-1)}
 				>{@html chevronLeftIcon}</Button
 			>
-			<Button variant="secondary" onclick={ontoday}>Today</Button>
-			<Button variant="secondary" iconOnly label={`Next ${view}`} onclick={() => onstep(1)}
+			<Button variant="secondary" white onclick={ontoday}>Today</Button>
+			<Button variant="secondary" white iconOnly label={`Next ${view}`} onclick={() => onstep(1)}
 				>{@html chevronRightIcon}</Button
 			>
 		</div>
@@ -52,7 +52,7 @@
 			value={view}
 			options={views}
 			size="small"
-			surface="page"
+			white
 			ariaLabel="Calendar view"
 			onchange={(next) => onview(next as V)}
 		/>

@@ -10,6 +10,7 @@
 		ariaLabel = 'Search',
 		disabled = false,
 		size = 'base',
+		white = false,
 		class: className = '',
 		onkeydown
 	}: {
@@ -21,6 +22,8 @@
 		disabled?: boolean;
 		/** `compact` is the 38px search that sits inside a table card's header. */
 		size?: 'base' | 'compact';
+		/** A white box, for a field on the page colour. Inside a `.tinted-surface` it is white without it. */
+		white?: boolean;
 		class?: string;
 		onkeydown?: (event: KeyboardEvent) => void;
 	} = $props();
@@ -39,6 +42,7 @@
 	class:search-input--disabled={disabled}
 	class:search-input--labelled={Boolean(label)}
 	class:search-input--compact={size === 'compact'}
+	class:search-input--white={white}
 >
 	{#if label}
 		<label class="search-input__label" for={id}>{label}</label>
@@ -82,7 +86,7 @@
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
-		background: var(--color-surface);
+		background: var(--field--fill, var(--color-surface--background));
 		transition:
 			box-shadow var(--timing-quick),
 			border-color var(--timing-quick);
@@ -98,6 +102,10 @@
 				width: 16px;
 				height: 16px;
 			}
+		}
+
+		&.search-input--white {
+			--field--fill: var(--color-surface);
 		}
 
 		&.search-input--labelled {

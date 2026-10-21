@@ -299,7 +299,6 @@
 	--color-payments--onSurface: var(--color-invoice--onSurface);
 	--color-client: #8a6a4b;
 	--color-client--surface: #e8dbc8;
-	--color-client--surface-edge: #d6c4aa;
 	--color-client--onSurface: #4a3826;
 	--color-time: var(--color-indigo);
 	--color-time--surface: var(--color-indigo--lightest);
@@ -325,7 +324,7 @@
 	--color-task--surface-edge: var(--color-base-blue--300);
 	--color-invoice--surface-edge: var(--color-base-lightBlue--300);
 	--color-event--surface-edge: var(--color-base-yellow--300);
-	--color-client--surface-edge: var(--color-base-taupe--300);
+	--color-client--surface-edge: #d6c4aa;
 	--color-conversation--surface-edge: var(--color-base-teal--300);
 	--color-growth--surface-edge: var(--color-base-purple--300);
 	--color-review--surface-edge: var(--color-base-yellow--300);
@@ -521,7 +520,6 @@
 		--color-payments--onSurface: var(--color-invoice--onSurface);
 		--color-client: #cfae88;
 		--color-client--surface: #4a3d2f;
-		--color-client--surface-edge: #5e4e3c;
 		--color-client--onSurface: #efe3d2;
 		--color-time: var(--color-indigo--light);
 		--color-time--surface: var(--color-indigo--dark);
@@ -546,7 +544,7 @@
 		--color-task--surface-edge: var(--color-task--surface);
 		--color-invoice--surface-edge: var(--color-invoice--surface);
 		--color-event--surface-edge: var(--color-event--surface);
-		--color-client--surface-edge: var(--color-client--surface);
+		--color-client--surface-edge: #5e4e3c;
 		--color-conversation--surface-edge: var(--color-conversation--surface);
 		--color-growth--surface-edge: var(--color-growth--surface);
 		--color-review--surface-edge: var(--color-review--surface);

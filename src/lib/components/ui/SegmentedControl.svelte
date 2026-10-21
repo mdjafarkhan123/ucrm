@@ -22,7 +22,7 @@
 		ariaLabel,
 		name,
 		size = 'base',
-		surface = 'card',
+		white = false,
 		fullWidth = false,
 		disabled = false,
 		onchange
@@ -35,9 +35,9 @@
 		ariaLabel?: string;
 		name?: string;
 		size?: 'small' | 'base';
-		/** What the switch sits on, so its track never matches it: `card` (a white card) or `page` (the page
-		 * colour or a coloured record top). */
-		surface?: 'card' | 'page';
+		/** A white track, for a switch on the page colour, so it never matches what it sits on. Inside a
+		 * `.tinted-surface` (a coloured record top) the track is white without it. */
+		white?: boolean;
 		fullWidth?: boolean;
 		disabled?: boolean;
 		onchange?: (value: string) => void;
@@ -92,7 +92,8 @@
 
 	<div
 		bind:this={trackEl}
-		class={`segmented__track segmented__track--${size} segmented__track--on-${surface}`}
+		class={`segmented__track segmented__track--${size}`}
+		class:segmented__track--white={white}
 		class:segmented__track--disabled={disabled}
 		role="radiogroup"
 		aria-labelledby={labelId}
@@ -290,9 +291,9 @@
 			padding: 3px;
 			border-color: var(--color-border);
 			border-radius: 8px;
-			background: var(--color-surface--background);
+			background: var(--switch--track-fill, var(--color-surface--background));
 		}
-		.segmented__track--on-page {
+		.segmented__track--white {
 			background: var(--color-surface);
 		}
 		.segmented__thumb {

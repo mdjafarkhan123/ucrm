@@ -59,7 +59,7 @@
 
 <section class={`create-form ${className}`}>
 	<div
-		class="create-form__top"
+		class="create-form__top tinted-surface"
 		style:background={`var(--color-${tone}--surface)`}
 		style:border-color={`var(--color-${tone}--surface-edge)`}
 	>
