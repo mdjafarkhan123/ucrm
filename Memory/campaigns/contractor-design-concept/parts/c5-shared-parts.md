@@ -42,6 +42,7 @@
 | 33 Number cards on list pages | data-display/KpiCard replaces work/AttentionCard + MoneyFeatureCard on Clients, Requests, Quotes, Jobs, Invoices; Reviews too | Approved `fzPaM` B 2026-10-21 (free-standing cards in one row, money card is the same card in green; A in-box deleted). Fixed set per page: Clients 4, Quotes 5, Invoices 5, Requests 6, Jobs 6, Reviews 4. 48 tile/24 icon; number with its short label under it, beside the tile (Jafar 2026-10-21); arrow in the top corner; note band kept. Narrow: even rows 6→3+3→2+2+2. Built 2026-10-21 using KpiCard on all six pages; dark mode follows existing tokens. Proof: `docs/evidence/2026-10-21-kpi-cards/README.md`; handover: `parts/batch33-kpi-build.md` |
 | 37 Customer group pop-up | marketing/CustomerGroupDialog, CustomerGroupRuleBuilder, AsyncMultiPicker, FreeTextChipInput, CustomerGroupPreview (1b): every state, dark | Approved `PLExJ` B 2026-10-21 (rules list beside a purple recipients panel; A refined pop-up deleted). Restyle only (Jafar 2026-10-21: no new features, nothing removed). Look in `modals.md` → Customer group pop-up. Hand-off: the panel hint drops "above" (conditions sit beside it); every other word stays |
 | 38 Profile photo pop-up | profile/ProfilePhotoDialog (1b): your photo, moving and zooming, no photo yet, not a photo, saving, couldn't save, removing, dark | Approved `n2ujB` B 2026-10-21 (dark photo studio with a live preview of the top bar, a Schedule visit and an Inbox conversation; A refined pop-up deleted). Same steps and words as live; previews only show. Look in `modals.md` → Profile photo pop-up. New token `--color-photo-studio` (`colors.md`) goes into `_variables.scss` with the build |
+| 39 Weekly hours | settings/WeeklyHoursEditor (1b) on Settings → Business hours and the setup wizard's hours question: hover, typing, end before start, can't change, one column, dark | Approved `DhRBV` B 2026-10-21 (Week planner: one row per day with a 24-hour bar; A refined day cards deleted). Restyle only (same switches, periods, words and limits). Look in `inputs.md` → Weekly hours. See § Batch 39 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -370,3 +371,19 @@ Job details record header (C). First board `Yh9QW` (A job facts preview, B title
 was deleted completely at his request after he noticed the client was shown pre-picked. Start again; the drawing
 must show how the client is chosen (search box "Search by name or company", result list, Change client, locked
 from a request). The New job drawing `zUFDO` is unchanged.
+
+## Batch 39 Weekly hours — approved 2026-10-21
+
+Board `DhRBV`, B · Week planner (A refined day cards deleted). Restyle only: same seven days, Open / Closed
+switch, Open 24 hours, up to three periods, Start → End with the length chip, Remove this period, Add another
+period, the range error and `disabled`. Look in `inputs.md` → Weekly hours. Hand-off for the builder:
+- One list inside the page's card: an hour scale strip on top (DAY, then 12 AM · 6 AM · 12 PM · 6 PM · 12 AM), then
+  one row per day with a 1px line above.
+- Day column 240: 40 day tile with the short day name (Time colour; inactive grey when closed or can't change),
+  day name 15/600, the Open switch (label "Open" in the brand colour, "Closed" quiet) and Open 24 hours under it.
+- Hours column: the 24-hour bar (display only, `aria-hidden`), then the periods stacked, each Start → End boxes
+  150 wide with no visible Start/End labels (the TimePicker keeps them for screen readers), the length chip and ×;
+  Add another period under them. A period that isn't valid yet draws no block.
+- `singleColumn` (setup wizard, 640): the day heading row carries Open 24 hours then Open at the right; the bar and
+  periods (130 boxes) sit under it.
+- Card header on Business hours: Time tile with the clock.

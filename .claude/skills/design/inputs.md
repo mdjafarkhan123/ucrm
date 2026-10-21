@@ -153,3 +153,25 @@ A business's own questions as a customer answers them (board `Y3od0z`, B, Jafar 
   `--color-inactive` icon, picked `--color-success--surface` with an `--color-success` icon.
 - Hover: `--color-surface--hover` with a `--color-interactive` edge. Focus: 2px `--color-focus` ring.
 - Photo questions use the page's approved upload box.
+
+## Weekly hours
+
+A business's normal week (Settings → Business hours, the setup wizard), approved B on board `DhRBV`
+(Jafar 2026-10-21). One list inside the card, a day per row.
+
+- Hour scale strip under the Card header: `--color-surface--background--subtle`, padding 10 20, "DAY" (12/600
+  uppercase, 0.7 spacing, quiet) over the day column, then 12 AM · 6 AM · 12 PM · 6 PM · 12 AM spread across the bar
+  column, 12/600 quiet.
+- Day row: padding 16 20, gap 24, a 1px `--color-border` line above. Day column 240: a 40 tile (radius 10) with
+  the short day name 12/700 in `--color-time--surface` / `--surface-edge` / `--onSurface`, 12 to the day name
+  15/600 heading; closed or can't change, the tile is `--color-inactive` and a closed day's name is quiet. Under
+  them, 52 in, the on/off switches 10 apart: Open (label in `--color-interactive`; "Closed" quiet) and Open 24 hours.
+- Day bar: 32 high, radius 8, `--color-surface--background--subtle`, 1px `--color-border`, a 1px `--color-border`
+  line at 6, 12 and 18 hours. Each open period is a block 24 high, 2 in from its edges, radius 6, `--color-time`
+  with its range 12/600 in `--color-surface` ("8:00 AM – 5:00 PM"; shorter "7–11 AM" in a narrow block). Open 24
+  hours fills the bar. A closed day's bar stays empty. Can't change: blocks `--color-disabled`.
+- Under the bar, 12 apart: the periods 10 apart, each Start → End time boxes 150 wide with no visible labels, the
+  length chip and a 32 × icon button (hover: `--color-surface--hover`, × in `--color-critical`); then a small
+  secondary "Add another period" with a plus. The range error follows the time box rules.
+- One column (640): the day heading row has Open 24 hours, then Open, at the right; the bar and periods (130
+  boxes) sit under it.
