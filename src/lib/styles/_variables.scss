@@ -181,6 +181,8 @@
 	--color-grey--dark: var(--color-base-grey--600);
 	--color-overlay: rgba(var(--color-black--rgb), 0.32);
 	--color-overlay--dimmed: rgba(var(--color-white--rgb), 0.6);
+	// The dark panel a photo sits on in the profile photo pop-up; the same in both modes.
+	--color-photo-studio: #032b3a;
 	--color-white: rgba(var(--color-white--rgb), 1);
 	--color-black: rgba(var(--color-black--rgb), 1);
 	--color-greyBlue: var(--color-base-blue--600);

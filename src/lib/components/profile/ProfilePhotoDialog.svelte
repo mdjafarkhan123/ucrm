@@ -9,6 +9,15 @@
 	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
 	import zoomOutIcon from '@tabler/icons/outline/zoom-out.svg?raw';
 	import zoomInIcon from '@tabler/icons/outline/zoom-in.svg?raw';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import topBarIcon from '@tabler/icons/outline/layout-navbar.svg?raw';
+	import scheduleIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import searchIcon from '@tabler/icons/outline/search.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// The signed-in person's own photo: choose a picture, drag and zoom it inside the circle, save. The crop
 	// happens here, in the browser, so a 4 MB phone photo goes up as a ~60 KB square; the server still
@@ -56,6 +65,7 @@
 	);
 	const shownWidth = $derived(image ? image.naturalWidth * scale : 0);
 	const shownHeight = $derived(image ? image.naturalHeight * scale : 0);
+	const firstName = $derived(name?.trim().split(/\s+/)[0] || 'You');
 
 	function clampOffsets(x: number, y: number, width: number, height: number) {
 		return {
@@ -219,15 +229,36 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+<!-- The previews show the person as teammates will: the saved photo, or the crop while it moves. -->
+{#snippet face(px: number, size: 'small' | 'base')}
+	{#if image && imageUrl}
+		<span class="profile-photo__face" style:width="{px}px" style:height="{px}px">
+			<img
+				src={imageUrl}
+				alt=""
+				draggable="false"
+				style:width="{(shownWidth * px) / VIEWPORT}px"
+				style:height="{(shownHeight * px) / VIEWPORT}px"
+				style:transform="translate({(offsetX * px) / VIEWPORT}px, {(offsetY * px) / VIEWPORT}px)"
+			/>
+		</span>
+	{:else}
+		<Avatar id={avatarId} {name} src={avatarUrl} {size} />
+	{/if}
+{/snippet}
+
 <!-- Focus starts on the explanation, not on Remove: Enter on opening must never delete a photo. -->
 <Dialog
 	{open}
 	title="Profile photo"
-	size="small"
+	subtitle="Shown next to your name across the app"
+	icon={userIcon}
+	iconTone="inactive"
+	size="medium"
 	initialFocusId="profile-photo-hint"
 	onClose={close}
 >
-	<div class="profile-photo">
+	<div class="profile-photo" class:profile-photo--busy={Boolean(busy)}>
 		<input
 			bind:this={fileInput}
 			class="profile-photo__file"
@@ -238,94 +269,149 @@
 			onchange={choose}
 		/>
 
-		{#if image && imageUrl}
-			<p class="profile-photo__hint">Drag to move your photo. Use the slider to zoom.</p>
-			<!-- A two-way pan has no native control or ARIA role; it is focusable and moves with the arrow keys,
-			     and the zoom slider below is a real one. -->
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
-			<div
-				class="profile-photo__crop"
-				style:width="{VIEWPORT}px"
-				style:height="{VIEWPORT}px"
-				role="application"
-				tabindex="0"
-				aria-label="Photo position. Use the arrow keys to move it."
-				onpointerdown={pointerDown}
-				onpointermove={pointerMove}
-				onpointerup={pointerUp}
-				onpointercancel={pointerUp}
-				onkeydown={keyMove}
-			>
-				<img
-					class="profile-photo__image"
-					src={imageUrl}
-					alt=""
-					draggable="false"
-					style:width="{shownWidth}px"
-					style:height="{shownHeight}px"
-					style:transform="translate({offsetX}px, {offsetY}px)"
-				/>
-				<span class="profile-photo__mask" aria-hidden="true"></span>
-			</div>
-			<div class="profile-photo__zoom">
-				<span class="profile-photo__zoom-icon" aria-hidden="true">{@html zoomOutIcon}</span>
-				<input
-					type="range"
-					aria-label="Zoom"
-					min="1"
-					max={MAX_ZOOM}
-					step="0.01"
-					value={zoom}
+		<div class="profile-photo__studio">
+			{#if image && imageUrl}
+				<p class="profile-photo__hint">Drag to move your photo. Use the slider to zoom.</p>
+				<!-- A two-way pan has no native control or ARIA role; it is focusable and moves with the arrow keys,
+				     and the zoom slider below is a real one. -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+				<div
+					class="profile-photo__crop"
+					style:width="{VIEWPORT}px"
+					style:height="{VIEWPORT}px"
+					role="application"
+					tabindex="0"
+					aria-label="Photo position. Use the arrow keys to move it."
+					onpointerdown={pointerDown}
+					onpointermove={pointerMove}
+					onpointerup={pointerUp}
+					onpointercancel={pointerUp}
+					onkeydown={keyMove}
+				>
+					<img
+						class="profile-photo__image"
+						src={imageUrl}
+						alt=""
+						draggable="false"
+						style:width="{shownWidth}px"
+						style:height="{shownHeight}px"
+						style:transform="translate({offsetX}px, {offsetY}px)"
+					/>
+					<span class="profile-photo__mask" aria-hidden="true"></span>
+				</div>
+				<div class="profile-photo__zoom profile-photo__fades">
+					<span class="profile-photo__zoom-icon" aria-hidden="true">{@html zoomOutIcon}</span>
+					<input
+						type="range"
+						aria-label="Zoom"
+						min="1"
+						max={MAX_ZOOM}
+						step="0.01"
+						value={zoom}
+						style:--zoom-filled="{((zoom - 1) / (MAX_ZOOM - 1)) * 100}%"
+						disabled={Boolean(busy)}
+						oninput={(event) => setZoom(Number(event.currentTarget.value))}
+					/>
+					<span class="profile-photo__zoom-icon" aria-hidden="true">{@html zoomInIcon}</span>
+				</div>
+				<button
+					type="button"
+					class="profile-photo__another profile-photo__fades"
 					disabled={Boolean(busy)}
-					oninput={(event) => setZoom(Number(event.currentTarget.value))}
-				/>
-				<span class="profile-photo__zoom-icon" aria-hidden="true">{@html zoomInIcon}</span>
-			</div>
-			<Button
-				size="small"
-				variant="tertiary"
-				disabled={Boolean(busy)}
-				onclick={() => fileInput?.click()}>Choose a different photo</Button
-			>
-		{:else}
-			<div class="profile-photo__current">
-				<Avatar id={avatarId} {name} src={avatarUrl} size="xlarge" />
+					onclick={() => fileInput?.click()}>Choose a different photo</button
+				>
+			{:else}
+				<div class="profile-photo__current">
+					<Avatar id={avatarId} {name} src={avatarUrl} size="xlarge" />
+				</div>
 				<p id="profile-photo-hint" class="profile-photo__hint" tabindex="-1">
 					{avatarUrl
 						? 'Your teammates see this photo next to your name.'
 						: 'Add a photo so your teammates can spot you at a glance.'}
 				</p>
+			{/if}
+		</div>
+
+		<div class="profile-photo__previews" aria-hidden="true">
+			<div class="profile-photo__previews-head">
+				<h3>How your teammates see you</h3>
+				<p>
+					{image ? 'Follows your photo as you move and zoom' : 'Your photo across the app'}
+				</p>
 			</div>
+
+			<div class="profile-photo__preview">
+				<span class="profile-photo__preview-label profile-photo__preview-label--top-bar"
+					>{@html topBarIcon} Top bar</span
+				>
+				<div class="profile-photo__top-bar">
+					<span class="profile-photo__search">{@html searchIcon} Search</span>
+					<span class="profile-photo__account">
+						{@render face(32, 'base')}
+						<strong>{firstName}</strong>
+						{@html chevronDownIcon}
+					</span>
+				</div>
+			</div>
+
+			<div class="profile-photo__preview">
+				<span class="profile-photo__preview-label profile-photo__preview-label--schedule"
+					>{@html scheduleIcon} Schedule</span
+				>
+				<div class="profile-photo__visit">
+					<span class="profile-photo__lines">
+						<strong>Gutter cleaning</strong>
+						<span>9:00 – 11:00 AM · Hill Street</span>
+					</span>
+					{@render face(24, 'small')}
+				</div>
+			</div>
+
+			<div class="profile-photo__preview">
+				<span class="profile-photo__preview-label profile-photo__preview-label--inbox"
+					>{@html inboxIcon} Inbox</span
+				>
+				<div class="profile-photo__conversation">
+					<span class="profile-photo__client">SL</span>
+					<span class="profile-photo__lines">
+						<strong>Sarah Lee</strong>
+						<span>Thanks, see you Tuesday!</span>
+					</span>
+					{@render face(24, 'small')}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{#snippet footer()}
+		{#if error}
+			<p class="profile-photo__error" role="alert">{@html alertIcon}<span>{error}</span></p>
 		{/if}
-
-		{#if error}<p class="profile-photo__error" role="alert">{error}</p>{/if}
-
 		<div class="profile-photo__actions">
 			{#if image}
-				<span class="profile-photo__spacer"></span>
-				<Button variant="secondary" variation="subtle" disabled={Boolean(busy)} onclick={reset}
-					>Back</Button
-				>
-				<Button variant="primary" loading={busy === 'save'} onclick={() => void save()}
-					>Save photo</Button
-				>
+				<Button variant="secondary" disabled={Boolean(busy)} onclick={reset}>Back</Button>
+				<Button variant="primary" loading={busy === 'save'} onclick={() => void save()}>
+					{@html checkIcon} Save photo
+				</Button>
 			{:else}
 				{#if avatarUrl}
 					<Button
-						variant="tertiary"
+						variant="secondary"
 						variation="destructive"
 						loading={busy === 'remove'}
-						onclick={() => void remove()}>Remove</Button
+						onclick={() => void remove()}
 					>
+						{@html trashIcon} Remove
+					</Button>
 				{/if}
-				<span class="profile-photo__spacer"></span>
+				{#if !error}<span class="profile-photo__spacer"></span>{/if}
 				<Button variant="primary" disabled={Boolean(busy)} onclick={() => fileInput?.click()}>
-					<span class="profile-photo__button-icon" aria-hidden="true">{@html photoIcon}</span>
+					{@html photoIcon}
 					{avatarUrl ? 'Choose new photo' : 'Choose a photo'}
 				</Button>
 			{/if}
 		</div>
-	</div>
+	{/snippet}
 </Dialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -333,27 +419,53 @@
 <style lang="scss">
 	.profile-photo {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-base);
+		min-height: 420px;
+		// The studio and previews run edge to edge, under the header and over the footer.
+		margin: calc(var(--space-medium) * -1);
 
 		&__file {
 			display: none;
 		}
 
-		&__current {
+		&__studio {
 			display: flex;
+			flex: 0 0 320px;
 			flex-direction: column;
 			align-items: center;
-			gap: var(--space-base);
-			padding: var(--space-base) 0;
-			text-align: center;
+			justify-content: center;
+			gap: 18px;
+			box-sizing: border-box;
+			padding: var(--space-large);
+			background:
+				radial-gradient(
+					ellipse at 50% 0%,
+					rgb(255 255 255 / 0.12),
+					rgb(255 255 255 / 0) 70%
+				),
+				var(--color-photo-studio);
+		}
+
+		&__current {
+			display: inline-flex;
+			border-radius: var(--radius-circle);
+			box-shadow:
+				0 0 0 4px #ffffff,
+				0 10px 28px rgb(0 0 0 / 0.35);
+
+			:global(.avatar) {
+				width: 176px;
+				height: 176px;
+				border: 0;
+				font-size: 52px;
+			}
 		}
 
 		&__hint {
+			width: 200px;
 			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: rgb(255 255 255 / 0.72);
+			font-size: 13px;
+			line-height: 1.45;
 			text-align: center;
 
 			// Only the dialog puts focus here, as a resting place; it is not a control.
@@ -364,11 +476,16 @@
 			}
 		}
 
+		&__studio > &__hint:first-child {
+			width: 240px;
+		}
+
 		&__crop {
 			position: relative;
+			flex: 0 0 auto;
 			overflow: hidden;
-			border-radius: var(--radius-base);
-			background: var(--color-surface--background);
+			border-radius: 12px;
+			background: rgb(255 255 255 / 0.06);
 			cursor: grab;
 			touch-action: none;
 			user-select: none;
@@ -402,6 +519,10 @@
 			pointer-events: none;
 		}
 
+		&--busy &__fades {
+			opacity: 0.45;
+		}
+
 		&__zoom {
 			display: flex;
 			align-items: center;
@@ -410,19 +531,75 @@
 
 			input {
 				flex: 1;
-				accent-color: var(--color-interactive);
-			}
+				height: 16px;
+				margin: 0;
+				background: transparent;
+				appearance: none;
+				cursor: pointer;
 
-			input:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
+				&:disabled {
+					cursor: not-allowed;
+				}
+
+				&::-webkit-slider-runnable-track {
+					height: 4px;
+					border-radius: var(--radius-circle);
+					background: linear-gradient(
+						to right,
+						var(--color-interactive) var(--zoom-filled),
+						rgb(255 255 255 / 0.22) var(--zoom-filled)
+					);
+				}
+
+				&::-moz-range-track {
+					height: 4px;
+					border-radius: var(--radius-circle);
+					background: rgb(255 255 255 / 0.22);
+				}
+
+				&::-moz-range-progress {
+					height: 4px;
+					border-radius: var(--radius-circle);
+					background: var(--color-interactive);
+				}
+
+				&::-webkit-slider-thumb {
+					width: 16px;
+					height: 16px;
+					margin-top: -6px;
+					box-sizing: border-box;
+					border: 2px solid var(--color-interactive);
+					border-radius: var(--radius-circle);
+					background: #ffffff;
+					appearance: none;
+				}
+
+				&::-moz-range-thumb {
+					width: 16px;
+					height: 16px;
+					box-sizing: border-box;
+					border: 2px solid var(--color-interactive);
+					border-radius: var(--radius-circle);
+					background: #ffffff;
+				}
+
+				&:focus-visible {
+					outline: none;
+				}
+
+				&:focus-visible::-webkit-slider-thumb {
+					box-shadow: var(--shadow-focus);
+				}
+
+				&:focus-visible::-moz-range-thumb {
+					box-shadow: var(--shadow-focus);
+				}
 			}
 		}
 
-		&__zoom-icon,
-		&__button-icon {
+		&__zoom-icon {
 			display: inline-flex;
-			color: var(--color-text--secondary);
+			color: rgb(255 255 255 / 0.72);
 
 			:global(svg) {
 				width: 18px;
@@ -430,23 +607,227 @@
 			}
 		}
 
-		&__button-icon {
-			color: inherit;
+		&__another {
+			padding: var(--space-smaller) var(--space-small);
+			border: 0;
+			border-radius: var(--radius-base);
+			color: #ffffff;
+			background: transparent;
+			font: inherit;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+
+			&:hover:not(:disabled) {
+				background: rgb(255 255 255 / 0.1);
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+
+			&:disabled {
+				cursor: not-allowed;
+			}
+		}
+
+		&__previews {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: var(--space-slim);
+			box-sizing: border-box;
+			min-width: 0;
+			padding: 20px;
+			border-left: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+		}
+
+		&__previews-head {
+			h3 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 600;
+			}
+
+			p {
+				margin: 2px 0 0;
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+			}
+		}
+
+		&__preview {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			padding: var(--space-slim);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 12px;
+			background: var(--color-surface);
+		}
+
+		&__preview-label {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+
+			&--top-bar :global(svg) {
+				color: var(--color-inactive);
+			}
+
+			&--schedule :global(svg) {
+				color: var(--color-time);
+			}
+
+			&--inbox :global(svg) {
+				color: var(--color-conversation);
+			}
+		}
+
+		&__top-bar,
+		&__visit,
+		&__conversation {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		&__search {
+			display: inline-flex;
+			flex: 1 1 auto;
+			align-items: center;
+			gap: 6px;
+			min-width: 0;
+			height: 32px;
+			padding: 0 10px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			color: var(--color-text--secondary);
+			background: var(--color-surface--background--subtle);
+			font-size: var(--typography--fontSize-small);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+				color: var(--color-icon--secondary);
+			}
+		}
+
+		&__account {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			color: var(--color-heading);
+			font-size: 13px;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+				color: var(--color-icon--secondary);
+			}
+		}
+
+		&__visit {
+			padding: var(--space-small) 10px;
+			border-left: 3px solid var(--color-job);
+			border-radius: var(--radius-base);
+			background: var(--color-job--surface);
+
+			.profile-photo__lines strong,
+			.profile-photo__lines span {
+				color: var(--color-job--onSurface);
+			}
+		}
+
+		&__lines {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 2px;
+			min-width: 0;
+
+			strong {
+				color: var(--color-heading);
+				font-size: 13px;
+				font-weight: 600;
+			}
+
+			span {
+				overflow: hidden;
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
+		}
+
+		&__client {
+			display: inline-flex;
+			flex: 0 0 32px;
+			align-items: center;
+			justify-content: center;
+			height: 32px;
+			border-radius: var(--radius-circle);
+			color: var(--color-client--onSurface);
+			background: var(--color-client--surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__face {
+			position: relative;
+			display: inline-block;
+			flex: 0 0 auto;
+			overflow: hidden;
+			border-radius: var(--radius-circle);
+
+			img {
+				position: absolute;
+				top: 0;
+				left: 0;
+				max-width: none;
+				pointer-events: none;
+			}
 		}
 
 		&__error {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
+			padding: 7px var(--space-slim);
+			border: var(--border-base) solid var(--color-critical--surface-edge, var(--color-critical));
+			border-radius: var(--radius-base);
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
+			font-size: 13px;
+			font-weight: 500;
+
+			:global(svg) {
+				flex: 0 0 auto;
+				width: 16px;
+				height: 16px;
+				color: var(--color-critical);
+			}
 		}
 
 		&__actions {
 			display: flex;
-			flex-wrap: wrap;
+			flex: 1 1 auto;
 			align-items: center;
+			justify-content: flex-end;
 			gap: var(--space-small);
-			width: 100%;
-			margin-top: var(--space-small);
 		}
 
 		&__spacer {
