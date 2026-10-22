@@ -15,8 +15,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/InsertVariableMenu` | menus ×1 | ✅ Batch 54 `Nuydc` B 2026-10-21 | ✅ built and checked 2026-10-22 (`docs/evidence/2026-10-21-batch54/`) |
 | `marketing/MarketingAllowanceNotice` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ✅ 2026-10-22 (Delivery drawn inline; Review keeps it until Batch 56) |
 | `marketing/MarketingSenderSummary` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ✅ 2026-10-22 (Delivery drawn inline; Review keeps it until Batch 56) |
-| `packages/PackageDetails` |  | ⬜ | ⬜ |
-| `packages/PackagePrice` |  | ⬜ | ⬜ |
+| `packages/PackageDetails` |  | 🟡 Batch 57 `S4I7i` A/B 2026-10-22 | ⬜ |
+| `packages/PackagePrice` |  | 🟡 Batch 57 `S4I7i` A/B 2026-10-22 | ⬜ |
 | `payments/OtherWaysToPay` |  | ⬜ | ⬜ |
 | `pipeline/MarkOpportunityLostDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `pipeline/StageAgeChip` |  | ⬜ | ⬜ |
