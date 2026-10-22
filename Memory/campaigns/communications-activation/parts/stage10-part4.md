@@ -1,7 +1,7 @@
 # Stage 10 Part 4 — Can each number text yet?
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 4
-**Stage:** 4a merged to main 2026-10-22; 4b built 2026-10-23, **Waiting to merge**, on branch `claude/stage10-part4` (worktree
+**Stage:** 4a merged to main 2026-10-22; 4b merged to main 2026-10-23; branch `claude/stage10-part4` (worktree
 `.worktrees/stage10-part4`, claim `d7269736bf63`) · **Done when:** every number shows its true steps and band (board `NbWfA`), numbers go
 live once their approval passes, toll-free has its own check, merged to main.
 
@@ -40,7 +40,7 @@ live once their approval passes, toll-free has its own check, merged to main.
 
 ## Next
 
-1. Merge 4b to main (integration claim; branch already contains main as of 2026-10-23).
+1. 4b merged 2026-10-23.
 2. Draw the 4c form in `concept.pen` for Jafar's approval (a design session; another session builds it).
 
 ## Limits / notes

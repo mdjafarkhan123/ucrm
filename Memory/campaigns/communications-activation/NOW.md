@@ -16,7 +16,7 @@ provider setup). Comparison: `docs/global-sms-codex-review-plan.md`; evidence:
 
 ## Next
 
-Stage 10 Part 4b (toll-free check, server) built 2026-10-23, waiting to merge — part note. Then 4c needs a Pencil
+Stage 10 Part 4b (toll-free check, server) merged 2026-10-23 — part note. Then 4c needs a Pencil
 drawing. Parts 2–4 live proof waits on number prices and Jafar's go-ahead.
 
 ## Constraints
