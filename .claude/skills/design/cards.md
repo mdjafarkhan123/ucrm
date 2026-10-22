@@ -123,6 +123,27 @@ The same card shows status counts, report numbers and the green summary at the e
 - The overview's title and facts sit above the row on the page: a 32 record tile beside title 16/600 over
   hint 12; facts use a 24 tile, figure 14/700 and label 13 quiet. Tags remain below when present.
 
+## Other ways to pay box
+
+The customer's list of payments taken outside card payment (`payments/OtherWaysToPay`), under Pay invoice in the
+invoice's blue Balance due panel and on a quote's deposit. Approved A by Jafar 2026-10-22 (Pencil: "Batch 58 ·
+Other ways to pay · Approved A", `s5UUVu`).
+
+- A white box on the coloured panel: `--color-surface`, 1px of the panel's `--surface-edge` (invoice blue; quote pink
+  on a deposit), radius 12, padding 16 16 14. Alone (no card payment) it keeps the same look; no line above it.
+- Head: "Other ways to pay" 16/600 heading over a 14 quiet hint that names the amount ("Send $1,240.00 with one of
+  these"; one method: "Send the $300.00 deposit"), 10 below.
+- Rows, padding 12 0, a 1px `--color-border` line above each, gap 12: a 32 `--color-invoice` tile (Venmo `wallet`,
+  Cash App `badge-dollar-sign`, PayPal `circle-dollar-sign`, Zelle `send`, e-Transfer `mail`, bank transfer
+  `landmark`; Tabler brand icons in code where they exist), the name 14/600 over the handle 14 quiet, then a small
+  secondary button: "Pay" with `external-link` for apps, "Copy" with `copy` for bank methods.
+- Bank transfer: name and Copy on one line, the instructions under them in a box (`--color-surface--background`,
+  1px `--color-border`, radius 8, padding 10 12, 14 `--color-text`, line height 1.5, line breaks kept).
+- Foot: a 1px line, 12 space, a 14 `--color-informative` info icon and "<Business> marks this invoice paid once the
+  money arrives." 12/500 quiet ("this deposit" on a quote).
+- Copied: the button takes `--color-success--surface`, a `--color-success` edge, a `check` icon and "Copied" in
+  `--color-success--onSurface` for 2 seconds.
+
 ## States
 
 - Static: no hover.

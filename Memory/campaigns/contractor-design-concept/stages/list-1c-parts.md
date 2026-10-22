@@ -17,7 +17,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/MarketingSenderSummary` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ✅ 2026-10-22 (Delivery drawn inline; Review keeps it until Batch 56) |
 | `packages/PackageDetails` |  | ✅ Batch 57 `S4I7i` B 2026-10-22 | ⬜ |
 | `packages/PackagePrice` |  | ✅ Batch 57 `S4I7i` B 2026-10-22 | ⬜ |
-| `payments/OtherWaysToPay` |  | 🟡 Batch 58 `s5UUVu` A/B 2026-10-22 | ⬜ |
+| `payments/OtherWaysToPay` |  | ✅ Batch 58 `s5UUVu` A 2026-10-22 | ⬜ |
 | `pipeline/MarkOpportunityLostDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `pipeline/StageAgeChip` |  | ⬜ | ⬜ |
 | `quotes/QuoteClientViewBlock` |  | ⬜ | ⬜ |
