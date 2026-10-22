@@ -844,6 +844,7 @@
 
 	.conversation-composer__header > .conversation-composer__route-from {
 		flex: 1;
+		max-width: none;
 	}
 
 	.conversation-composer__route-arrow {
