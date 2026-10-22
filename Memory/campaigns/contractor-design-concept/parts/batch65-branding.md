@@ -41,6 +41,8 @@ staff view with the last editor; someone-saved-first message; leave-page warning
 - Drawn: "Logo states" panel `xSOZT` (No logo yet, New logo · Not saved yet, Saved · Being checked, Removed · Undo).
 - New behaviour (quick picks, colour-code box, readability check, colour on the customer quote top line and main
   button) is taken as covered by the approval of A, as with Batch 64; confirm with Jafar if the builder is unsure.
-- **Next:** draw the staff view (read-only notice with lock, no Replace/Remove/Reset/quick picks/save bar) and the
-  someone-saved-first state (critical notice, See their version); loading follows Batch 48. Then add look rules to
-  design `layout.md` § Branding, wait for Jafar's Ctrl+S, commit `concept.pen`, merge for building.
+- Drawn: staff view `RQL5t` (lock notice, read only, preview kept) and someone-saved-first panel `M4vpJ`
+  (critical notice, save bar with See their version). Loading follows Batch 48. Look rules: design `layout.md` §
+  Branding.
+- **Next:** Jafar's Ctrl+S in Pencil (file last saved 10:46, before the approval edits), then commit
+  `concept.pen` from the main checkout copy and merge this branch to main for building.

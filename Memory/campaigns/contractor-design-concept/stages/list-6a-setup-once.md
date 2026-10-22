@@ -25,7 +25,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `(app)/settings/automation/[id]` | `settings/automation/ActivationImpactDialog` 🔁F, `settings/automation/RecipeDetailView` · pop-ups: "form" 🔁F, "Archive this automation?" 🔁C, "Discard your changes?" 🔁C, "Restore this automation?" 🔁C, "Duplicate automation" 🔁F · tabs ×1 · menus ×1 · loading, empty, permission-limited | ⬜ | ⬜ |
 | `(app)/settings/automation/[id]/edit` | `settings/automation/RecipeEditorLoader` · loading | ⬜ | ⬜ |
 | `(app)/settings/automation/new` | `settings/automation/PresetLibrary` | ⬜ | ⬜ |
-| `(app)/settings/branding` | loading, permission-limited | 🟡 Batch 65 `FjLSw` approved A 2026-10-22 (staff view still to draw) | ⬜ |
+| `(app)/settings/branding` | loading, permission-limited | 🟡 Batch 65 `FjLSw` approved A 2026-10-22 | ⬜ |
 | `(app)/settings/business-hours` | loading, permission-limited | ⬜ | ⬜ |
 | `(app)/settings/business-profile` | loading, permission-limited | ✅ Batch 64 `dw4fp` B 2026-10-22 | ✅ 2026-10-22 (`docs/evidence/2026-10-22-batch64/`; business email left out) |
 | `(app)/settings/checklists` | `settings/ChecklistTemplateDialog` 🔁F · pop-ups: "form" 🔁F · menus ×1 · loading, empty | ⬜ | ⬜ |

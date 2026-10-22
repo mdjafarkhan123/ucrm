@@ -40,7 +40,7 @@ Jafar 2026-10-17).
 - [brand.md](brand.md) — Brand
 - [colors.md](colors.md) — Colour
 - [typography.md](typography.md) — Typography
-- [layout.md](layout.md) — Layout and spacing, sign-in screens, setup steps, booking page, settings home, business profile
+- [layout.md](layout.md) — Layout and spacing, sign-in screens, setup steps, booking page, settings home, business profile, branding
 - [radius.md](radius.md) — Radius
 - [borders.md](borders.md) — Borders
 - [shadows.md](shadows.md) — Shadows
