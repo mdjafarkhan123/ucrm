@@ -22,3 +22,11 @@ Real server answers: config now returns `logoPath`; `GET /api/webchat/logo` retu
 use sample server answers because a live first message currently fails in the database: the shared trigger
 `private.opportunity_record_customer_reply` reads `new.in_reply_to_intent_id`, which `website_chat_messages` does not
 have (error 42703). Reported to Jafar; fix waits for his yes, then the live send needs one proof.
+
+## Fixes (same day, Jafar: "please fix all")
+
+- **Trigger bug fixed** by `supabase/migrations/20261022120000_customer_reply_trigger_chat_messages.sql` (applied with
+  psql and recorded). Shot 11: a real send through the live app (`localhost:5173`) — first message and follow-up
+  both saved in `website_chat_messages`, linked to the client; the greeting opens the thread.
+- **Settings preview** (`Settings › Website chat › Edit`) redrawn as the new widget. Shots 12–14: open, closed with
+  teaser, and Mobile size, in light and dark; it keeps light colours in dark mode like the live widget.

@@ -40,8 +40,9 @@ Built on `claude/build-batch66-website-chat`: `src/widget/website-chat.ts` resty
 Branding through `logoPath` in the public config and `src/routes/api/webchat/logo/+server.ts`, friendlier mistakes.
 Evidence: `docs/evidence/2026-10-22-batch66/README.md`.
 
-## Next
+## Done (2026-10-22, Jafar: "please fix all")
 
-1. Jafar's yes to fix the chat-message trigger bug (README); then send one real message live as the journey proof.
-2. Settings preview `src/lib/components/communications/WebsiteChatPreview.svelte` still shows the old look (ask first).
-3. Pencil step-6 tidy-up of `yyWfm`.
+- Chat-message trigger bug fixed (`supabase/migrations/20261022120000_customer_reply_trigger_chat_messages.sql`,
+  applied live); a real widget send and follow-up landed linked to the client (shot 11).
+- Settings preview `WebsiteChatPreview.svelte` restyled to the widget (shots 12–14, light and dark).
+- Pencil `yyWfm` tidied (decision note removed, intro says built). Needs Jafar's Ctrl+S, then a `concept.pen` commit.
