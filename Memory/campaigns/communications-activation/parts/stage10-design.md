@@ -7,10 +7,10 @@
 
 ## Steps
 
-- [ ] Add number pop-up — board `qaFQf` "Concept · Communications · Add number pop-up · Options · 2026-10-22",
-  drawn 2026-10-22: Option A (search and pick, one screen; US and Germany-with-paperwork) and Option B (guided
-  three steps). Waiting on Jafar's pick.
-- [ ] After the pick: delete the other option, then draw every state on the chosen one: searching, no numbers in
+- [x] Add number pop-up — Jafar approved B 2026-10-22 ("I approved"): guided three steps, with option A's number
+  list in step 2 and no cards/list switch. Option A deleted; board `qaFQf` renamed "Concept · Communications ·
+  Add number pop-up · Approved B · 2026-10-22".
+- [ ] Next session: draw every state on the approved B: searching, no numbers in
   stock, provider unreachable, country with no texting numbers, buying (spinner), interrupted purchase being
   checked, bought → next step; plus dark mode.
 - [ ] Compliance list and form (paperwork per country).
@@ -20,8 +20,11 @@
 
 ## Next
 
-Ask Jafar for A or B on `qaFQf` (and to press Ctrl+S in Pencil), then commit `concept.pen` from main under a
-claim. One screen per session: the next session draws the next unticked row.
+Jafar stopped drawing for this session ("we will design more on next session"). Next session: add an "Every
+state" section to board `qaFQf` with the states listed above (Germany step 1 = only Mobile texts, paperwork first,
+$3.00 setup; a country with no texting numbers greys every kind and disables Continue; step 3 for a paperwork
+country swaps Buy for Start paperwork and must not promise to hold the number), then dark mode. If `concept.pen`
+is still uncommitted, ask Jafar for Ctrl+S and commit it from main first.
 
 ## Notes
 

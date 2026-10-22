@@ -14,8 +14,7 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 
 ## Next
 
-Design started 2026-10-22: Add number pop-up options A and B on `concept.pen` board `qaFQf`, waiting for
-Jafar's pick. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
+Add number pop-up approved B 2026-10-22 (`concept.pen` board `qaFQf`); its states and dark mode are next. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
 
 ## Constraints
 
