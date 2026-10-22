@@ -1,7 +1,6 @@
 # CLAUDE.md
 
-Project instructions for Claude Code. Codex reads `AGENTS.md`, which carries the same rules: when you change a
-rule in one file, make the same change in the other in the same commit.
+Project instructions for Claude Code.
 
 ## Project
 
@@ -125,7 +124,7 @@ before changing files (`--mode read` for research). Release after safe integrati
   Tell Jafar which product or method you followed.
 - Design in the Pencil app first before building in the app, following the design skill. If Jafar tells you to change any design that does not match the current design skill, then update the design skill to match the approved look in Pencil. Before updating the skill, keep in mind: the design skill should only talk about the look and feel, nothing else. Follow the enterprise folder, which contains all the reference design skills, to see how to write a design skill.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
-- SCSS + BEM for all styling. Tabler icons for all icons.
+- SCSS + BEM for all styling. Tabler icons for all icons. Always use defined variables instead of handmade values.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global
   baseline, so component styles are never imported through it. SCSS variables and mixins reach every component
   automatically via Vite `additionalData`, with no import.

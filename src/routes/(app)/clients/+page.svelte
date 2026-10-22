@@ -556,7 +556,7 @@
 							<th scope="row">
 								<div class="clients-table__name">
 									<span class="clients-table__avatar">
-										<Avatar id={client.id} name={client.display_name} size="base" />
+										<Avatar id={client.id} name={client.display_name} size="medium" />
 									</span>
 									<div class="clients-table__name-block">
 										<a class="clients-table__name-text" href={clientHref(client)}
@@ -791,14 +791,9 @@
 		align-items: center;
 		gap: var(--space-slim);
 	}
-	/* This list draws its client avatars as rounded squares. */
 	.clients-table__avatar {
 		display: inline-flex;
 		flex: 0 0 auto;
-
-		:global(.avatar) {
-			border-radius: var(--radius-base);
-		}
 	}
 	.clients-table__name-block {
 		display: grid;
