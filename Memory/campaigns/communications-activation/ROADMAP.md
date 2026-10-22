@@ -499,8 +499,9 @@ permissions, configured opt-out languages and published selling rates. Jafar req
 this session and will start a new session for designing. **Design done 2026-10-22:** all five Stage 10 screens approved
 with every state in `concept.pen` (`qaFQf`, `A0URqF`, `NbWfA`, `nLAe4`, `v6Jtu`); record in
 `parts/stage10-design.md`. **Part 1 server foundation built 2026-10-22** (`parts/stage10-part1.md`): live
-country catalog + ISV settings, unit-tested and proven read-only against live Twilio. Next: Parts 2 and 3 together
-(buy a number + paperwork). Live activation still requires truthful business details and Jafar's authorization.
+country catalog + ISV settings, unit-tested and proven read-only against live Twilio. **Parts 2 + 3 built 2026-10-22**
+(`parts/stage10-parts23.md`): Add number with its purchase saga, and Number paperwork end to end, screens checked
+against `qaFQf`/`A0URqF`. Next: Part 4 readiness per number (`NbWfA`). Open: number prices (Jafar), monthly renewal. Live activation still requires truthful business details and Jafar's authorization.
 
 ## Stage 8 parts (billing reconciliation; started 2026-09-15, non-blocked pieces run in parallel with Stage 9)
 
