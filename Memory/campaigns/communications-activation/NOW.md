@@ -2,37 +2,18 @@
 
 ## Goal
 
-Make Communications deliver email and SMS through a GHL-style unified inbox and provide safe delivery channels
-to dependent products such as Marketing. Email is live; SMS Stages 1–9 and 6D (MMS) are all done and committed.
-Everything stays dark (no live traffic) until a country launch gate passes.
+Deliver email and SMS through the unified inbox, with safe channels for dependent products. Email is live; SMS Stages 1–9 and MMS are built. Live SMS stays off until its launch gate passes.
 
 ## Active part
 
-**Global texting (Stage 10) — plan written 2026-10-22, waiting for review.** Plan (core agreement — read it):
-`docs/global-sms-behavior-contract.md`. Follow GHL: every country Twilio sells numbers in; no region blocked in
-the app (Jafar simply doesn't sell subscriptions in Asia); rules read live from Twilio, never hardcoded.
-Research: `docs/research/global-sms-country-requirements-2026-10-22.md`. Platform ISV profile
-`BU0a5a8f75e733bf8f1020e8d923a017f5` approved by Twilio 2026-10-19 (not yet in app config).
+**Stage 10 global texting — planning; Jafar compares two plans next session.** Read the [other agent's plan](../../../docs/global-sms-behavior-contract.md) and [Codex comparison](../../../docs/global-sms-codex-review-plan.md), then the [country research](../../../docs/research/global-sms-country-requirements-2026-10-22.md) as needed. No region is blocked in the app; subscription sales decide access. Twilio approved the platform ISV profile on 2026-10-19; it is not yet configured in the app.
 
-## Exact next action
+## Next
 
-Next session: Jafar reviews the plan with an agent. Walk him through it in everyday English, record his
-changes in the plan, then get his go-ahead. No code has started. After the go-ahead: Pencil designs (Add number,
-Compliance, per-number readiness) in design sessions, then Part 1. Settled 2026-10-22: the ISV's own country is not a
-Twilio limit (ISV guide needs only an approved ISV profile; the "headquartered outside" line is the Direct guide's). Real purchases/registrations wait for
-the first paying customer and Jafar's yes.
+Jafar reviews both plans, especially country readiness, SMS destination permissions, opt-out languages and pricing. Record his chosen agreement in the canonical plan before build. Pencil designs precede new screens. No code has started.
 
-Pre-existing and unrelated to this campaign, found in an earlier session, do not re-investigate: a full local
-pgTAP run and a full `vitest run` both surface dozens of failures outside communications (stale Stage-1 SMS
-fixture, quotes/team/settings specs, website_chat/jobs/quotes pgTAP) — confirmed unrelated by running the
-affected files individually.
+## Constraints
 
-## Constraint
-
-Neither the platform nor any contractor has a real registered business yet. A2P 10DLC cannot complete, and no
-live Twilio send/price data can ever exist, until one does. Never spend real money firing placeholder data at
-Twilio's live API. The SMS outbox wake cron (`dispatch_communication_sms_outbox_wake`) is deliberately left
-inactive in dev for this same reason — do not enable it without Jafar's explicit sign-off. Do not flip any
-organization's SMS sender to a fake `ready` state to work around this.
+No contractor with real business details exists yet. Do not buy a number, submit placeholder registration, enable live sending, or mark a fake sender ready. Real purchase, registration and end-to-end proof wait for the first paying business and Jafar's go-ahead. The SMS outbox wake cron remains inactive in development.
 
 Resume: `read memory and continue — communications-activation`.
