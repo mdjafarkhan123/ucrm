@@ -22,13 +22,20 @@
   working out the price, emoji, picture text, country not switched on, no price yet, couldn't work out the price,
   sending), light only; Jafar approved the states the same day ("saved, approved"). Rules in
   `.claude/skills/design/inputs.md` § Text price in the reply box.
-- [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
+- [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio). Options A and B drawn
+  2026-10-22 on board `v6Jtu` ("Uplift texting setup · Options A and B"), light only, waiting for Jafar: A = a
+  Texting setup view on the organization's Communications tab (setup journey, countries table with Twilio permission,
+  price, status and the row's button; Texting mode and Twilio account side cards); B = a new Platform Operations page
+  "Texting setup", an inbox-like to-do queue across businesses with a step-by-step task panel. Shared by both: the
+  Countries & prices card (Twilio cost, their price, margin, picture, number a month, businesses, status; a notice
+  when Twilio's price moves), replacing the live "SMS retail rates" list.
 
 ## Next
 
-Draw Uplift's internal setup controls (Jafar panel: per business, destination countries switched on, prices per
-country, provider setup status) — read the live Jafar panel SMS controls first, research Twilio/GHL agency views,
-two real options, light only. It is the last Stage 10 screen; after its approval Stage 10 moves to building. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Wait for Jafar's pick on board `v6Jtu` (A, B or a mix). On his yes: delete the unchosen option, rename the board
+"Approved", draw every state on the chosen one (loading, empty, couldn't load, Mark as turned on saving, Can't turn
+on with a reason, set-price pop-up, Twilio price moved), record the rules in the design skill. It is the last Stage
+10 screen; after its approval Stage 10 moves to building. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
 
 ## Notes
 

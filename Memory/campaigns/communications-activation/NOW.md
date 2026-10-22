@@ -15,7 +15,7 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 ## Next
 
 Approved with every state 2026-10-22 in `concept.pen`: Add number (`qaFQf`), Number paperwork (`A0URqF`), Number
-readiness (`NbWfA`). Charges before sending approved B with every state 2026-10-22 (`nLAe4`). Uplift's internal setup controls are the last drawing. Next action: `parts/stage10-design.md`. No Stage 10 code started.
+readiness (`NbWfA`). Charges before sending approved B with every state 2026-10-22 (`nLAe4`). Uplift's internal setup controls: options A and B drawn on `v6Jtu`, waiting for Jafar. Next action: `parts/stage10-design.md`. No Stage 10 code started.
 
 ## Constraints
 
