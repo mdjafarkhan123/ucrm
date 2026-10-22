@@ -178,6 +178,34 @@ text A). One sheet, like a mail app; the step card around it keeps its number an
   with the hint in `--color-warning--onSurface`. The optional text inside "Reply by text or email" has two values
   and no Send from.
 
+## Text price in the reply box
+
+What a text will cost, shown before Send in the inbox reply box (`concept.pen` board `nLAe4`, "Charges before
+sending · Approved B", Jafar 2026-10-22, with every state).
+
+- **Country pill** in the From → To line, after the customer's number: 24 high, padding 0 10 0 8, gap 6, pill
+  corners, a 13 icon, the country 12/600 and "· $0.11 a segment" 12/400. At home: `--color-surface--background--subtle`,
+  1px `--color-border`, `map-pin` `--color-icon--secondary`, quiet price words. Another country: the informative
+  family with `globe`. Can't text that country: the critical family with `ban` and "· not switched on". No price
+  yet: the warning family with `tag` and "· no price yet". With a picture: "· $0.05 a picture text".
+- **Segment blocks** under the message (padding 0 16 12, gap 8): one 6-high pill per segment, 4 apart, sharing the
+  width, `--color-conversation--surface`, filled from the left in `--color-conversation`. Under them, 12: the count
+  600 heading ("3 segments", or "1 picture text"), "· 81 characters before a fourth one" quiet, and the characters
+  quiet at the right. Unknown or not allowed: the blocks `--color-surface--background--subtle`, filled
+  `--color-border--interactive`. Not enough balance: filled `--color-critical`.
+- **Reason line** under the words: radius 8, padding 8 12, gap 8, `--surface` of its tone, a 14 icon, the words
+  12/600 `--onSurface`, and at the right an underlined 12/600 `--color-interactive` link with a 12 icon. Informative
+  for the emoji note; critical for not enough balance (Add credit → Balance page) and a country not switched on
+  (Ask Uplift → support chat); warning for no price yet (Ask Uplift) and couldn't work out the price (Try again,
+  `rotate-cw`).
+- **Balance** beside Send: a 14 `wallet` quiet, "Balance" 12 quiet, the amount 12/600 heading (critical words and
+  icon when too low).
+- **Send with its price:** the main button with padding 0 6 0 14, then the price chip: 24 high, padding 0 8,
+  radius 6, a 1px white-18% edge, the amount 13/700 white ("Send · $0.33"). Nothing typed, unknown price, not
+  allowed or too little balance: no chip (or the chip kept in red cases) and the button at 45%. Working out the
+  price: a 14 white spinner in the chip, Send waits. Sending: spinner and "Sending…" with the price kept; the
+  channel pill and tools at 45%.
+
 ## Questions on a public form
 
 A business's own questions as a customer answers them (board `Y3od0z`, B, Jafar 2026-10-20).
