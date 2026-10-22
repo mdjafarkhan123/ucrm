@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import requestIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import quoteIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import lostIcon from '@tabler/icons/outline/circle-x.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import {
 		markOpportunityLost,
 		setLostReason,
@@ -23,6 +29,7 @@
 		opportunityId,
 		subject = 'request',
 		existing,
+		subtitle,
 		onSaved,
 		onClose
 	}: {
@@ -30,6 +37,8 @@
 		opportunityId: string;
 		// What the card stands for, so the notice says what really happens to it.
 		subject?: 'request' | 'quote';
+		// The header's quiet line naming the record, e.g. "Request · Kitchen remodel · Dana Ortiz".
+		subtitle?: string;
 		// Set when the record is already Lost: the dialog then only saves its reason and note. A customer's
 		// decline arrives with their own words and no reason, so those words are shown above the form.
 		existing?: { reason: LostReason | null; note: string | null; customerMessage: string | null };
@@ -112,71 +121,83 @@
 	}
 </script>
 
+<!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
 <Dialog
 	{open}
 	title={classifying ? 'Lost reason' : 'Mark as lost'}
+	{subtitle}
+	icon={subject === 'quote' ? quoteIcon : requestIcon}
+	iconTone={subject}
 	onClose={saving ? () => {} : onClose}
 >
 	<div class="lost-dialog">
+		{#if formError}<Banner type="error">{formError}</Banner>{/if}
+
 		{#if classifying}
 			{#if existing?.customerMessage}
 				<div class="lost-dialog__quoted">
-					<span class="lost-dialog__label">What the customer said</span>
+					<span class="lost-dialog__quoted-label">What the customer said</span>
 					<p class="lost-dialog__message">{existing.customerMessage}</p>
 				</div>
 			{/if}
-			<p class="lost-dialog__notice">
+			<p class="lost-dialog__private">
+				<span aria-hidden="true">{@html lockIcon}</span>
 				Only your team sees this reason. It is used to report why work was lost.
 			</p>
 		{:else if subject === 'quote'}
-			<p class="lost-dialog__notice">
+			<Banner type="warning">
 				This quote will leave the board and be archived, and its tasks will be removed. The amount
 				the customer last saw is kept as the lost value.
-			</p>
+			</Banner>
 		{:else}
-			<p class="lost-dialog__notice">
+			<Banner type="warning">
 				This request will leave the board, be archived, and its open tasks will be marked complete.
-			</p>
+			</Banner>
 		{/if}
 
-		<div class="lost-dialog__field">
-			<label class="lost-dialog__label" for="lost-dialog-reason">Reason (optional)</label>
-			<Select
-				id="lost-dialog-reason"
-				bind:value={reason}
-				options={reasonOptions}
-				disabled={reasonsQuery.isPending}
-			/>
-		</div>
-
-		<Textarea
-			id="lost-dialog-note"
-			label={noteRequired ? 'Note (required for "Other")' : 'Note (optional)'}
-			rows={3}
-			maxlength={1000}
-			bind:value={note}
-			invalid={Boolean(fieldErrors.note)}
-			errorMessage={fieldErrors.note}
+		<Select
+			id="lost-dialog-reason"
+			label="Reason (optional)"
+			bind:value={reason}
+			options={reasonOptions}
+			disabled={reasonsQuery.isPending || saving}
 		/>
 
-		{#if formError}<p class="lost-dialog__error" role="alert">{formError}</p>{/if}
-
-		<div class="lost-dialog__actions">
-			<Button variant="secondary" variation="subtle" disabled={saving} onclick={onClose}>
-				Cancel
-			</Button>
-			<Button
-				variant="primary"
-				variation={classifying ? 'work' : 'destructive'}
-				disabled={noteRequired && note.trim().length === 0}
-				loading={saving}
-				onclick={() => void save()}
-			>
-				{classifying ? 'Save reason' : 'Mark as lost'}
-			</Button>
+		<div class="lost-dialog__note">
+			<Textarea
+				id="lost-dialog-note"
+				label={noteRequired ? 'Note (required for “Other”)' : 'Note (optional)'}
+				rows={4}
+				maxlength={1000}
+				showCount={false}
+				bind:value={note}
+				disabled={saving}
+				invalid={Boolean(fieldErrors.note)}
+				errorMessage={fieldErrors.note}
+			/>
+			<p class="lost-dialog__count">{note.length.toLocaleString('en-US')} / 1,000</p>
 		</div>
 	</div>
+
+	{#snippet footer()}
+		<Button variant="secondary" variation="subtle" disabled={saving} onclick={onClose}
+			>Cancel</Button
+		>
+		<Button
+			variant="primary"
+			variation={classifying ? 'work' : 'destructive'}
+			disabled={noteRequired && note.trim().length === 0}
+			loading={saving}
+			onclick={() => void save()}
+		>
+			{@html classifying ? checkIcon : lostIcon}
+			{classifying ? 'Save reason' : 'Mark as lost'}
+		</Button>
+	{/snippet}
 </Dialog>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.lost-dialog {
@@ -184,30 +205,19 @@
 		flex-direction: column;
 		gap: var(--space-base);
 
-		&__notice {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-large);
-		}
-		&__field {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-smaller);
-		}
-		&__label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
 		&__quoted {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
-			padding: var(--space-small) var(--space-base);
+			padding: var(--space-small) var(--space-slim);
 			border-left: 3px solid var(--color-border);
 			background: var(--color-surface--background);
 			border-radius: var(--radius-small);
+		}
+		&__quoted-label {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 		&__message {
 			margin: 0;
@@ -217,15 +227,34 @@
 			white-space: pre-wrap;
 			overflow-wrap: anywhere;
 		}
-		&__error {
-			margin: 0;
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
+		&__note {
+			position: relative;
+			padding-bottom: var(--space-base);
 		}
-		&__actions {
+		// Takes the place of the box's own "N left" count, at the same spot under it.
+		&__count {
+			position: absolute;
+			right: 0;
+			bottom: 0;
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		&__private {
 			display: flex;
-			justify-content: flex-end;
-			gap: var(--space-small);
+			align-items: center;
+			gap: var(--space-smaller);
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+				flex: 0 0 auto;
+			}
 		}
 	}
 </style>

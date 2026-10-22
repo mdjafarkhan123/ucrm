@@ -497,6 +497,16 @@
 	<MarkOpportunityLostDialog
 		open={Boolean(classifying)}
 		opportunityId={classifying.id}
+		subject={classifying.source === 'quote' ? 'quote' : 'request'}
+		subtitle={[
+			classifying.source === 'quote' && classifying.quote?.quote_number
+				? `Quote #${classifying.quote.quote_number}`
+				: classifying.source === 'quote'
+					? 'Quote'
+					: 'Request',
+			classifying.title,
+			clientName(classifying)
+		].join(' · ')}
 		existing={{
 			reason: classifying.lost?.reason ?? null,
 			note: classifying.lost?.note ?? null,

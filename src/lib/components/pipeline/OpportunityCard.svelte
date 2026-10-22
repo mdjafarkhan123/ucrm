@@ -399,6 +399,7 @@
 		open={lostDialogOpen}
 		opportunityId={opportunity.id}
 		subject={opportunity.quote ? 'quote' : 'request'}
+		subtitle={`${opportunity.quote ? 'Quote' : 'Request'} · ${opportunity.title} · ${clientName}`}
 		onSaved={() => {
 			lostDialogOpen = false;
 			invalidatePipeline(queryClient);

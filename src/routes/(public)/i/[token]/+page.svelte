@@ -113,7 +113,7 @@
 			amountMinor={payment.balance_minor}
 			{currencyCode}
 			memo={data.document ? `Invoice #${data.document.invoice.invoice_number}` : ''}
-			divider={payment.available}
+			businessName={data.document?.business.name}
 		/>
 	{/if}
 {/snippet}

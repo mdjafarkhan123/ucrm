@@ -162,7 +162,8 @@
 			amountMinor={payment.deposit_required_minor}
 			currencyCode={data.document?.document.currency_code ?? 'USD'}
 			memo={data.document ? `Deposit for quote #${data.document.quote.quote_number}` : ''}
-			divider={payment.available}
+			kind="deposit"
+			businessName={data.document?.business.name}
 		/>
 	{/if}
 {/snippet}
