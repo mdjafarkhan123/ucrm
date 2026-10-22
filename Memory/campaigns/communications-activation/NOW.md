@@ -15,7 +15,7 @@ provider setup). Comparison: `docs/global-sms-codex-review-plan.md`; evidence:
 ## Next
 
 Build Parts 2 and 3 together (buy a number + paperwork), plan § Order and design, against boards `qaFQf` and
-`A0URqF`. Open: Jafar to give the Twilio monitoring email (`TWILIO_ISV_MONITORING_EMAIL`).
+`A0URqF`.
 
 ## Constraints
 

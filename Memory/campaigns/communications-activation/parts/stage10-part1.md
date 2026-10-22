@@ -14,7 +14,7 @@ number types and abilities, paperwork and prices, and holds Uplift's ISV setting
   searches never cached; concurrent callers share one request) and per-type abilities (`listNumberTypeOptions`:
   text / pictures / calls). `getSmsCountryCatalog()` is the shared instance. No API route yet — Part 2 adds them.
 - `src/lib/server/env.ts` — `TWILIO_ISV_PRIMARY_PROFILE_SID` (set in main `.env` to `BU0a5a…17f5`) and
-  `TWILIO_ISV_MONITORING_EMAIL` (unset: waits for Jafar).
+  `TWILIO_ISV_MONITORING_EMAIL` (set in main `.env` to `info@upliftcontractor.com`, the Twilio account email; Jafar 2026-10-22).
 
 ## Proof
 
