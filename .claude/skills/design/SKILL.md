@@ -50,7 +50,7 @@ Jafar 2026-10-17).
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
 - [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet, questions on a public form, weekly hours, signature pad
-- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip, channel pill
+- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip, channel pill, days-in-stage line
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card, side card rows, totals card, automatic follow-up card, other ways to pay box
