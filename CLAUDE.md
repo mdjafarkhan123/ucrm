@@ -122,7 +122,7 @@ before changing files (`--mode read` for research). Release after safe integrati
   process. Jafar decides what users see and do: when the proven answer does not fit what he wants, or there is a
   real choice, bring researched options with a recommendation and wait for his answer. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
-- Design in the Pencil app first before building in the app, following the design skill. If Jafar tells you to change any design that does not match the current design skill, then update the design skill to match the approved look in Pencil. Before updating the skill, keep in mind: the design skill should only talk about the look and feel, nothing else. Follow the enterprise folder, which contains all the reference design skills, to see how to write a design skill.
+- Design in the Pencil app first before building in the app readign design preferences from `.claude/skills/design/SKILL.md`, following the design skill. If Jafar tells you to change any design that does not match the current design skill, then update the design skill to match the approved look in Pencil. Before updating the skill, keep in mind: the design skill should only talk about the look and feel, nothing else. Follow the enterprise folder, which contains all the reference design skills, to see how to write a design skill.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons. Always use defined variables instead of handmade values.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global

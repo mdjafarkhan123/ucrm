@@ -23,9 +23,8 @@
 12. Research realted top industry to know what to show, what works, what not etc.. Not to copy design.
 
 
-## Design 
+## If app has a screen already built in 
 Before start designing in pencil app see what our app has and its design looks like today. Then pick a type from below and create at least 2 variants
-
 1. New creative concept: Forget what is the current app design looks like rather make a creative design from scratch to show your creativity, a whole new idea/concept/design
 2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
 ive apps.
