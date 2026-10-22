@@ -20,13 +20,13 @@
   numbers can text" + one card per number with its four-step journey and a status band. Option A deleted; board
   `NbWfA` renamed "Number readiness · Approved B". Every state drawn the same day (page states, summary none/all,
   turned down, just bought, another country on its way, texting paused, ⋯ menu, renaming, sending, saving
-  default), light only, waiting for Jafar's look. Rules in `.claude/skills/design/layout.md` § Number readiness.
+  default), light only; Jafar approved the states the same day ("saved, approved"). Rules in `.claude/skills/design/layout.md` § Number readiness.
 - [ ] Charges shown before sending or buying.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Ask Jafar to look at the readiness states on `NbWfA`; record his yes here. Then draw charges shown before sending
+Draw charges shown before sending
 or buying (research GHL/Twilio price display first), light only. If `concept.pen` is uncommitted, ask Jafar for
 Ctrl+S and commit it from main.
 
