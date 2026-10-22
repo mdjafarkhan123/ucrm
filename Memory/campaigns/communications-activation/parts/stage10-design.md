@@ -16,15 +16,20 @@
 - [x] Number paperwork (Compliance) list and form — Jafar approved 2026-10-22 ("approved"), board `A0URqF`
   renamed "Number paperwork · Approved". Every state drawn and approved the same day ("approved"), light only (Jafar: "no need to draw dark
   mode"). Rules in `.claude/skills/design/layout.md` § Number paperwork.
-- [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text").
+- [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text") —
+  options A (numbers list with a 4-step track per row + side panel for one number) and B (summary "2 of 4 can
+  text" + one card per number with its journey and a status band) drawn 2026-10-22 on board `NbWfA`, waiting
+  for Jafar's choice. Status colours: details needed `informative`, under review `warning`, action needed
+  `critical`, ready `success`.
 - [ ] Charges shown before sending or buying.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Next session: draw the readiness of each number ("Business details needed", "Under review", "Action needed",
-"Ready to text"), researched from GHL's number list and Twilio sender states. Light only. If `concept.pen` is
-uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Ask Jafar to choose A or B on board `NbWfA` (or a mix). On his yes: delete the unchosen option, rename the
+board "Approved", then draw every state (loading, empty, couldn't load, each status, a number that lost a
+destination) light only, and add the rules to the design skill. If `concept.pen` is uncommitted, ask Jafar for
+Ctrl+S and commit it from main.
 
 ## Notes
 
