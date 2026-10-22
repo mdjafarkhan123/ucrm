@@ -5,6 +5,8 @@
 - **Experience:** `.claude/skills/design/SKILL.md` and its modules.
 - **Stage:** Approved parts are being built; further screens are being drawn.
 
+**Waiting to merge:** Batch 57 is built and checked on `codex/build-batch57`, pushed to GitHub. Main has unclaimed changes in `CLAUDE.md` and `concept.pen`; integration claim refused. Resume `parts/batch57-build.md` before rebuilding it.
+
 **Next:**
 1. **Build:** Batches 43 Merge clients and 44 Collect payment pop-ups built 2026-10-21
    (`docs/evidence/2026-10-21-popups/`). Batch 45 Notification bell pop-up built and merged 2026-10-21
