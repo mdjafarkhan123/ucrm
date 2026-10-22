@@ -23,13 +23,16 @@
 	let {
 		content,
 		title,
-		editingBlock = null
+		editingBlock = null,
+		shownWith = ''
 	}: {
 		content: MarketingCampaignContent;
 		/** Names the email frame to a screen reader. */
 		title: string;
 		/** The open block, outlined in the email. */
 		editingBlock?: { id: string; type: MarketingBlockType } | null;
+		/** The Review step's own pill, e.g. "Shown with Sarah's details", in place of "Updates as you type". */
+		shownWith?: string;
 	} = $props();
 
 	let viewport = $state<'desktop' | 'mobile'>('desktop');
@@ -130,7 +133,8 @@
 				{:else if updating}
 					<span class="email-preview__spinner" aria-hidden="true"></span>Updating…
 				{:else}
-					<span class="email-preview__dot" aria-hidden="true"></span>Updates as you type
+					<span class="email-preview__dot" aria-hidden="true"></span>{shownWith ||
+						'Updates as you type'}
 				{/if}
 			</span>
 		{/if}

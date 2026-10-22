@@ -361,7 +361,7 @@
 <svelte:head><title>{name || 'New campaign'} · Marketing · Contractor CRM</title></svelte:head>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={['journey', step === 3 && 'journey--wide']}>
+<div class={['journey', (step === 3 || step === 5) && 'journey--wide']}>
 	<Breadcrumbs
 		items={[
 			{ label: 'Campaigns', href: campaignsHref },
@@ -466,7 +466,7 @@
 
 <style lang="scss">
 	// The setup-steps frame (design skill `layout.md` → Setup steps): one 760 column with its blocks 24 apart.
-	// The Email step widens it to 1092 for the editor and the live email side by side; the header and the step
+	// The Email and Review steps widen it to 1092 for the editor or launch panel and the email side by side; the header and the step
 	// track stretch with it.
 	.journey {
 		display: flex;

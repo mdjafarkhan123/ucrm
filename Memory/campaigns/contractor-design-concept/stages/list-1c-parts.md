@@ -10,7 +10,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/CampaignEmailStep` | menus ×1 | ✅ Batch 54 `Nuydc` B 2026-10-21 | ✅ built and checked 2026-10-22 (`docs/evidence/2026-10-21-batch54/`) |
 | `marketing/CampaignGoalStep` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/CampaignJourney` | loading | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
-| `marketing/CampaignReviewStep` | loading, owner view | ✅ Batch 56 `qCDG0` B 2026-10-21 | ⬜ |
+| `marketing/CampaignReviewStep` | loading, owner view | ✅ Batch 56 `qCDG0` B 2026-10-21 | ✅ 2026-10-22 (staff, loading and fix states not driven live) |
 | `marketing/CampaignStepper` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/InsertVariableMenu` | menus ×1 | ✅ Batch 54 `Nuydc` B 2026-10-21 | ✅ built and checked 2026-10-22 (`docs/evidence/2026-10-21-batch54/`) |
 | `marketing/MarketingAllowanceNotice` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ✅ 2026-10-22 (Delivery drawn inline; Review keeps it until Batch 56) |

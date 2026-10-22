@@ -35,13 +35,16 @@
 		counts,
 		isPending,
 		isError,
-		onRetry
+		onRetry,
+		meterOnly = false
 	}: {
 		rules: MarketingGroupRules;
 		counts: MarketingRecipientPreviewCounts | undefined;
 		isPending: boolean;
 		isError: boolean;
 		onRetry: () => void;
+		/** The Review step shows only the headline meter, not the left-out reasons or the customer list. */
+		meterOnly?: boolean;
 	} = $props();
 
 	// Each reason a matched customer is left out: its icon, what the owner can do about it, and whether the
@@ -218,7 +221,9 @@
 			</ul>
 		</div>
 
-		{#if counts.matches === 0}
+		{#if meterOnly}
+			<!-- The Review step stops at the meter. -->
+		{:else if counts.matches === 0}
 			<p class="audience__none">
 				No customers match this group's rules yet. Change the group or pick another.
 			</p>
