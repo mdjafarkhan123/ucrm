@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -635,6 +636,7 @@
 			<WebsiteChatPreview
 				businessName={widgetsQuery.data?.organization.name ?? 'Your business'}
 				brandColor={widgetsQuery.data?.organization.brand_color}
+				logoUrl={page.data.logoUrl}
 				launcherPosition={draft.launcher_position}
 				teaserText={draft.teaser_text}
 				greetingText={draft.greeting_text}
