@@ -13,7 +13,8 @@
 		subtitle,
 		icon,
 		tone,
-		badge
+		badge,
+		closeDisabled = false
 	}: {
 		title: string;
 		subtitle?: string;
@@ -21,6 +22,8 @@
 		tone?: string;
 		/** A small pill beside the title. */
 		badge?: Snippet;
+		/** While something can't be interrupted (buying), the × is greyed and does nothing. */
+		closeDisabled?: boolean;
 	} = $props();
 </script>
 
@@ -36,7 +39,9 @@
 	</div>
 	<DialogPrimitive.Close>
 		{#snippet child({ props })}
-			<Button {...props} variant="secondary" iconOnly label="Close">{@html closeIcon}</Button>
+			<Button {...props} variant="secondary" iconOnly label="Close" disabled={closeDisabled}
+				>{@html closeIcon}</Button
+			>
 		{/snippet}
 	</DialogPrimitive.Close>
 </header>

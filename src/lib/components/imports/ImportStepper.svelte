@@ -1,16 +1,10 @@
-<script lang="ts">
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+<script lang="ts" module>
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import columnsIcon from '@tabler/icons/outline/columns-3.svg?raw';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 	import flagIcon from '@tabler/icons/outline/flag.svg?raw';
 
-	// Display-only progress rail for the import wizard. It never navigates: a real import carries server state
-	// (an uploaded batch, a saved mapping), so moving between steps is owned by the wizard's own Back/Continue
-	// buttons, not by clicking a rail label out of order.
-	let { current }: { current: number } = $props();
-
-	const steps = [
+	const IMPORT_STEPS = [
 		{ n: 1, title: 'Upload', hint: 'Pick your file', icon: uploadIcon },
 		{ n: 2, title: 'Map columns', hint: 'Match your fields', icon: columnsIcon },
 		{ n: 3, title: 'Review', hint: 'Check before import', icon: listCheckIcon },
@@ -18,8 +12,25 @@
 	];
 </script>
 
+<script lang="ts">
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+
+	type Step = { n: number; title: string; hint: string; icon: string };
+
+	// Display-only progress rail for a setup-steps page (design skill `layout.md` → Setup steps). It never
+	// navigates: a real import carries server state (an uploaded batch, a saved mapping), so moving between steps
+	// is owned by the page's own Back/Continue buttons, not by clicking a rail label out of order. The import
+	// wizard's steps are the default; another setup-steps page passes its own.
+	let {
+		current,
+		steps = IMPORT_STEPS,
+		label = 'Import steps'
+	}: { current: number; steps?: Step[]; label?: string } = $props();
+</script>
+
+
 <!-- eslint-disable svelte/no-at-html-tags -->
-<ol class="import-stepper" aria-label="Import steps">
+<ol class="import-stepper" aria-label={label}>
 	{#each steps as step, index (step.n)}
 		{@const state = step.n < current ? 'done' : step.n === current ? 'active' : 'upcoming'}
 		{#if index > 0}

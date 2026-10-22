@@ -519,6 +519,35 @@ export async function adoptPhoneNumber(
 	};
 }
 
+export type SubaccountAccess = {
+	subaccountSid: string;
+	authToken: string;
+	messagingServiceSid: string;
+};
+
+/**
+ * The organization's ready subaccount with its decrypted Auth Token, for one setup call (buying or attaching a
+ * number). Returns null when the organization has no ready subaccount with a Messaging Service yet.
+ */
+export async function getSubaccountAccess(
+	deps: Pick<TwilioProvisioningDeps, 'store' | 'keyring'>,
+	organizationId: string
+): Promise<SubaccountAccess | null> {
+	const account = await deps.store.getAccount(organizationId);
+	if (!account || account.lifecycleState !== 'ready' || !account.messagingServiceSid) return null;
+	const credential = await deps.store.getCredential({
+		accountId: account.id,
+		purpose: 'auth_token',
+		lifecycleState: 'current'
+	});
+	if (!credential) return null;
+	return {
+		subaccountSid: account.subaccountSid,
+		authToken: decryptCredential(deps.keyring, account, credential),
+		messagingServiceSid: account.messagingServiceSid
+	};
+}
+
 async function requireAccount(
 	store: TwilioProvisioningStore,
 	organizationId: string

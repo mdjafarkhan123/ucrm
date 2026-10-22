@@ -4,7 +4,7 @@ export type Database = {
 	// Allows to automatically instantiate createClient with right options
 	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
 	__InternalSupabase: {
-		PostgrestVersion: '14.5';
+		PostgrestVersion: '14.15';
 	};
 	public: {
 		Tables: {
@@ -3997,6 +3997,365 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_number_orders: {
+				Row: {
+					address_requirement: string;
+					address_sid: string | null;
+					bundle_sid: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at: string | null;
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					failed_at: string | null;
+					failure_code: string | null;
+					id: string;
+					idempotency_key: string;
+					locality: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string | null;
+					purchased_at: string | null;
+					region: string | null;
+					requested_by: string;
+					sender_identity_id: string | null;
+					setup_minor: number;
+					state: string;
+					updated_at: string;
+				};
+				Insert: {
+					address_requirement?: string;
+					address_sid?: string | null;
+					bundle_sid?: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at?: string | null;
+					country_code: string;
+					created_at?: string;
+					currency_code: string;
+					failed_at?: string | null;
+					failure_code?: string | null;
+					id?: string;
+					idempotency_key: string;
+					locality?: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid?: string | null;
+					purchased_at?: string | null;
+					region?: string | null;
+					requested_by: string;
+					sender_identity_id?: string | null;
+					setup_minor: number;
+					state?: string;
+					updated_at?: string;
+				};
+				Update: {
+					address_requirement?: string;
+					address_sid?: string | null;
+					bundle_sid?: string | null;
+					capable_mms?: boolean;
+					capable_sms?: boolean;
+					capable_voice?: boolean;
+					charge_minor?: number;
+					completed_at?: string | null;
+					country_code?: string;
+					created_at?: string;
+					currency_code?: string;
+					failed_at?: string | null;
+					failure_code?: string | null;
+					id?: string;
+					idempotency_key?: string;
+					locality?: string | null;
+					monthly_minor?: number;
+					number_rate_id?: string;
+					number_type?: string;
+					organization_id?: string;
+					phone_number?: string;
+					provider_phone_number_sid?: string | null;
+					purchased_at?: string | null;
+					region?: string | null;
+					requested_by?: string;
+					sender_identity_id?: string | null;
+					setup_minor?: number;
+					state?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_orders_number_rate_id_fkey';
+						columns: ['number_rate_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_retail_rates';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_orders_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_orders_sender_fk';
+						columns: ['organization_id', 'sender_identity_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_sender_identities';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_number_paperwork: {
+				Row: {
+					address: Json | null;
+					answers: Json;
+					country_code: string;
+					created_at: string;
+					created_by: string | null;
+					decided_at: string | null;
+					document_choices: Json;
+					end_user_type: string;
+					failure_reason: string | null;
+					fixes: Json;
+					id: string;
+					last_checked_at: string | null;
+					number_type: string;
+					organization_id: string;
+					provider_address_sid: string | null;
+					provider_bundle_sid: string | null;
+					provider_end_user_sid: string | null;
+					provider_status: string | null;
+					regulation_sid: string | null;
+					revision: number;
+					sending_claim_token: string | null;
+					sending_claimed_at: string | null;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					valid_until: string | null;
+				};
+				Insert: {
+					address?: Json | null;
+					answers?: Json;
+					country_code: string;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					document_choices?: Json;
+					end_user_type?: string;
+					failure_reason?: string | null;
+					fixes?: Json;
+					id?: string;
+					last_checked_at?: string | null;
+					number_type: string;
+					organization_id: string;
+					provider_address_sid?: string | null;
+					provider_bundle_sid?: string | null;
+					provider_end_user_sid?: string | null;
+					provider_status?: string | null;
+					regulation_sid?: string | null;
+					revision?: number;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					valid_until?: string | null;
+				};
+				Update: {
+					address?: Json | null;
+					answers?: Json;
+					country_code?: string;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					document_choices?: Json;
+					end_user_type?: string;
+					failure_reason?: string | null;
+					fixes?: Json;
+					id?: string;
+					last_checked_at?: string | null;
+					number_type?: string;
+					organization_id?: string;
+					provider_address_sid?: string | null;
+					provider_bundle_sid?: string | null;
+					provider_end_user_sid?: string | null;
+					provider_status?: string | null;
+					regulation_sid?: string | null;
+					revision?: number;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					valid_until?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_number_paperwork_documents: {
+				Row: {
+					created_at: string;
+					document_type: string;
+					failure_reason: string | null;
+					fields: Json;
+					id: string;
+					organization_id: string;
+					paperwork_id: string;
+					protected_document_id: string | null;
+					provider_document_sid: string | null;
+					provider_fields: Json | null;
+					provider_protected_document_id: string | null;
+					provider_status: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					document_type: string;
+					failure_reason?: string | null;
+					fields?: Json;
+					id?: string;
+					organization_id: string;
+					paperwork_id: string;
+					protected_document_id?: string | null;
+					provider_document_sid?: string | null;
+					provider_fields?: Json | null;
+					provider_protected_document_id?: string | null;
+					provider_status?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					document_type?: string;
+					failure_reason?: string | null;
+					fields?: Json;
+					id?: string;
+					organization_id?: string;
+					paperwork_id?: string;
+					protected_document_id?: string | null;
+					provider_document_sid?: string | null;
+					provider_fields?: Json | null;
+					provider_protected_document_id?: string | null;
+					provider_status?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_d_protected_document_id_fkey';
+						columns: ['protected_document_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_protected_documents';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_documents_set_fkey';
+						columns: ['organization_id', 'paperwork_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_paperwork';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_number_paperwork_events: {
+				Row: {
+					action: string;
+					actor_user_id: string | null;
+					created_at: string;
+					detail: Json;
+					id: number;
+					organization_id: string;
+					paperwork_id: string;
+				};
+				Insert: {
+					action: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id: string;
+					paperwork_id: string;
+				};
+				Update: {
+					action?: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id?: string;
+					paperwork_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_events_set_fkey';
+						columns: ['organization_id', 'paperwork_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_paperwork';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_number_retail_rates: {
+				Row: {
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					monthly_rate_major: number;
+					note: string | null;
+					number_type: string;
+					provider_monthly_cost_major: number | null;
+					provider_setup_cost_major: number | null;
+					set_by: string;
+					setup_rate_major: number;
+				};
+				Insert: {
+					country_code: string;
+					created_at?: string;
+					currency_code?: string;
+					effective_from?: string;
+					id?: string;
+					monthly_rate_major: number;
+					note?: string | null;
+					number_type: string;
+					provider_monthly_cost_major?: number | null;
+					provider_setup_cost_major?: number | null;
+					set_by: string;
+					setup_rate_major?: number;
+				};
+				Update: {
+					country_code?: string;
+					created_at?: string;
+					currency_code?: string;
+					effective_from?: string;
+					id?: string;
+					monthly_rate_major?: number;
+					note?: string | null;
+					number_type?: string;
+					provider_monthly_cost_major?: number | null;
+					provider_setup_cost_major?: number | null;
+					set_by?: string;
+					setup_rate_major?: number;
+				};
+				Relationships: [];
+			};
 			communication_sms_org_modes: {
 				Row: {
 					chosen_mode: string;
@@ -4422,8 +4781,10 @@ export type Database = {
 					id: string;
 					is_default_sender: boolean;
 					lifecycle_state: string;
+					number_type: string | null;
 					organization_id: string;
 					phone_number: string;
+					provider_phone_number_sid: string | null;
 					registration_id: string | null;
 					sender_type: string | null;
 					updated_at: string;
@@ -4440,8 +4801,10 @@ export type Database = {
 					id?: string;
 					is_default_sender?: boolean;
 					lifecycle_state?: string;
+					number_type?: string | null;
 					organization_id: string;
 					phone_number: string;
+					provider_phone_number_sid?: string | null;
 					registration_id?: string | null;
 					sender_type?: string | null;
 					updated_at?: string;
@@ -4458,8 +4821,10 @@ export type Database = {
 					id?: string;
 					is_default_sender?: boolean;
 					lifecycle_state?: string;
+					number_type?: string | null;
 					organization_id?: string;
 					phone_number?: string;
+					provider_phone_number_sid?: string | null;
 					registration_id?: string | null;
 					sender_type?: string | null;
 					updated_at?: string;
@@ -20909,6 +21274,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_claim_number_order_purchase: {
+				Args: { p_order_id: string };
+				Returns: boolean;
+			};
 			communication_sms_client_stop_state: {
 				Args: { p_client_id: string; p_organization_id: string };
 				Returns: {
@@ -20922,6 +21291,46 @@ export type Database = {
 					stopped_by_user: string;
 					value: string;
 				}[];
+			};
+			communication_sms_complete_number_order: {
+				Args: { p_order_id: string };
+				Returns: {
+					address_requirement: string;
+					address_sid: string | null;
+					bundle_sid: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at: string | null;
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					failed_at: string | null;
+					failure_code: string | null;
+					id: string;
+					idempotency_key: string;
+					locality: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string | null;
+					purchased_at: string | null;
+					region: string | null;
+					requested_by: string;
+					sender_identity_id: string | null;
+					setup_minor: number;
+					state: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_orders';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			communication_sms_confirm_credit_topup: {
 				Args: {
@@ -20993,6 +21402,34 @@ export type Database = {
 			communication_sms_effective_mode: {
 				Args: { p_organization_id: string };
 				Returns: string;
+			};
+			communication_sms_effective_number_rate: {
+				Args: {
+					p_at?: string;
+					p_country_code: string;
+					p_currency_code?: string;
+					p_number_type: string;
+				};
+				Returns: {
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					monthly_rate_major: number;
+					note: string | null;
+					number_type: string;
+					provider_monthly_cost_major: number | null;
+					provider_setup_cost_major: number | null;
+					set_by: string;
+					setup_rate_major: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_retail_rates';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			communication_sms_effective_retail_rate: {
 				Args: {
@@ -21089,6 +21526,46 @@ export type Database = {
 					segment_count: number;
 				}[];
 			};
+			communication_sms_fail_number_order: {
+				Args: { p_failure_code: string; p_order_id: string };
+				Returns: {
+					address_requirement: string;
+					address_sid: string | null;
+					bundle_sid: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at: string | null;
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					failed_at: string | null;
+					failure_code: string | null;
+					id: string;
+					idempotency_key: string;
+					locality: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string | null;
+					purchased_at: string | null;
+					region: string | null;
+					requested_by: string;
+					sender_identity_id: string | null;
+					setup_minor: number;
+					state: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_orders';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			communication_sms_grant_promotional_credit: {
 				Args: {
 					p_amount_minor: number;
@@ -21141,6 +21618,61 @@ export type Database = {
 					window_end: string;
 					window_start: string;
 				}[];
+			};
+			communication_sms_open_number_order: {
+				Args: {
+					p_actor: string;
+					p_address_requirement?: string;
+					p_address_sid?: string;
+					p_bundle_sid?: string;
+					p_capable_mms: boolean;
+					p_capable_sms: boolean;
+					p_capable_voice: boolean;
+					p_country_code: string;
+					p_idempotency_key: string;
+					p_locality?: string;
+					p_number_type: string;
+					p_organization_id: string;
+					p_phone_number: string;
+					p_region?: string;
+				};
+				Returns: {
+					address_requirement: string;
+					address_sid: string | null;
+					bundle_sid: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at: string | null;
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					failed_at: string | null;
+					failure_code: string | null;
+					id: string;
+					idempotency_key: string;
+					locality: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string | null;
+					purchased_at: string | null;
+					region: string | null;
+					requested_by: string;
+					sender_identity_id: string | null;
+					setup_minor: number;
+					state: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_orders';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
 			};
 			communication_sms_opted_out_count: {
 				Args: { p_organization_id: string; p_since?: string };
@@ -21210,6 +21742,10 @@ export type Database = {
 					registration_status: string;
 				}[];
 			};
+			communication_sms_reclaim_number_order_purchase: {
+				Args: { p_order_id: string; p_stale_before: string };
+				Returns: boolean;
+			};
 			communication_sms_record_adjustment: {
 				Args: {
 					p_actor?: string;
@@ -21262,6 +21798,46 @@ export type Database = {
 				SetofOptions: {
 					from: '*';
 					to: 'communication_sms_consent_events';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_record_number_purchased: {
+				Args: { p_order_id: string; p_provider_phone_number_sid: string };
+				Returns: {
+					address_requirement: string;
+					address_sid: string | null;
+					bundle_sid: string | null;
+					capable_mms: boolean;
+					capable_sms: boolean;
+					capable_voice: boolean;
+					charge_minor: number;
+					completed_at: string | null;
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					failed_at: string | null;
+					failure_code: string | null;
+					id: string;
+					idempotency_key: string;
+					locality: string | null;
+					monthly_minor: number;
+					number_rate_id: string;
+					number_type: string;
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string | null;
+					purchased_at: string | null;
+					region: string | null;
+					requested_by: string;
+					sender_identity_id: string | null;
+					setup_minor: number;
+					state: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_orders';
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
@@ -21460,8 +22036,10 @@ export type Database = {
 					id: string;
 					is_default_sender: boolean;
 					lifecycle_state: string;
+					number_type: string | null;
 					organization_id: string;
 					phone_number: string;
+					provider_phone_number_sid: string | null;
 					registration_id: string | null;
 					sender_type: string | null;
 					updated_at: string;
@@ -21566,6 +22144,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_schedule_paperwork_file_deletion: {
+				Args: { target_paperwork_id: string };
+				Returns: number;
+			};
 			communication_sms_set_compliance_settings: {
 				Args: {
 					p_actor: string;
@@ -21612,8 +22194,10 @@ export type Database = {
 					id: string;
 					is_default_sender: boolean;
 					lifecycle_state: string;
+					number_type: string | null;
 					organization_id: string;
 					phone_number: string;
+					provider_phone_number_sid: string | null;
 					registration_id: string | null;
 					sender_type: string | null;
 					updated_at: string;
@@ -21621,6 +22205,40 @@ export type Database = {
 				SetofOptions: {
 					from: '*';
 					to: 'communication_sms_sender_identities';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_number_rate: {
+				Args: {
+					p_country_code: string;
+					p_currency_code?: string;
+					p_effective_from?: string;
+					p_monthly_rate_major: number;
+					p_note?: string;
+					p_number_type: string;
+					p_provider_monthly_cost_major?: number;
+					p_provider_setup_cost_major?: number;
+					p_set_by: string;
+					p_setup_rate_major?: number;
+				};
+				Returns: {
+					country_code: string;
+					created_at: string;
+					currency_code: string;
+					effective_from: string;
+					id: string;
+					monthly_rate_major: number;
+					note: string | null;
+					number_type: string;
+					provider_monthly_cost_major: number | null;
+					provider_setup_cost_major: number | null;
+					set_by: string;
+					setup_rate_major: number;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_number_retail_rates';
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
@@ -21730,8 +22348,10 @@ export type Database = {
 					id: string;
 					is_default_sender: boolean;
 					lifecycle_state: string;
+					number_type: string | null;
 					organization_id: string;
 					phone_number: string;
+					provider_phone_number_sid: string | null;
 					registration_id: string | null;
 					sender_type: string | null;
 					updated_at: string;
@@ -24843,7 +25463,6 @@ export type Database = {
 					subject: string;
 				}[];
 			};
-			invoice_money: { Args: { target_invoice_ids: string[] }; Returns: Json };
 			invoice_list_views: {
 				Args: { target_invoice_ids: string[]; target_organization_id: string };
 				Returns: {
@@ -24851,6 +25470,11 @@ export type Database = {
 					invoice_id: string;
 					view_count: number;
 				}[];
+			};
+			invoice_money: { Args: { target_invoice_ids: string[] }; Returns: Json };
+			invoice_money_context: {
+				Args: { target_invoice_id: string; target_organization_id: string };
+				Returns: Json;
 			};
 			invoice_money_overview: {
 				Args: { target_organization_id: string };
@@ -24910,6 +25534,10 @@ export type Database = {
 			issue_support_realtime_grant: {
 				Args: { target_owner_session_id: string };
 				Returns: string;
+			};
+			job_billing_summary: {
+				Args: { target_job_id: string; target_organization_id: string };
+				Returns: Json;
 			};
 			job_checklists_list: {
 				Args: { target_job_id: string; target_organization_id: string };
@@ -27115,6 +27743,14 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			record_chain: {
+				Args: {
+					source_id: string;
+					source_kind: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			record_client_marketing_unsubscribe: {
 				Args: { supplied_evidence?: Json; supplied_token_hash: string };
 				Returns: Json;
@@ -28535,9 +29171,9 @@ export type Database = {
 			save_job_pricing: {
 				Args: {
 					expected_revision: number;
-					new_discount: Json | null;
-					new_lines: Json | null;
-					new_tax: Json | null;
+					new_discount: Json;
+					new_lines: Json;
+					new_tax: Json;
 					target_job_id: string;
 					target_organization_id: string;
 				};
