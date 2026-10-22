@@ -239,7 +239,7 @@
 
 	.chat-preview__browser {
 		width: 100%;
-		min-height: 520px;
+		min-height: 690px;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
@@ -268,7 +268,7 @@
 
 	.chat-preview__site {
 		position: relative;
-		min-height: 486px;
+		min-height: 656px;
 		background:
 			linear-gradient(var(--color-border), var(--color-border)) var(--space-large)
 				var(--space-large) / 42% var(--space-small) no-repeat,
