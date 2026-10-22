@@ -86,7 +86,7 @@ The files card on a record page, approved 2026-10-20 on board `pH9PB` (A). Hint 
 - **Documents** run edge to edge under the photos, a 1px `--color-border` line above each, padding 12 12 12
   16, gap 12: the file picture list line (40), the name 13/600 heading over type · size · date 12 quiet ("· used
   in 2 places" when shared), and a 28 quiet ⋯ (16 `ellipsis`). Open: the ⋯ `--color-surface--active`.
-- **Menu:** the line menu look, 208 wide: Download (`download`), a divider, "Remove from this record" (`unlink`)
+- **Menu:** the action menu (`inputs.md`), 236 wide: Download (`download`), a divider, "Remove from this record" (`unlink`)
   in `--color-critical`. View only: Download alone, 184 wide.
 - **Notices** at the top of the body, radius 8, padding 10 12, gap 10, 12/500 in the family's `--onSurface`,
   surface fill with its `--surface-edge`: being checked is warning with a 16 spinner ("1 file is being checked
