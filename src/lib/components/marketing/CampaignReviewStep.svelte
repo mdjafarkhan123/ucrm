@@ -276,6 +276,7 @@
 		}
 	}
 
+	// A part that needs a fix keeps Send off (design: Review step, "needs a fix"); the server refuses it too.
 	const needsFix = $derived(!options.sender || Boolean(buttonProblem));
 </script>
 
@@ -497,7 +498,7 @@
 								size="large"
 								fullWidth
 								loading={sending}
-								disabled={isPending || isError}
+								disabled={isPending || isError || needsFix}
 								onclick={() => void handleSend()}
 							>
 								{@html sendMode === 'schedule' ? calendarCheckIcon : rocketIcon}

@@ -25,7 +25,8 @@ test email was sent.
 Staff member view (no When block or test button), sending spinner, couldn't send, test sent / couldn't send a test,
 needs-a-fix rows (no sender, no button), loading bones and couldn't load. The office login could not open the draft.
 
-## Waiting on Jafar
+## Send while a part needs a fix
 
-The drawing disables Send while a part needs a fix; today it stays pressable and the server answers with the
-reason. Built as today (pressable, with the warning strip above it). Say yes if Send should be disabled.
+Jafar said (2026-10-22) to follow the drawing: Send/Schedule is disabled while there is no verified sender or no
+valid button. `npx vitest run src/lib/components/marketing/CampaignReviewStep.svelte.spec.ts`: 3 of 3 pass (on with
+both set, off with no sender, off with no button). Not driven live; the state can't be reached through the steps.
