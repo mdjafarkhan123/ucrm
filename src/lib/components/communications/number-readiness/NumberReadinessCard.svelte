@@ -121,8 +121,7 @@
 					<div class="number-readiness__rename-row">
 						<Input
 							id={`number-name-${card.key}`}
-							label="Number name"
-							hideLabel
+							aria-label="Number name"
 							maxlength={60}
 							placeholder={card.name}
 							bind:value={renameDraft}
@@ -313,9 +312,17 @@
 				flex: 1 1 auto;
 			}
 
+			:global(.button) {
+				flex: none;
+				white-space: nowrap;
+			}
+
+			:global(.number-readiness__rename-field .input__control) {
+				border: 1.5px solid var(--color-interactive);
+			}
+
 			:global(.number-readiness__rename-field input) {
 				height: 36px;
-				border: 1.5px solid var(--color-interactive);
 			}
 		}
 

@@ -11,9 +11,11 @@
 
 <style lang="scss">
 	.paperwork-flag {
-		display: inline-grid;
+		// Flex centring lets the oversized emoji spill equally off both sides of the circle.
+		display: inline-flex;
 		flex: none;
-		place-items: center;
+		align-items: center;
+		justify-content: center;
 		width: var(--flag-size);
 		height: var(--flag-size);
 		overflow: hidden;

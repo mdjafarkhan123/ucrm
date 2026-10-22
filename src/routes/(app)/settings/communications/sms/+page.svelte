@@ -544,13 +544,28 @@
 
 		<div class="sms-settings__readiness" aria-busy={readinessQuery.isPending}>
 			{#if readinessQuery.isPending}
-				<div
-					class="sms-settings__shape sms-settings__shape--summary"
-					aria-label="Loading your numbers"
-				></div>
+				<div class="sms-settings__shape" aria-label="Loading your numbers">
+					<span class="skeleton sms-settings__bone sms-settings__bone--tile"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--title"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--line"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--bar"></span>
+				</div>
 				<div class="sms-settings__cards">
 					{#each [0, 1] as shape (shape)}
-						<div class="sms-settings__shape sms-settings__shape--card"></div>
+						<div class="sms-settings__shape sms-settings__shape--card" aria-hidden="true">
+							<div class="sms-settings__shape-head">
+								<span class="skeleton sms-settings__bone sms-settings__bone--flag"></span>
+								<span class="sms-settings__shape-lines">
+									<span class="skeleton sms-settings__bone sms-settings__bone--name"></span>
+									<span class="skeleton sms-settings__bone sms-settings__bone--detail"></span>
+								</span>
+							</div>
+							<span class="sms-settings__shape-journey"></span>
+							<div class="sms-settings__shape-band">
+								<span class="skeleton sms-settings__bone sms-settings__bone--icon"></span>
+								<span class="skeleton sms-settings__bone sms-settings__bone--detail"></span>
+							</div>
+						</div>
 					{/each}
 				</div>
 			{:else if readinessQuery.isError}
@@ -1112,31 +1127,80 @@
 		background: var(--color-surface);
 	}
 	.sms-settings__shape {
+		display: grid;
+		gap: var(--space-base);
+		padding: var(--space-medium);
+		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
-		background: linear-gradient(
-			90deg,
-			var(--color-border),
-			var(--color-surface--background--subtle),
-			var(--color-border)
-		);
-		background-size: 200% 100%;
-		animation: sms-settings-shimmer 1.4s ease-in-out infinite;
+		background: var(--color-surface);
 
-		&--summary {
-			height: 200px;
-		}
 		&--card {
-			height: 300px;
+			gap: var(--space-medium);
+			overflow: hidden;
+			padding-bottom: 0;
 		}
 	}
-	@keyframes sms-settings-shimmer {
-		to {
-			background-position: -200% 0;
-		}
+	.sms-settings__shape-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.sms-settings__shape {
-			animation: none;
+	.sms-settings__shape-lines {
+		display: grid;
+		flex: 1 1 auto;
+		gap: var(--space-small);
+	}
+	.sms-settings__shape-journey {
+		height: 96px;
+		border-radius: var(--radius-tile-large);
+		background: var(--color-surface--background--subtle);
+	}
+	.sms-settings__shape-band {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		margin: 0 calc(var(--space-medium) * -1);
+		padding: var(--space-base) var(--space-medium);
+		background: var(--color-surface--background--subtle);
+	}
+	.sms-settings__bone {
+		min-height: 0;
+
+		&--tile,
+		&--icon {
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-tile-large);
+		}
+		&--icon {
+			width: 32px;
+			height: 32px;
+		}
+		&--flag {
+			flex: none;
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-circle);
+		}
+		&--title {
+			width: 30%;
+			height: 28px;
+		}
+		&--line {
+			width: 70%;
+			height: 12px;
+		}
+		&--bar {
+			height: 10px;
+			border-radius: var(--radius-circle);
+		}
+		&--name {
+			width: 40%;
+			height: 14px;
+		}
+		&--detail {
+			width: 60%;
+			height: 12px;
 		}
 	}
 	.sms-settings__foot {
