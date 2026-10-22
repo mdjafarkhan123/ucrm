@@ -337,6 +337,42 @@ The control room: every setting shows how it is set right now (Pencil: "Batch 63
   avatar with "Your account" 16/600 over name and role 14 quiet, then cells divided by a 1px left line: 32 tile,
   name 14/600, value or pill, chevron; desktop alerts end in the on/off switch (`inputs.md`).
 
+## Business profile
+
+A settings page that reads like the business card; each section opens in place on its own Edit (Pencil:
+"Batch 64 · Business profile · Approved B", `dw4fp`, Jafar 2026-10-22). Full-width page frame, blocks 24 apart.
+
+- **Top:** the breadcrumb trail (Settings › Business profile, `store`), 14 above the page header: the 40
+  `--color-inactive` `store` tile, title and description; at the right a 16 `history` icon and the last change 12/500
+  quiet.
+- **Business card:** white, 1px border, radius 16, clipped. Identity padding 24 24 22, gap 20: a 72
+  `--color-interactive` logo tile (radius 18, white 34 leaf or the logo), the name `-display` 700 (-0.6) with the
+  profile pill, a trade line (16 `hard-hat` `--color-job`, trade 14/600 heading, a 4 dot, city 14/500 text), the
+  tagline 14 quiet in quotes (line height 1.5, 640 wide), and Edit name and trade (secondary, `pencil`) at the right.
+  Under it a `--color-surface--background--subtle` band (1px line on top, padding 12 24, gap 10): "Customers see this
+  on" 12/600 quiet, then white pill chips (1px border, padding 4 10 4 6) each with a 20 round tile in the place's
+  colour (quotes, invoices, emails and texts, client portal, booking forms) and the name 12/600 heading.
+- **Section cards:** Contact and Time zone and currency side by side (same height), then Where you work across the
+  page. Closed: the Card header with Edit (secondary, `pencil`), then fact rows edge to edge (padding 14 20, gap 12,
+  1px line between): a 32 tile in the fact's meaning colour, label 12/500 quiet over the value 14/600 heading; a
+  state sits at the right as a pill (Not confirmed `warning`, Street hidden `inactive`, Locked `inactive` with a 12
+  lock) with Confirm (small secondary) beside it. A reason goes in a subtle footer band (1px line on top, padding 12
+  20, a 14 `--color-informative` info icon, 12/500 quiet).
+- **Open section:** the same card with a 1.5px `--color-interactive` edge and a soft lift (0 8 24, heading 8%);
+  header without Edit, the body padding 20 gap 16 with the fields (`inputs.md`), and a footer bar
+  (`--color-surface--background--subtle`, 1px line on top, padding 12 20, gap 8): a 12/500 quiet hint, Cancel
+  (secondary) and Save (main, `check`, named for the section). The business card opens with the logo column at the
+  left (logo over a 12/600 `--color-interactive` "Logo in Branding" link with arrow-up-right).
+- **Where you work:** the map panel at the left (520, `--color-surface--background--subtle`, 1px line at its right,
+  pale `--color-surface` roads): the service-area ring (`--color-client--surface`, 1.5px `--color-client` edge), an
+  inner `--surface-edge` circle, a 32 round `--color-client` base pin with a white house and a 2px white edge, a
+  white distance chip (12/600) and a white place label (12/500 quiet). Facts or the open fields at the right.
+- **Someone saved first:** the open card's edge turns 1.5px `--color-critical`; a `critical` notice strip (`notices.md`,
+  `users` icon) names who changed it and when; the footer hint says your changes are kept, with See their version
+  (secondary, `git-compare`) and Save.
+- **Staff who can't change it:** every section closed, no Edit or Confirm; an `informative` notice strip with a lock
+  under the page header says who can change it.
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

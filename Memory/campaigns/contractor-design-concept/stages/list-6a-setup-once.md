@@ -27,7 +27,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `(app)/settings/automation/new` | `settings/automation/PresetLibrary` | ⬜ | ⬜ |
 | `(app)/settings/branding` | loading, permission-limited | ⬜ | ⬜ |
 | `(app)/settings/business-hours` | loading, permission-limited | ⬜ | ⬜ |
-| `(app)/settings/business-profile` | loading, permission-limited | ⬜ | ⬜ |
+| `(app)/settings/business-profile` | loading, permission-limited | ✅ Batch 64 `dw4fp` B 2026-10-22 | ⬜ |
 | `(app)/settings/checklists` | `settings/ChecklistTemplateDialog` 🔁F · pop-ups: "form" 🔁F · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `(app)/settings/communications/balance` | pop-ups: "Request a top-up" 🔁F · loading, empty | ⬜ | ⬜ |
 | `(app)/settings/communications/blocked-addresses` | pop-ups: "Request removal" 🔁F, "Withdraw removal request" 🔁C · loading, empty | ⬜ | ⬜ |
