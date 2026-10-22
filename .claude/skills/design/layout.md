@@ -305,6 +305,38 @@ One card for all six records (Pencil: "Record header · C · White top", approve
   32 step tiles, label `-label` 600, 700 on the current step, sub `-overline` quiet, 2px joining lines) or the
   client's tab band (`tabs.md`).
 
+## Settings home
+
+The control room: every setting shows how it is set right now (Pencil: "Batch 63 · Settings home · Approved A",
+`PZ8xu`, Jafar 2026-10-22). Full-width page frame, blocks 24 apart.
+
+- **Page header:** the 40 `--color-inactive` settings tile, title and description; at the right a 360 settings
+  search box (`inputs.md` search, no key hint).
+- **Top row:** the business card fills the left; a 360 column at the right holds the feature card, then the
+  balance card, 16 apart. The business card stretches to the column's height.
+  - **Business card:** white, 1px `--color-border`, radius 16, clipped. Top padding 24 24 20, gap 16: a 64
+    `--color-interactive` logo tile (radius 16, white 30 leaf or the logo), the name `-display` 700 (-0.6) with the
+    profile status pill beside it, a 14/500 `--color-text` line under it, and the contact row (16 icons: phone
+    `--color-time`, mail `--color-conversation`, web `--color-inactive`; 14/500, 16 apart); Edit profile
+    (secondary) at the right. Facts below on `--color-surface--background--subtle` with a 1px line on top,
+    padding 0 24: rows of two facts that share the height, a 1px line between rows; each fact a 32 tile in its
+    own colour, label `-small` 500 quiet over the value `-base` 600 heading.
+  - **Ready for customers:** the screen's one feature card (`cards.md`), padding 20 24, gap 14: an overline
+    eyebrow, "10 of 12" `-stat` 700 white with "set up" 14 white 72%, a bar of one 8-high segment per item (3
+    apart, done white, left `--color-feature--subtle`), then one row per item left: feature-subtle panel, 1px
+    feature border, radius 12, padding 10 12, a 32 outlined icon box, title 14/600 white, arrow-right.
+  - **Balance card:** white card, padding 18 20, gap 10: a 32 `--color-conversation` wallet tile, the label 14/600
+    heading and a state pill at the right (Enough `success`, Running low `warning`); the amount `-stat` 700 with a
+    small secondary Request top-up button at the right; one 14 quiet usage line.
+- **Area cards:** three columns 24 apart, cards stacked 24 apart in each column. Each card: white, 1px border,
+  radius 16, the Card header (padding 14 16; 40 tile in the area's colour; hint counts settings and what needs
+  you), then rows in 6 8 padding. Row: padding 10 8, gap 12, radius 8; a 32 tile in the setting's own meaning
+  colour, the name 14/600 heading, the current value 14/500 quiet at the right (or a status pill when it is a
+  state: done, waiting), then a 16 chevron-right `--color-icon--secondary`. Hover `--color-surface--hover`.
+- **Your account strip:** one white card across the page, padding 14 16, gap 24: a 40 round `--color-heading`
+  avatar with "Your account" 16/600 over name and role 14 quiet, then cells divided by a 1px left line: 32 tile,
+  name 14/600, value or pill, chevron; desktop alerts end in the on/off switch (`inputs.md`).
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

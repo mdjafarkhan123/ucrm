@@ -1,7 +1,7 @@
 # Batch 63 · Settings home
 
-**Board:** `concept.pen` → "Concept · Batch 63 · Settings home · Options · 2026-10-22" (`PZ8xu`). Drawn
-2026-10-22, waiting for Jafar's choice. Piece: `(app)/settings` (list-6a).
+**Board:** `concept.pen` → "Concept · Batch 63 · Settings home · Approved A · 2026-10-22" (`PZ8xu`). **Approved A (Control room) by Jafar 2026-10-22**;
+Option B removed from the board. Look rules: design `layout.md` § Settings home. Piece: `(app)/settings` (list-6a).
 
 **Jafar's brief (2026-10-22):** a new, modern Settings concept that really helps contractors; restructuring is
 fine; a couple of variants. Not Jobber's settings look; not the classic.pen "App look" directory (`hBrzM`).
@@ -35,13 +35,12 @@ Both options now have a "Texting & email balance" card near the top: amount, use
 sending now, Request top-up, a state pill (Enough; amber "Running low" when low). A: under the green Ready card;
 B: beside the search. The row left the Talking to customers list (9 settings).
 
-## Needs Jafar's decision before building
+## For the builder
 
-- Pick A or B (or a mix).
-- Both show data the settings home does not load today: current values (default tax, payment terms, quote
+- A shows data the settings home does not load today: current values (default tax, payment terms, quote
   validity, item, list, stage, team and role counts, chat sites, template counts, texting balance, 2-step
-  state). A needs all of them; B needs only the opened area's.
-- Searching settings is new behaviour (blueprint said "later").
+  state).
+- The settings search box is new behaviour (blueprint said "later"): Jafar's approval of A covers it.
 
-**Next:** record Jafar's choice, delete the other option, then draw the next Settings screen (one form page,
+**Next:** draw the next Settings screen (one form page,
 e.g. Business profile).
