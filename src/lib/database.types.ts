@@ -4906,6 +4906,128 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_tollfree_verification_events: {
+				Row: {
+					action: string;
+					actor_user_id: string | null;
+					created_at: string;
+					detail: Json;
+					id: number;
+					organization_id: string;
+					verification_id: string;
+				};
+				Insert: {
+					action: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id: string;
+					verification_id: string;
+				};
+				Update: {
+					action?: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id?: string;
+					verification_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_tollfree_verification_events_check_fkey';
+						columns: ['organization_id', 'verification_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_tollfree_verifications';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_tollfree_verifications: {
+				Row: {
+					answers: Json;
+					created_at: string;
+					created_by: string | null;
+					decided_at: string | null;
+					edit_allowed: boolean | null;
+					edit_expires_at: string | null;
+					failure_reason: string | null;
+					id: string;
+					last_checked_at: string | null;
+					organization_id: string;
+					provider_error_code: number | null;
+					provider_status: string | null;
+					provider_verification_sid: string | null;
+					revision: number;
+					sender_identity_id: string;
+					sending_claim_token: string | null;
+					sending_claimed_at: string | null;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					answers?: Json;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					edit_allowed?: boolean | null;
+					edit_expires_at?: string | null;
+					failure_reason?: string | null;
+					id?: string;
+					last_checked_at?: string | null;
+					organization_id: string;
+					provider_error_code?: number | null;
+					provider_status?: string | null;
+					provider_verification_sid?: string | null;
+					revision?: number;
+					sender_identity_id: string;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					answers?: Json;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					edit_allowed?: boolean | null;
+					edit_expires_at?: string | null;
+					failure_reason?: string | null;
+					id?: string;
+					last_checked_at?: string | null;
+					organization_id?: string;
+					provider_error_code?: number | null;
+					provider_status?: string | null;
+					provider_verification_sid?: string | null;
+					revision?: number;
+					sender_identity_id?: string;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_tollfree_verifications_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_tollfree_verifications_sender_fkey';
+						columns: ['organization_id', 'sender_identity_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_sender_identities';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			communication_sms_trust_hub_events: {
 				Row: {
 					created_at: string;
@@ -21746,6 +21868,10 @@ export type Database = {
 				Args: { p_order_id: string; p_stale_before: string };
 				Returns: boolean;
 			};
+			communication_sms_reconcile_sender_readiness: {
+				Args: { p_organization_id: string; p_us_use_case: string };
+				Returns: number;
+			};
 			communication_sms_record_adjustment: {
 				Args: {
 					p_actor?: string;
@@ -21934,10 +22060,6 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
-			};
-			communication_sms_reconcile_sender_readiness: {
-				Args: { p_organization_id: string; p_us_use_case: string };
-				Returns: number;
 			};
 			communication_sms_record_usage_reconciliation_finding: {
 				Args: {

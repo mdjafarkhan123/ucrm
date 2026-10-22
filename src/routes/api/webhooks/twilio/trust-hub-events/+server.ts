@@ -9,7 +9,12 @@ import {
 } from '$lib/server/communications/twilio-trust-hub';
 import { createSupabaseTrustHubStatusTriggerStore } from '$lib/server/communications/trust-hub-status-trigger-store';
 import { syncTrustHubRegistrationStatus } from '$lib/server/communications/trust-hub-submission';
+import { TwilioRegulatoryError } from '$lib/server/communications/twilio-regulatory';
 import { reconcileAllSenderReadiness } from '$lib/server/communications/sms-number-readiness';
+import {
+	createTollfreeCheckDeps,
+	syncTollfreeCheck
+} from '$lib/server/communications/sms-tollfree-verification';
 
 // Stage 9D primary trigger: Twilio Event Streams pushes Brand/Campaign status changes here instead of us
 // polling for them (Twilio's own recommendation -- see the migration's header comment). Event Streams webhook
@@ -39,6 +44,10 @@ const CAMPAIGN_EVENT_TYPES = new Set([
 	'com.twilio.messaging.compliance.campaign-registration.campaign-failure',
 	'com.twilio.messaging.compliance.campaign-registration.campaign-approved'
 ]);
+
+// Stage 10 Part 4b: a toll-free check's answers arrive on the same Sink. Toll-free checks live in each
+// business's subaccount, so the Subscription must receive subaccount events (ReceiveEventsFromSubaccounts).
+const TOLLFREE_EVENT_PREFIX = 'com.twilio.messaging.compliance.toll-free-verification.';
 
 const NO_STORE = { 'cache-control': 'no-store' } as const;
 // Accepted (processed, or a harmless unknown/already-resolved event). Twilio needs no body.
@@ -87,10 +96,15 @@ function safeJsonParse(raw: string): unknown {
 
 function extractResourceSid(
 	event: CloudEvent
-): { role: 'brand_registration' | 'campaign'; sid: string } | null {
+): { role: 'brand_registration' | 'campaign' | 'tollfree'; sid: string } | null {
 	if (typeof event.type !== 'string') return null;
 	const data = parseData(event.data);
 	if (!data) return null;
+
+	if (event.type.startsWith(TOLLFREE_EVENT_PREFIX)) {
+		const sid = data.tollfreeverificationsid;
+		return typeof sid === 'string' && sid ? { role: 'tollfree', sid } : null;
+	}
 
 	if (BRAND_EVENT_TYPES.has(event.type)) {
 		const sid = data.brandsid;
@@ -126,10 +140,44 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	let sawRetryableFailure = false;
 	let approved = false;
+	let tollfreeDeps: ReturnType<typeof createTollfreeCheckDeps> | null = null;
 
 	for (const event of events) {
 		const resource = extractResourceSid(event);
 		if (!resource) continue;
+
+		if (resource.role === 'tollfree') {
+			tollfreeDeps ??= createTollfreeCheckDeps();
+			try {
+				const check = await tollfreeDeps.store.findByProviderSid(resource.sid);
+				if (!check) {
+					console.warn('Toll-free event for an unknown check; ignoring.', {
+						eventType: event.type
+					});
+					continue;
+				}
+				// Re-reads the check from Twilio, so a repeated or out-of-order event changes nothing.
+				await syncTollfreeCheck(tollfreeDeps, {
+					organizationId: check.organizationId,
+					verificationId: check.id
+				});
+			} catch (error) {
+				if (error instanceof TwilioRegulatoryError && !error.retryable) {
+					console.error(
+						'Toll-free check sync failed (not retryable); accepting the event anyway.',
+						{
+							error: error.message
+						}
+					);
+					continue;
+				}
+				sawRetryableFailure = true;
+				console.error('Toll-free check sync failed; asking Twilio to redeliver.', {
+					error: error instanceof Error ? error.message : error
+				});
+			}
+			continue;
+		}
 
 		const registrationId = await triggerStore.findRegistrationIdByResourceSid(
 			resource.role,

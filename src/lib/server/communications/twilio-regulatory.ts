@@ -167,12 +167,12 @@ const BUNDLE_STATUSES = new Set<BundleStatus>([
 	'provisionally-approved'
 ]);
 
-function basicAuth(account: SubaccountCredentials): string {
+export function basicAuth(account: SubaccountCredentials): string {
 	requireSid(account.subaccountSid, SUBACCOUNT_SID, 'twilio_bad_subaccount_sid');
 	return `Basic ${Buffer.from(`${account.subaccountSid}:${account.authToken}`, 'utf8').toString('base64')}`;
 }
 
-function readString(body: unknown, key: string): string | null {
+export function readString(body: unknown, key: string): string | null {
 	if (body && typeof body === 'object' && key in body) {
 		const value = (body as Record<string, unknown>)[key];
 		return typeof value === 'string' ? value : null;
@@ -195,18 +195,28 @@ function requireSid(value: string | null, pattern: RegExp, code: string): string
 	return value;
 }
 
-type RegulatoryRequest = {
+export type RegulatoryRequest = {
 	base: string;
 	path: string;
 	method: 'GET' | 'POST' | 'DELETE';
 	auth: string;
-	form?: Record<string, string>;
+	// A list is sent as the same key repeated, Twilio's convention for list parameters.
+	form?: Record<string, string | string[]>;
 	multipart?: FormData;
 	query?: Record<string, string>;
 	timeoutMs?: number;
 };
 
-async function regulatoryRequest(request: RegulatoryRequest): Promise<unknown> {
+function encodeForm(form: Record<string, string | string[]>): string {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(form)) {
+		for (const item of Array.isArray(value) ? value : [value]) params.append(key, item);
+	}
+	return params.toString();
+}
+
+/** One request to Twilio as a subaccount; also used by the toll-free check (twilio-tollfree.ts). */
+export async function regulatoryRequest(request: RegulatoryRequest): Promise<unknown> {
 	const url = new URL(request.path, request.base);
 	for (const [key, value] of Object.entries(request.query ?? {})) url.searchParams.set(key, value);
 
@@ -221,7 +231,7 @@ async function regulatoryRequest(request: RegulatoryRequest): Promise<unknown> {
 				authorization: request.auth,
 				...(request.form ? { 'content-type': 'application/x-www-form-urlencoded' } : {})
 			},
-			body: request.form ? new URLSearchParams(request.form).toString() : request.multipart,
+			body: request.form ? encodeForm(request.form) : request.multipart,
 			signal: controller.signal
 		});
 	} catch {
@@ -253,7 +263,7 @@ async function regulatoryRequest(request: RegulatoryRequest): Promise<unknown> {
 				? String((body as { code: number }).code)
 				: null;
 		throw new TwilioRegulatoryError(
-			`Twilio refused a paperwork request (status ${response.status}).`,
+			`Twilio refused a request (status ${response.status}).`,
 			response.status,
 			'twilio_regulatory_rejected',
 			response.status === 429 || response.status >= 500,

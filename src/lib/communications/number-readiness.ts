@@ -24,6 +24,16 @@ export type ReadinessPaperwork = {
 	decided_at: string | null;
 };
 
+/** A toll-free number's own carrier check (Twilio Toll-Free Verification). */
+export type ReadinessTollFreeCheck = {
+	id: string;
+	status: 'draft' | 'sending' | 'under_review' | 'approved' | 'needs_fix';
+	failure_reason: string | null;
+	submitted_at: string | null;
+	decided_at: string | null;
+	edit_expires_at: string | null;
+};
+
 export type ReadinessRegistration = {
 	status: 'waiting_for_info' | 'under_review' | 'action_needed' | 'approved';
 	required_fixes: string | null;
@@ -46,6 +56,7 @@ export type ReadinessNumber = {
 	created_at: string;
 	order: ReadinessOrder | null;
 	paperwork: ReadinessPaperwork | null;
+	toll_free_check: ReadinessTollFreeCheck | null;
 };
 
 export type ReadinessHome = {
@@ -228,7 +239,20 @@ function approvalStep(
 			? { ...step, state: connecting(number) ? 'not_yet' : 'done', hint: 'Not needed' }
 			: { ...step, state: 'done', hint: 'Approved' };
 	if (connecting(number)) return { ...step, state: 'not_yet', hint: 'Not yet' };
-	if (approval === 'toll_free_check') return { ...step, state: 'your_turn', hint: 'Your turn' };
+	if (approval === 'toll_free_check') {
+		const check = number.toll_free_check;
+		switch (check?.status) {
+			case 'sending':
+			case 'under_review':
+				return { ...step, state: 'waiting', hint: `Sent ${shortDate(check.submitted_at)}` };
+			case 'needs_fix':
+				return { ...step, state: 'failed', hint: 'Turned down' };
+			case 'approved':
+				return { ...step, state: 'done', hint: 'Approved' };
+			default:
+				return { ...step, state: 'your_turn', hint: 'Your turn' };
+		}
+	}
 	switch (registration?.status) {
 		case 'under_review':
 			return { ...step, state: 'waiting', hint: `Sent ${shortDate(registration.submitted_at)}` };
@@ -294,6 +318,19 @@ function band(
 			action: paperworkFix
 		};
 	}
+	if (steps.approval.state === 'failed' && approvalFor(number) === 'toll_free_check') {
+		const check = number.toll_free_check;
+		const by = check?.edit_expires_at
+			? ` Send the fix by ${shortDate(check.edit_expires_at)}.`
+			: '';
+		// The fix button arrives with the toll-free form (Part 4c).
+		return {
+			status: 'action_needed',
+			title: 'Carriers turned down your toll-free check',
+			line: `${check?.failure_reason ?? 'Carriers asked for a change.'}${by}`,
+			action: null
+		};
+	}
 	if (steps.approval.state === 'failed') {
 		return {
 			status: 'action_needed',
@@ -331,6 +368,14 @@ function band(
 			title: 'Under review',
 			line: `Twilio is checking your ${country} paperwork. The answer shows here.`,
 			action: { kind: 'see_paperwork', label: 'See what you sent', paperwork_id: paperwork.id }
+		};
+	}
+	if (steps.approval.state === 'waiting' && approvalFor(number) === 'toll_free_check') {
+		return {
+			status: 'under_review',
+			title: 'Under review',
+			line: 'Carriers are checking your toll-free number, usually a few working days. The answer shows here.',
+			action: null
 		};
 	}
 	if (steps.approval.state === 'waiting') {
