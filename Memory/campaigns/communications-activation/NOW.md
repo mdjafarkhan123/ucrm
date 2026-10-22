@@ -17,7 +17,7 @@ provider setup). Comparison: `docs/global-sms-codex-review-plan.md`; evidence:
 ## Next
 
 Stage 10 Part 4 (readiness, board `NbWfA`): slice 4a built on branch `claude/stage10-part4`, **Waiting to merge**
-— `parts/stage10-part4.md`. Then 4b (toll-free check, server) and 4c (toll-free form, needs a Pencil drawing).
+— `parts/stage10-part4.md`. Then 4b (toll-free check) and 4c (toll-free form, needs a drawing).
 Parts 2 + 3 live proof waits on prices and Jafar's go-ahead; decision-email question in `parts/stage10-parts23.md`.
 
 ## Constraints
