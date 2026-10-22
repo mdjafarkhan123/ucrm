@@ -38,3 +38,9 @@ Key, tick rule and coverage command: `list-index.md`.
 | Email: everyday messages to customers (quotes, invoices, visits, receipts) | Built by `renderManualEmailHtml` in `src/lib/server/communications/manual-email.ts` | ⬜ | ⬜ |
 | Email: review request | `renderReviewEmailHtml` in `src/lib/server/reviews/requests.ts` | ⬜ | ⬜ |
 | Email: marketing campaign | `renderCampaignEmail` in `src/lib/server/marketing/render-email.ts` (MJML) | ⬜ | ⬜ |
+
+Outside `src/routes` and `src/lib/components` (the coverage command does not list it):
+
+| Piece | Inside it | Pencil | Built |
+| --- | --- | --- | --- |
+| `src/widget/website-chat.ts` (website chat widget on the contractor's site) | teaser and button, details form, country list, chat, sending, not sent, ended, not set up, loading | ✅ Batch 66 `yyWfm` B 2026-10-22 | ⬜ |
