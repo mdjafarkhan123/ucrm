@@ -850,6 +850,111 @@ export function createTwilioProvisioningClient(
 }
 
 // -----------------------------------------------------------------------------------------------------------------
+// Stage 10 Part 2: buying a number in a business's own subaccount (IncomingPhoneNumbers, verified against Twilio's
+// API reference 2026-10-22). Twilio takes no idempotency key for a purchase, so the order saga reconciles an
+// unknown outcome by asking whether the subaccount already owns the number before it ever buys again.
+
+export type OwnedPhoneNumber = {
+	phoneNumberSid: string;
+	phoneNumber: string;
+	capabilities: { sms: boolean; mms: boolean; voice: boolean };
+};
+
+export type PurchasePhoneNumberInput = SubaccountAuthInput & {
+	phoneNumber: string;
+	friendlyName: string;
+	bundleSid: string | null;
+	addressSid: string | null;
+};
+
+export type TwilioNumberPurchaseClient = {
+	purchasePhoneNumber(input: PurchasePhoneNumberInput): Promise<OwnedPhoneNumber>;
+	findOwnedPhoneNumber(
+		input: SubaccountAuthInput & { phoneNumber: string }
+	): Promise<OwnedPhoneNumber | null>;
+	addPhoneNumberToMessagingService: TwilioProvisioningClient['addPhoneNumberToMessagingService'];
+};
+
+const E164 = /^\+[1-9][0-9]{7,14}$/;
+const BUNDLE_SID = /^BU[0-9A-Fa-f]{32}$/;
+const ADDRESS_SID = /^AD[0-9A-Fa-f]{32}$/;
+
+function readOwnedPhoneNumber(body: unknown): OwnedPhoneNumber {
+	const capabilities =
+		body && typeof body === 'object' && 'capabilities' in body
+			? ((body as Record<string, unknown>).capabilities as Record<string, unknown> | null)
+			: null;
+	return {
+		phoneNumberSid: requireSid(
+			readString(body, 'sid'),
+			PHONE_NUMBER_SID,
+			'twilio_bad_phone_number_sid'
+		),
+		phoneNumber: requireSid(readString(body, 'phone_number'), E164, 'twilio_bad_phone_number'),
+		capabilities: {
+			// Twilio spells these both lower- and upper-case depending on the resource.
+			sms: Boolean(capabilities?.sms ?? capabilities?.SMS),
+			mms: Boolean(capabilities?.mms ?? capabilities?.MMS),
+			voice: Boolean(capabilities?.voice ?? capabilities?.Voice)
+		}
+	};
+}
+
+export function createTwilioNumberPurchaseClient(
+	provisioning: TwilioProvisioningClient = createTwilioProvisioningClient()
+): TwilioNumberPurchaseClient {
+	const subaccountAuth = (sid: string, token: string) => basicAuthHeader(sid, token);
+
+	return {
+		async purchasePhoneNumber({
+			subaccountSid,
+			subaccountAuthToken,
+			phoneNumber,
+			friendlyName,
+			bundleSid,
+			addressSid
+		}) {
+			requireSid(phoneNumber, E164, 'twilio_bad_phone_number');
+			const form: Record<string, string> = { PhoneNumber: phoneNumber, FriendlyName: friendlyName };
+			if (bundleSid) form.BundleSid = requireSid(bundleSid, BUNDLE_SID, 'twilio_bad_bundle_sid');
+			if (addressSid)
+				form.AddressSid = requireSid(addressSid, ADDRESS_SID, 'twilio_bad_address_sid');
+			const { body } = await twilioRequest({
+				base: TWILIO_API_BASE,
+				path: `/2010-04-01/Accounts/${subaccountSid}/IncomingPhoneNumbers.json`,
+				method: 'POST',
+				auth: subaccountAuth(subaccountSid, subaccountAuthToken),
+				form
+			});
+			return readOwnedPhoneNumber(body);
+		},
+
+		async findOwnedPhoneNumber({ subaccountSid, subaccountAuthToken, phoneNumber }) {
+			requireSid(phoneNumber, E164, 'twilio_bad_phone_number');
+			const { body } = await twilioRequest({
+				base: TWILIO_API_BASE,
+				path: `/2010-04-01/Accounts/${subaccountSid}/IncomingPhoneNumbers.json`,
+				method: 'GET',
+				auth: subaccountAuth(subaccountSid, subaccountAuthToken),
+				query: { PhoneNumber: phoneNumber, PageSize: '20' }
+			});
+			const rows =
+				body &&
+				typeof body === 'object' &&
+				Array.isArray((body as Record<string, unknown>).incoming_phone_numbers)
+					? ((body as Record<string, unknown>).incoming_phone_numbers as unknown[])
+					: [];
+			// The filter matches by pattern, so insist on the exact number.
+			const match = rows.find((row) => readString(row, 'phone_number') === phoneNumber);
+			return match ? readOwnedPhoneNumber(match) : null;
+		},
+
+		addPhoneNumberToMessagingService: (input) =>
+			provisioning.addPhoneNumberToMessagingService(input)
+	};
+}
+
+// -----------------------------------------------------------------------------------------------------------------
 // Stage 6D-1: inbound MMS media download. Twilio's inbound webhook gives only an authenticated MediaUrl per
 // item, never the bytes themselves -- the worker fetches them separately, mirroring fetchTwilioMessagePrice's
 // transport style but returning raw bytes instead of parsed JSON.

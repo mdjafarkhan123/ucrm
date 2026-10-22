@@ -803,6 +803,47 @@ export const communicationSmsRetailRateSchema = z.object({
 		.transform((value) => value || undefined)
 });
 
+// Stage 10 Part 2: Jafar's selling price for a texting number, per country and number kind: a monthly price and an
+// optional one-off setup price, in whole cents. Same immutable-version shape as the message rates.
+const numberMoney = z
+	.number()
+	.min(0, 'Enter zero or more.')
+	.max(1000, 'That price is too large.')
+	.refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6, {
+		message: 'Use whole cents.'
+	});
+
+export const communicationSmsNumberRateSchema = z.object({
+	country_code: smsCountryCodeSchema,
+	number_type: z.enum(['local', 'mobile', 'national', 'toll_free'], {
+		error: 'Choose a kind of number.'
+	}),
+	currency_code: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.regex(/^[A-Z]{3}$/, 'Enter a 3-letter currency code.')
+		.default('USD'),
+	monthly_rate_major: numberMoney.refine((value) => value > 0, 'Enter a price greater than zero.'),
+	setup_rate_major: numberMoney.default(0),
+	provider_monthly_cost_major: z.number().min(0).max(1000).optional(),
+	provider_setup_cost_major: z.number().min(0).max(1000).optional(),
+	effective_from: z
+		.string()
+		.refine((value) => !Number.isNaN(Date.parse(value)), 'Enter a valid effective date and time.')
+		.refine(
+			(value) => Date.parse(value) >= Date.now(),
+			'The effective date must be now or in the future.'
+		)
+		.optional(),
+	note: z
+		.string()
+		.trim()
+		.max(2000, 'Keep the note under 2,000 characters.')
+		.optional()
+		.transform((value) => value || undefined)
+});
+
 // Part 7B: the over-allowance email retail price Jafar sets, in currency major units per 1,000 recipients.
 // Same immutable-version shape as communicationSmsRetailRateSchema, minus the SMS-only destination/sender/
 // message-unit dimensions -- email has one price per currency, not one per route.

@@ -98,3 +98,45 @@ export const smsCreditTopupRequestSchema = z.object({
 });
 
 export type SmsCreditTopupRequestInput = z.infer<typeof smsCreditTopupRequestSchema>;
+
+// Add number (Stage 10 Part 2). Countries are ISO codes Twilio sells numbers in; the server re-reads the chosen number
+// from Twilio's live stock before buying, so the browser only names it.
+const countryCode = z
+	.string()
+	.trim()
+	.toUpperCase()
+	.regex(/^[A-Z]{2}$/, 'Choose a country.');
+const numberType = z.enum(['local', 'mobile', 'national', 'toll_free'], {
+	message: 'Choose a kind of number.'
+});
+const flag = z
+	.enum(['true', 'false'])
+	.optional()
+	.transform((value) => value === 'true');
+
+export const smsNumberCountrySchema = countryCode;
+
+export const smsNumberSearchSchema = z.object({
+	country: countryCode,
+	type: numberType,
+	contains: z
+		.string()
+		.trim()
+		.transform((value) => value.replace(/[^0-9A-Za-z*]/g, ''))
+		.refine((value) => value.length === 0 || (value.length >= 2 && value.length <= 16), {
+			message: 'Type 2 to 16 digits or letters.'
+		})
+		.optional(),
+	mms: flag,
+	voice: flag
+});
+
+export const smsNumberOrderSchema = z.object({
+	idempotency_key: z.string().trim().min(8).max(200),
+	phone_number: z
+		.string()
+		.trim()
+		.regex(/^\+[1-9][0-9]{7,14}$/, 'Choose a number.'),
+	country_code: countryCode,
+	number_type: numberType
+});
