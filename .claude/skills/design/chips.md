@@ -1,4 +1,4 @@
-# Filter Chips, Tags, Sender Chip and Channel Pill
+# Filter Chips, Tags, Sender Chip, Channel Pill and Days-in-Stage Line
 
 > Dependencies: `colors.md`, `inputs.md` (dropdown list), `radius.md`
 
@@ -99,3 +99,13 @@ The Email / Text / Website chat picker in the inbox reply box, the folded reply 
 - Hover and open: `--color-surface--hover`. Focus: 1.5px `--color-interactive` edge.
 - Menu: the dropdown list, 216 wide; each line has its 16 teal icon; the current one is 600 with the green check.
 - One channel only: a look-only pill in `--color-conversation--surface` with a 1px `--surface-edge`, no chevron.
+
+## Days-in-stage line
+
+How long a Pipeline card has sat in its stage (`pipeline/StageAgeChip`), approved 2026-10-22 on board `B0GT1L`
+(B). A line of text, not a pill.
+
+- Gap 4: a 14 clock icon `--color-icon--secondary`, the age (`0h`, `7h`, `21d`) 12/700 `--color-heading` with
+  tabular numbers, then "in stage" 12/400 `--color-text--secondary`.
+- In a table whose column already says "In stage", the words are left off.
+- Always neutral: age never takes a status colour; a stale card's warning carries the colour.
