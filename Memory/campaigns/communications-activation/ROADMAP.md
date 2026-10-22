@@ -494,7 +494,7 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
 
 Plan: `docs/global-sms-behavior-contract.md`. Parts 1 country rules + ISV settings · 2 buy a number · 3 paperwork
 (bundles) · 4 registration per number (10DLC wired, toll-free verification) · 5 sending rules per country · 6 prices per
-country. Designs in Pencil before each UI. State: Part 1 in progress.
+country. Designs in Pencil before each UI. State: plan waiting for Jafar's review (next session); no code started.
 
 ## Stage 8 parts (billing reconciliation; started 2026-09-15, non-blocked pieces run in parallel with Stage 9)
 
