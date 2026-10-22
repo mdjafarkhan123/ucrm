@@ -43,4 +43,4 @@ Outside `src/routes` and `src/lib/components` (the coverage command does not lis
 
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
-| `src/widget/website-chat.ts` (website chat widget on the contractor's site) | teaser and button, details form, country list, chat, sending, not sent, ended, not set up, loading | 🟡 Batch 66 `yyWfm` A and B drawn 2026-10-22 | ⬜ |
+| `src/widget/website-chat.ts` (website chat widget on the contractor's site) | teaser and button, details form, country list, chat, sending, not sent, ended, not set up, loading | ✅ Batch 66 `yyWfm` B 2026-10-22 | ⬜ |

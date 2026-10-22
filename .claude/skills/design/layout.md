@@ -477,3 +477,53 @@ radius 9, white 16 leaf, then "Uplift" 18/700 heading), then one card.
   quiet, the value 14/600; the join link 13/600 `--color-interactive` with external-link; a pending link line 13
   quiet. The foot band (`--color-surface--background--subtle`, 1px line on top, padding 14 28): a 16 mail icon and
   the change-or-cancel hint 13 quiet.
+
+## Website chat widget
+
+The chat a visitor opens on the contractor's own website (Pencil: "Batch 66 · Website chat widget · Approved B",
+`yyWfm`, Jafar 2026-10-22). It wears the business's brand colour from Branding (shown as `brand` below), never
+`--color-interactive`, and keeps its light colours on every website and in dark mode. White words on `brand`.
+
+- **Launcher:** bottom right or left, 24 from the edges. Closed: a 52 pill, padding 0 22 0 18, `brand`, a 22
+  `message-circle` and "Message us" 16/600; a brand-coloured glow (0 8 20 `brand` at 35%) and 0 2 4. Open: a 52
+  circle with a 22 `chevron-down`. The panel sits 16 above it.
+- **Teaser:** a 300 white speech bubble (radius 20 20 4 20, padding 14 16 16, gap 8, 0 12 30 shadow and a 1 hairline
+  ring): a 24 logo mark with the business name 12/700, then the teaser line 16/500 heading. A 28 round white key ×
+  sits above it at the right.
+- **Panel:** 392 wide, radius 24, clipped, `--color-surface--background--subtle`, 1px `--color-border`, a 0 20 48
+  shadow at 18% and 0 2 6 at 8%.
+- **Welcome top:** a 232 `brand` gradient (to a darker step) with a soft white glow at the top right; the logo on a
+  44 white tile (radius 12, a 32 logo mark) and a 32 close (white 15%, radius 10, 16 ×); the business name 14/600
+  white 82% over the greeting 24/700 white (-0.5).
+- **Card:** overlaps the top, 12 from the panel's sides: white, radius 20, 1px border, a 0 4 14 shadow, padding
+  18, gap 14. "Your message" (label 14/600) and an 84 big text box first; then "How should we reply?" with "Phone
+  or email" 12 quiet at the right, over one joined contact box (radius 10, 1px `--color-border--interactive`) of
+  44 rows split by hairlines: name (`user-round`), phone (a 32 country button on `--color-surface--background--subtle`,
+  radius 8: flag, dial code 14/600, 14 chevron), email (`mail`, "Email (optional)"). The "Text me about my request"
+  agreement sits in a `--color-surface--background--subtle` box (radius 12, padding 12) with the brand-filled
+  checkbox, label 14/600 and the fine print 12 quiet; it shows once a phone number is typed. Send: 48 high, radius
+  14, `brand`, "Send message" 16/600 at the left and a 32 arrow-right well (white 18%, radius 10) at the right.
+- **Footer:** centred, padding 14 16: a 12 lock, "Privacy policy" 12/600 underlined, a dot, "Powered by
+  <business>" 12 quiet.
+- **Form states:** Send at 45% until the form is complete. A mistake turns the contact box (or message box) edge
+  1.5px `--color-critical`, adds a 16 `circle-alert` at the row's right and a 12 `--color-critical` line under the
+  box that says how to fix it. Couldn't send: a `--color-critical--surface` note (1px edge, radius 10, padding 10
+  12, 16 `circle-alert`, 14/500 `--onSurface`) above Send. Sending: Send at 85% with a white 18 spinner and
+  "Sending…". Loading: shimmer shapes (page-states rule) in the card's layout.
+- **Country list:** under the country button, 260 wide, white, radius 12, padding 6, a 0 12 28 shadow: a
+  36 search box, then 36 rows (flag, name 14/500, dial 12/600 quiet); the chosen row `--color-surface--hover`, 600
+  name and a 14 brand check. The country button gets a 1.5px `--color-interactive` edge while open.
+- **Chat:** the top turns white and slim (padding 14 14 14 16, hairline under it): a 40 logo mark (radius 12), the
+  business 16/700 over "We'll reply right here" 12 quiet, and a 32 close on `--color-surface--background--subtle`.
+  White thread, padding 14 16 16. "Load earlier messages" 12/600 with a 14 arrow-up and the time line 12/500 quiet,
+  centred. Business messages: `--color-surface--background--subtle` bubbles (radius 18 18 18 6, padding 10 14,
+  14 heading, up to 272 wide), a 24 logo mark beside the last one of a run, the name and time 12 quiet under it.
+  Visitor messages: `brand` bubbles at the right (radius 18 18 6 18), white words, time 12 quiet under. Not sent: an
+  18 `circle-alert` before the bubble and "Not sent · Tap to retry" 12/600 `--color-critical`, retry underlined.
+  Message box: a 48 pill (white, 1px `--color-border--interactive`, padding 0 6 0 18) with a 36 `brand` circle send
+  holding a white 18 arrow-up.
+- **Ended:** the message box gives way to a `--color-surface--background--subtle` card (radius 16, padding 18,
+  centred, gap 12): a 40 inactive `message-circle-x` tile, "This conversation has ended." 14/600, and a 44 `brand`
+  "Start a new conversation" button (radius 12, `message-circle-plus`).
+- **Not available or not set up:** the welcome top stays; the card holds a 48 inactive `message-circle-off` tile
+  and the message 14/600; no footer.
