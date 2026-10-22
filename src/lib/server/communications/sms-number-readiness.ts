@@ -1,3 +1,6 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/database.types';
+import { SMS_REGISTRATION_USE_CASE } from './sms-registration';
 import type {
 	ReadinessNumber,
 	ReadinessOrder,
@@ -6,7 +9,8 @@ import type {
 
 // Joins the rows behind number readiness (Stage 10 Part 4) into one fact list per number: the number itself,
 // the order that bought it, and the paperwork for its country and kind. A number still being connected has an
-// order but no sender yet, so it gets its own entry too. Pure, so the join is tested without a database.
+// order but no sender yet, so it gets its own entry too. The join is pure; the switch-on helpers below call the
+// database command that turns passed approvals into live numbers.
 
 export type ReadinessSenderRow = {
 	id: string;
@@ -135,4 +139,42 @@ export function readinessNumbers(
 			Number(b.is_default_sender) - Number(a.is_default_sender) ||
 			a.created_at.localeCompare(b.created_at)
 	);
+}
+
+/**
+ * Switch on every number of this business whose route's approval has now passed (US: the approved US
+ * registration; elsewhere: approved, in-date paperwork). Called after a purchase finishes, after an approval
+ * arrives and by the daily check; never throws, because the next of those runs finishes whatever this misses.
+ */
+export async function reconcileSenderReadiness(
+	client: SupabaseClient<Database>,
+	organizationId: string
+): Promise<number> {
+	const { data, error } = await client.rpc('communication_sms_reconcile_sender_readiness', {
+		p_organization_id: organizationId,
+		p_us_use_case: SMS_REGISTRATION_USE_CASE
+	});
+	if (error) {
+		console.error('Could not switch on numbers whose approval passed.', { organizationId, error });
+		return 0;
+	}
+	return data ?? 0;
+}
+
+/** The daily sweep: every business that still has a number waiting to be switched on. */
+export async function reconcileAllSenderReadiness(client: SupabaseClient<Database>) {
+	const { data, error } = await client
+		.from('communication_sms_sender_identities')
+		.select('organization_id')
+		.eq('lifecycle_state', 'pending_setup');
+	if (error) {
+		console.error('Could not list numbers waiting to be switched on.', error);
+		return { organizations: 0, switched_on: 0 };
+	}
+	const organizations = [...new Set((data ?? []).map((row) => row.organization_id))];
+	let switchedOn = 0;
+	for (const organizationId of organizations) {
+		switchedOn += await reconcileSenderReadiness(client, organizationId);
+	}
+	return { organizations: organizations.length, switched_on: switchedOn };
 }

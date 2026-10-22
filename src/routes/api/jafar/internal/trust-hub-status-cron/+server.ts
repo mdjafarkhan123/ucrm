@@ -11,6 +11,7 @@ import {
 	createNumberPaperworkDeps,
 	runPaperworkStatusCheck
 } from '$lib/server/communications/sms-number-paperwork';
+import { reconcileAllSenderReadiness } from '$lib/server/communications/sms-number-readiness';
 
 function isAuthorized(request: Request): boolean {
 	const expected = getServerEnv().TRUST_HUB_STATUS_CRON_SECRET;
@@ -50,7 +51,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			console.error('The number paperwork status check failed.', error);
 			return { failed: true };
 		});
-		return json({ ...result, paperwork });
+		// Stage 10 Part 4: switch on every number whose approval has now passed, whichever check above found it.
+		const numbers = await reconcileAllSenderReadiness(client);
+		return json({ ...result, paperwork, numbers });
 	} catch (error) {
 		console.error('The Trust Hub status poll cron failed.', error);
 		return json({ error: 'The Trust Hub status poll cron failed.' }, { status: 500 });

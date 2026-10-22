@@ -9,6 +9,7 @@ import {
 } from '$lib/server/communications/twilio-trust-hub';
 import { createSupabaseTrustHubStatusTriggerStore } from '$lib/server/communications/trust-hub-status-trigger-store';
 import { syncTrustHubRegistrationStatus } from '$lib/server/communications/trust-hub-submission';
+import { reconcileAllSenderReadiness } from '$lib/server/communications/sms-number-readiness';
 
 // Stage 9D primary trigger: Twilio Event Streams pushes Brand/Campaign status changes here instead of us
 // polling for them (Twilio's own recommendation -- see the migration's header comment). Event Streams webhook
@@ -124,6 +125,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	};
 
 	let sawRetryableFailure = false;
+	let approved = false;
 
 	for (const event of events) {
 		const resource = extractResourceSid(event);
@@ -142,7 +144,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		try {
-			await syncTrustHubRegistrationStatus(deps, { registrationId });
+			const outcome = await syncTrustHubRegistrationStatus(deps, { registrationId });
+			// An approved US registration switches on the business's US numbers waiting for it (Stage 10 Part 4).
+			if (outcome.registrationStatus === 'approved') approved = true;
 		} catch (error) {
 			if (error instanceof TwilioTrustHubError && error.retryable) {
 				sawRetryableFailure = true;
@@ -161,5 +165,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	}
 
+	if (approved) await reconcileAllSenderReadiness(client);
 	return sawRetryableFailure ? retryLater() : accepted();
 };
