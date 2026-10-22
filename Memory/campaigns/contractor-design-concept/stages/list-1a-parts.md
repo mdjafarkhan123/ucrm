@@ -10,7 +10,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/LoadingSkeleton` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `data-display/ErrorState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Input` |  | ✅ Fields board `khuNF` (sunken box 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
-| `ui/Select` |  | 🟡 Batch 61 `bM4k0` redraw A/B 2026-10-22, waiting for Jafar (was ✅ Fields board `khuNF`) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
+| `ui/Select` |  | ✅ Batch 61 `bM4k0` B 2026-10-22 (redraw; replaces Fields board `khuNF`) | ⬜ rebuild to Batch 61 |
 | `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `layout/SectionBlock` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
@@ -20,7 +20,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Textarea` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/SearchInput` |  | ✅ Fields board `khuNF` (sunken box 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
-| `ui/DropdownMenu` |  | 🟡 Batch 61 `bM4k0` menu made one shared part, A/B 2026-10-22, waiting for Jafar (was ✅ from drawings on lines, notes, files) | ✅ |
+| `ui/DropdownMenu` |  | ✅ Batch 61 `bM4k0` B 2026-10-22 (one shared action menu) | ⬜ rebuild to Batch 61 |
 | `layout/Breadcrumbs` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/SegmentedControl` |  | ✅ Switch component `SnDlF` 2026-10-21 (brand-green choice) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |

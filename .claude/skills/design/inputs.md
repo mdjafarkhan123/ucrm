@@ -15,12 +15,17 @@
 
 ## Variants
 
-- **Select:** chevron-down icon at the right, `--color-icon--secondary`.
+- **Select** (board `bM4k0`, B, Jafar 2026-10-22): the box above with padding 0 5 0 12. The chosen value 14/600
+  heading (placeholder 14/400 `--color-text--secondary`). At the right a 30 chevron well, radius 6,
+  `--color-surface--background--subtle`, with a 14 chevron-down `--color-icon`. A value with a status starts with
+  a 24 tile in its status family (`--surface`, `--surface-edge`, an 8 dot in the main colour). Only one choice:
+  the well holds a 14 lock instead. Open: 1.5px `--color-interactive` edge with the focus glow; the well turns
+  `--color-interactive` with a white chevron-up. Greyed out: the disabled box, the well `--color-disabled--secondary`.
 - **Search:** search icon at the left. Once something is typed, a 24 clear button at the right: × 14
   `--color-icon` on `--color-surface--hover`, radius 6. The ⌘K hint (12/600 on `--color-surface--background`,
   radius 4) is only in the top bar's search. Inside a table's header: 38 high, 1px `--color-border`, 13/500.
 - **Select with a word in front (filters):** an optional 16 icon, then the word 14/500 `--color-text--secondary`,
-  then the value 14/600 heading ("Status · All").
+  then the value 14/600 heading ("Status · All"), then the chevron well.
 - **Big text box:** 96 high (three lines), padding 10 12, line height 1.45, grows when dragged. With a letter
   limit, a 12/500 `--color-text--secondary` count under the right corner ("408 left"); over the limit it turns
   12/600 `--color-critical` ("12 too many").
@@ -36,7 +41,8 @@
 
 ## States
 
-Hover: border `--color-border--interactive--hover`. Focus (typing, or a dropdown open): `--shadow-focus`.
+Hover: border `--color-border--interactive--hover`. Focus (typing, or a dropdown open): `--shadow-focus` (an open
+select also gets the green edge and well, above).
 Disabled: `--color-disabled--secondary` background, value and icons `--color-disabled`.
 Text boxes, big text boxes and search share the hover edge and retain their typing focus while pressed.
 A closed dropdown pressed state uses `--color-surface--active` and the hover edge, then opens the list.
@@ -45,11 +51,40 @@ Dropdown errors use the shared error border and a corrective message below the b
 
 ## Dropdown list
 
-- Opens 4 under the box, as wide as it: `--color-surface`, 1px `--color-border`, radius 16, padding 8, 2
-  between lines, `--shadow-base`. The box's chevron turns up.
-- Line: 36 high, padding 0 10, radius 8, 14 `--color-heading`. Mouse over: `--color-surface--hover`. Chosen:
-  600 with a 16 check in `--color-interactive` at the right. Pressed: `--color-surface--active`.
-  Can't be picked: `--color-disabled`.
+A pick-one list (board `bM4k0`, B, Jafar 2026-10-22).
+
+- Opens 4 under the box, as wide as it: `--color-surface`, 1px `--color-border`, radius 14, padding 6, 2
+  between lines, `--shadow-base`.
+- Line: 40 high, padding 0 10, gap 10, radius 10: an 18 radio circle (white, 1px `--color-border--interactive`),
+  an optional 8 status dot, the name 14 `--color-heading`. Mouse over: `--color-surface--hover`. Pressed:
+  `--color-surface--active`.
+- Chosen: the circle's edge is a 5px `--color-interactive` ring, the name 600, and the line is white with a
+  1.5px `--color-interactive` edge.
+- Can't be picked: circle edge `--color-disabled--secondary`, name `--color-disabled`, an optional 12 reason at
+  the right in `--color-disabled` ("Not offered").
+
+## Action menu
+
+The menu a ⋯, More or Add button opens (`ui/DropdownMenu`; board `bM4k0`, B, Jafar 2026-10-22).
+
+- Panel: `--color-surface`, 1px `--color-border`, radius 16, padding 6, 2 between rows, `--shadow-base`; opens 4
+  under its button. Widths: 236 for a short list, 276 for longer words, 306 for tiles with a hint.
+- Row: 40 high, padding 0 8, gap 10, radius 10. A 28 icon square (radius 8, `--color-surface--background--subtle`)
+  holding a 16 icon `--color-icon`, then the name 14/500 heading. Mouse over: the row `--color-surface--hover`
+  and its square turns white with a 1px `--color-border` edge.
+- Rows without icons keep the same height and padding, name only.
+- Kinds of thing (Add new): a 32 icon tile in the record's colour instead of the square, the name 14/600 heading
+  and a 12 `--color-text--secondary` hint under it; padding 8.
+- Headings, only on long menus: 12/600 uppercase `--color-text--secondary`, letter spacing 0.6, padding 10 8 4.
+- Current choice: a 20 `--color-interactive` circle with a white 12 check at the right; the name 600.
+- Quiet row (answers with an explanation): name `--color-text--secondary`, a 14 icon `--color-icon--secondary`
+  at the right (`lock`).
+- Greyed row: icon and name `--color-disabled`, a 12 `--color-text--secondary` reason under the name.
+- Red actions sit last, together on a danger strip: `--color-critical--surface`, radius 10, padding 2. Each row's
+  square is white with a 16 `--color-critical` icon, the name 14/600 `--color-critical--onSurface`. Mouse over:
+  `--color-critical--surface-edge`. A footer of safe actions sits above it behind a 1px `--color-border` line.
+- The ⋯ button is the 32 icon button (`buttons.md`): open `--color-surface--active`; loading a spinner in
+  `--color-interactive`; can't open greyed with the reason on hover.
 
 ## Checkbox
 

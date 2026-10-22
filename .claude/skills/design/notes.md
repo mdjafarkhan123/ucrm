@@ -46,7 +46,7 @@ records → board "Writing boxes" (`qf1uu`, B), approved 2026-10-20.
   edge. A 32 send square at the right, radius 8, a 16 `arrow-up`: `--color-interactive` with a white arrow when
   there is text, `--color-inactive--surface` with an `--color-inactive--onSurface` arrow when empty.
 - ⋯ on a note: a 28 quiet square, radius 8, 16 `ellipsis` in `--color-icon--secondary`; pressed
-  `--color-surface--active`. Its menu is the line menu look (`price-book.md`), 184 wide; Delete in
+  `--color-surface--active`. Its menu is the action menu (`inputs.md`), 236 wide; Delete in
   `--color-critical`.
 - Pinned note: band `--color-warning--surface` with a 1px `--color-warning--surface-edge`, and a 16 `pin` in
   `--color-warning` before the ⋯.

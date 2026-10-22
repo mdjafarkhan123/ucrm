@@ -49,7 +49,7 @@ Jafar 2026-10-17).
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet, questions on a public form, weekly hours, signature pad
+- [inputs.md](inputs.md) — Field, select and dropdown list, action menu (⋯), money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet, questions on a public form, weekly hours, signature pad
 - [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip, channel pill, days-in-stage line
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
@@ -67,5 +67,5 @@ Jafar 2026-10-17).
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 - [time-clock.md](time-clock.md) — Work timer: ticking time, running clock, Start and Stop, your timer panel, visit row clock
 
-Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
+Not yet designed in the concept — use the Classic module until it is: accordion, pagination,
 tooltips.
