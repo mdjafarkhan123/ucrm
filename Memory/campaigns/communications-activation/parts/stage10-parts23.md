@@ -42,10 +42,10 @@ Build the screens against board `A0URqF` (exported PNGs: re-export with Pencil `
    Business details, Documents ("What counts" chips pick the kind; a kind chosen above is "covered"; upload =
    `startPaperworkUpload` → `uploadAttachmentFile` → `finishPaperworkUpload`, poll while checking), Check and
    send (422 problems → form error card), Sent card. Needs fix / under review / approved → opened-set view.
-5. Live check 1440 light+dark on Road LTD (Login.md), nothing sent to Twilio; compare with the board; commit;
-   then merge Parts 2+3 to main (type check once first, memory rule) and release the claim.
+5. Live check 1440 light+dark (Login.md), nothing sent to Twilio; compare with the board; type check once; merge
+   Parts 2+3 to main; release the claim.
 
 ## Questions for Jafar
 
-- The board says "We'll email you" when the phone company decides, but nothing emails the business yet (Twilio
-  emails Uplift's address). Copy will say "the answer shows here" unless Jafar wants that email built.
+- Board says "We'll email you" on a decision; nothing emails the business yet (Twilio emails Uplift). Copy says
+  "the answer shows here" unless Jafar wants that email built.
