@@ -2,7 +2,7 @@
 
 ## Context
 
-Jafar wants texting to work for contractors in every country except Asia, copying GoHighLevel (GHL) exactly.
+Jafar wants texting to work for contractors in every country, copying GoHighLevel (GHL) exactly.
 There is no registered business yet, so the goal is a launch-ready app now. The real end-to-end test waits for
 the first paying customer.
 
@@ -39,7 +39,7 @@ Sending, replies, opt-outs, the balance, the inbox and Automation already work f
   Evidence: `docs/research/global-sms-country-requirements-2026-10-22.md`.
 
 Following GHL settles last session's six questions:
-- countries: every country with Twilio stock, except Asia;
+- countries: every country with Twilio stock (no app-level block; Jafar does not sell subscriptions in Asia);
 - number types: whatever Twilio sells in that country;
 - paperwork: our own in-app form;
 - prices: Twilio's price for each country plus our margin;
@@ -57,8 +57,8 @@ Following GHL settles last session's six questions:
   - number types and whether each can text, send pictures or take calls (the AvailablePhoneNumbers API);
   - the paperwork each needs (the Regulations API).
 - Keep a short cache.
-- The country list is Twilio's countries minus a stored "not served" list (all of Asia). Jafar can change that
-  list from his existing Communications controls.
+- The country list is every country Twilio sells numbers in. The app blocks no region: Jafar controls who can use
+  texting by who he sells subscriptions to (Jafar, 2026-10-22).
 
 ### Part 2 — Contractor buys a number (like GHL's Add Number)
 - Phone & SMS settings gets an "Add number" dialog:
@@ -119,8 +119,7 @@ Following GHL settles last session's six questions:
 - Read-only live Twilio calls prove real country data loads: number search and requirements for the US, Canada,
   the UK, Australia, Germany and Brazil. Nothing is bought.
 - Browser check in Chrome at 1440 wide, in light and dark: search shows real numbers and prices, the paperwork
-  form shows the UK's real fields, New Zealand and Brazil show "no texting numbers", and Asian countries don't
-  appear.
+  form shows the UK's real fields, New Zealand and Brazil show "no texting numbers".
 - Real purchase, registration and a live text wait for the first paying customer, with Jafar's yes.
 
 ## For Jafar to do
@@ -129,5 +128,5 @@ Following GHL settles last session's six questions:
 
 ## Approval record
 
-Jafar approved this plan on 2026-10-22 ("follow GHL totally"; serve every country except Asia).
+Jafar approved this plan on 2026-10-22 ("follow GHL totally"; every country Twilio supports; no region blocked in the app — Jafar simply does not sell to Asia).
 Each new screen still needs its Pencil design approved before it is built.
