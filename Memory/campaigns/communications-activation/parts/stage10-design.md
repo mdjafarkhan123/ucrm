@@ -29,14 +29,11 @@
   Countries & prices tab replaces the live "SMS retail rates" list. Board `v6Jtu` renamed "Approved mix (B + A's
   table)". Every state drawn the same day under "Every state · drawn on the approved mix", light only; Jafar approved
   them the same day ("approved and saved"). Rules in `.claude/skills/design/layout.md` § Texting setup (Control Room) and § A business's Texting view.
+- [x] Toll-free business details — Jafar approved option A 2026-10-23 ("A is approved"), board `SCpaW`.
+  Guided Business → Texting → Proof of consent → Check and send, with upload, submission and rejection states.
+  Option B deleted. Rules in `.claude/skills/design/layout.md` § Toll-free business details.
 
 ## Next
 
-Stage 10 design is complete. Building starts in a new session: Part 1 (server foundation) per
-`docs/global-sms-behavior-contract.md` § Order and design; each built screen is checked against its board here.
-
-## Notes
-
-- Research: GoHighLevel Add Number (country → filters for type, Voice/SMS/MMS, digits → select → Proceed to Buy →
-  paperwork prompt) and Twilio Buy a number. Example prices on the board ($2.00 US local, $2.50 toll-free, $6.00 +
-  $3.00 setup for Germany mobile) are placeholders; real ones are Jafar's selling prices.
+Build the toll-free form (Part 4c) against approved board `SCpaW`, then Parts 5 and 6. Each built screen is
+checked against its board here.

@@ -482,6 +482,26 @@ B", `NbWfA`, Jafar 2026-10-22). Texting parts use `--color-conversation`.
 - **States:** loading shows shapes for the summary and each card (the band as a subtle strip); no numbers and
   couldn't load use page states in a white card (conversation `phone` with Add number; critical with Try again).
 
+## Toll-free business details
+
+The guided form opened from a toll-free number's Add business details button (Pencil: "Communications · Toll-free
+business details · Approved A", `SCpaW`, Jafar 2026-10-23). Use the number-paperwork setup frame: a 760-wide
+column, breadcrumb and page header, four-step track, one white step card, and its Back / saved-state / Continue
+footer. The steps are Business, Texting, Proof of consent, and Check and send. Texting parts use
+`--color-conversation`.
+
+- **Business:** prefilled fields follow the number-paperwork Business details card, with a quiet helper line.
+- **Texting:** one card groups the purpose, how customers agree, estimated volume, consent explanation, two
+  sample texts and optional policy links. Use the shared white fields and 96-high text boxes; the examples sit
+  side by side.
+- **Proof:** one card with an `informative` hint strip, then a subtle 160-high picture box with a conversation
+  `image-plus` icon, upload label and up-to-five-pictures hint. A quiet foot line sits below the box.
+- **Check and send:** a `success`-surface review area with a plain approval explanation, Save draft secondary and
+  Send for review main.
+- **States:** a progress bar appears in the picture box during upload. A failed upload uses a `critical` icon
+  tile and Try again; Send uses the shared button spinner. Under review uses a `success` tile and Back to numbers;
+  a rejected check uses a `critical` tile, the reason and Fix and send again.
+
 ## Texting setup (Control Room)
 
 Uplift's hand work so businesses can text, and the price list (Pencil: "Communications · Uplift texting setup ·

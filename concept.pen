@@ -333559,7 +333559,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "4 min",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     },
@@ -333691,7 +333692,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "32 min",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     },
@@ -333969,7 +333971,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "2 hr",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     },
@@ -384815,7 +384818,8 @@
           "content": "The first step of making an email campaign (marketing/CampaignJourney, CampaignStepper, CampaignGoalStep). Same words, goals, name box and buttons as the live app; only the look changes. Followed: Mailchimp's campaign checklist (fill steps in any order, each shows its state) and Jobber / Housecall Pro's goal-first start. Customers, Email, Delivery and Review follow in later batches.",
           "lineHeight": 1.5,
           "fontFamily": "$font-family",
-          "fontSize": "$font-size-base"
+          "fontSize": "$font-size-base",
+          "fontWeight": "normal"
         },
         {
           "type": "frame",
@@ -384845,7 +384849,8 @@
               "content": "The approved setup-steps page (Import): one centred column, the five steps across the top with their tiles stacked over the words, then one card for the current step with its footer bar.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
-              "fontSize": "$font-size-base"
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -385098,7 +385103,8 @@
                               "fill": "$color-text-secondary",
                               "content": "Email a group of your customers in five short steps.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base"
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -385227,7 +385233,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Why this campaign",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -385311,7 +385318,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Who receives it",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -385395,7 +385403,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Build the message",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -385479,7 +385488,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "When it sends",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -385563,7 +385573,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Check and launch",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -385701,7 +385712,8 @@
                                               "content": "Reach customers who have not booked in a while and invite them back.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -385799,7 +385811,8 @@
                                               "content": "Tell existing customers about a seasonal or additional service.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -385895,7 +385908,8 @@
                                               "content": "Share news — a price change, new hours, or something new you offer.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -385982,7 +385996,8 @@
                                               "content": "Build the email yourself with no starting content.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -386048,7 +386063,8 @@
                               "width": "fill_container",
                               "content": "Use Save draft above to keep this for later.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-small"
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
                             },
                             {
                               "id": "DODtT",
@@ -386359,7 +386375,8 @@
                               "fill": "$color-text-secondary",
                               "content": "Email a group of your customers in five short steps.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base"
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -386488,7 +386505,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Why this campaign",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -386572,7 +386590,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Who receives it",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -386656,7 +386675,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Build the message",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -386740,7 +386760,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "When it sends",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -386824,7 +386845,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Check and launch",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -386962,7 +386984,8 @@
                                               "content": "Reach customers who have not booked in a while and invite them back.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -387060,7 +387083,8 @@
                                               "content": "Tell existing customers about a seasonal or additional service.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -387156,7 +387180,8 @@
                                               "content": "Share news — a price change, new hours, or something new you offer.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -387243,7 +387268,8 @@
                                               "content": "Build the email yourself with no starting content.",
                                               "lineHeight": 1.45,
                                               "fontFamily": "$font-family",
-                                              "fontSize": "$font-size-small"
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
@@ -387309,7 +387335,8 @@
                               "width": "fill_container",
                               "content": "Use Save draft above to keep this for later.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-small"
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
                             },
                             {
                               "id": "tG1ze",
@@ -387371,7 +387398,8 @@
           "content": "Approved B by Jafar 2026-10-21; option A (group tiles beside the Recipients panel) deleted. Step 2 of the New campaign flow: pick a saved customer group from one box, see its rules as chips, an audience meter of who will get the email, and why the rest are left out. Same behaviour as the live app — New group opens the approved customer group pop-up, View customers opens the exact list.",
           "lineHeight": 1.5,
           "fontFamily": "$font-family",
-          "fontSize": "$font-size-base"
+          "fontSize": "$font-size-base",
+          "fontWeight": "normal"
         },
         {
           "type": "frame",
@@ -387401,7 +387429,8 @@
               "content": "New concept: the group is picked from one box; the step then explains the audience — the group's rules as chips, a meter of who will get the email, and why the rest are left out.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
-              "fontSize": "$font-size-base"
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -387654,7 +387683,8 @@
                               "fill": "$color-text-secondary",
                               "content": "Email a group of your customers in five short steps.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base"
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -387785,7 +387815,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Why this campaign",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -387868,7 +387899,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Who receives it",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -387952,7 +387984,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Build the message",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -388036,7 +388069,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "When it sends",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -388120,7 +388154,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Check and launch",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -388912,7 +388947,8 @@
                               "content": "112 customers will get this email.",
                               "textAlign": "right",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-small"
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
                             },
                             {
                               "id": "sjqqj",
@@ -389388,7 +389424,8 @@
                                   "content": " ",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "cwNoJ",
@@ -389596,7 +389633,8 @@
                                   "content": " ",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "uHYeq",
@@ -389804,7 +389842,8 @@
                                   "content": " ",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "PwXxU",
@@ -390222,7 +390261,8 @@
                                   "content": "Counting who will get this email…",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "og55v",
@@ -391514,7 +391554,8 @@
                                   "content": "112 customers will get this email.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "rTJCk",
@@ -391827,7 +391868,8 @@
                               "fill": "$color-text-secondary",
                               "content": "Email a group of your customers in five short steps.",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base"
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -391958,7 +392000,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Why this campaign",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -392041,7 +392084,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Who receives it",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -392125,7 +392169,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Build the message",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -392209,7 +392254,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "When it sends",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -392293,7 +392339,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Check and launch",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -393085,7 +393132,8 @@
                               "content": "112 customers will get this email.",
                               "textAlign": "right",
                               "fontFamily": "$font-family",
-                              "fontSize": "$font-size-small"
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
                             },
                             {
                               "id": "Tm7GF",
@@ -393436,7 +393484,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Email a group of your customers in five short steps.",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-base"
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -393567,7 +393616,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Why this campaign",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -393651,7 +393701,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Who receives it",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -393734,7 +393785,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Build the message",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -393818,7 +393870,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "When it sends",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -393902,7 +393955,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Check and launch",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -395452,7 +395506,8 @@
                                   "content": "Variables fill in with each customer's own details.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "jsytM",
@@ -396336,7 +396391,8 @@
                                   "content": "Variables fill in with each customer's own details.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "bBKQT",
@@ -398301,7 +398357,8 @@
                                   "content": "Variables fill in with each customer's own details.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "sxWt2",
@@ -399930,7 +399987,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Email a group of your customers in five short steps.",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-base"
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -400061,7 +400119,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Why this campaign",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -400145,7 +400204,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Who receives it",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -400228,7 +400288,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Build the message",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -400312,7 +400373,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "When it sends",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -400396,7 +400458,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Check and launch",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -401946,7 +402009,8 @@
                                       "content": "Variables fill in with each customer's own details.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "GJXoi",
@@ -402300,7 +402364,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Email a group of your customers in five short steps.",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-base"
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -402431,7 +402496,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Why this campaign",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -402515,7 +402581,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Who receives it",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -402599,7 +402666,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Build the message",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -402683,7 +402751,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Button and replies",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -402767,7 +402836,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Check and launch",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -404102,7 +404172,8 @@
                                   "content": "Nothing sends yet — you send or schedule it on the next step.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 },
                                 {
                                   "id": "ZWPlk",
@@ -404427,7 +404498,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Email a group of your customers in five short steps.",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-base"
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -404558,7 +404630,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Why this campaign",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -404642,7 +404715,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Who receives it",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -404726,7 +404800,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Build the message",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -404810,7 +404885,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Button and replies",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -404894,7 +404970,8 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Check and launch",
                                           "fontFamily": "$font-family",
-                                          "fontSize": "$font-size-small"
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -406229,7 +406306,8 @@
                                       "content": "Nothing sends yet — you send or schedule it on the next step.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "e27mD",
@@ -407688,7 +407766,8 @@
                                       "content": "Nothing sends yet — you send or schedule it on the next step.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "UjTTf",
@@ -409212,7 +409291,8 @@
                                       "content": "Nothing sends yet — you send or schedule it on the next step.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "tqY7g",
@@ -409862,7 +409942,8 @@
                                       "content": " ",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "S3HgV",
@@ -410070,7 +410151,8 @@
                                       "content": "Nothing sends yet — you send or schedule it on the next step.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "id": "DlXYW",
@@ -410423,7 +410505,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Email a group of your customers in five short steps.",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-base"
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -410554,7 +410637,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Why this campaign",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -410638,7 +410722,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Who receives it",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -410721,7 +410806,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Build the message",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -410805,7 +410891,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Button and replies",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -410889,7 +410976,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Check and launch",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -412410,7 +412498,8 @@
                                   "content": "Nothing sends until you press Send.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -412704,7 +412793,8 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Email a group of your customers in five short steps.",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-base"
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -412835,7 +412925,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Why this campaign",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -412919,7 +413010,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Who receives it",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -413002,7 +413094,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Build the message",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -413086,7 +413179,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Button and replies",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -413170,7 +413264,8 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Check and launch",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -414691,7 +414786,8 @@
                                   "content": "Nothing sends until you press Send.",
                                   "textAlign": "right",
                                   "fontFamily": "$font-family",
-                                  "fontSize": "$font-size-small"
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -417123,7 +417219,8 @@
                                       "content": "Nothing sends until you press Send.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -417317,7 +417414,8 @@
                                       "content": "Nothing sends until you press Send.",
                                       "textAlign": "right",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-small"
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -536604,6 +536702,2830 @@
                           ]
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "SCpaW",
+      "x": 64234,
+      "y": -1273,
+      "name": "Concept · Communications · Toll-free business details · Approved A · 2026-10-23",
+      "width": 1536,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "vRK1S",
+          "name": "Intro",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "PZ8dA",
+              "name": "Eyebrow",
+              "fill": "$color-interactive",
+              "content": "COMMUNICATIONS · STAGE 10 · TOLL-FREE VERIFICATION · APPROVED A BY JAFAR · 2026-10-23",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-overline",
+              "fontWeight": "700",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "text",
+              "id": "CeCQO",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Toll-free verification: a guided path from business details to approval",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-largest",
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "t2lS2U",
+              "name": "Lead",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1200,
+              "content": "Opened from Add business details on the toll-free number card. Four steps: check the business, explain the texts, add a picture showing how customers agree, then check and send. Answers from the existing texting registration are filled in. The number cannot text until the phone company approves it.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dXzGK",
+          "name": "Option A · Guided steps",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            0,
+            8,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "F4BfgY",
+              "name": "Option A label",
+              "fill": "$color-heading",
+              "content": "Approved A · Guided steps",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-larger",
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "xGIzd",
+              "name": "Option A note",
+              "fill": "$color-text-secondary",
+              "content": "Matches the familiar number-paperwork flow: one task at a time, a step track, and saved drafts. The proof picture gets its own step so a business owner can see exactly what is missing.",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "W2ZqPR",
+              "name": "Toll-free check · Guided · Business details · 1440",
+              "clip": true,
+              "width": 1440,
+              "height": 1330,
+              "fill": "$color-surface-background",
+              "cornerRadius": "$radius-large",
+              "padding": [
+                12,
+                0,
+                12,
+                12
+              ],
+              "children": [
+                {
+                  "id": "m3Jv0T",
+                  "type": "ref",
+                  "ref": "giszF",
+                  "name": "Sidebar",
+                  "height": "fill_container",
+                  "descendants": {
+                    "C5QjxN": {
+                      "content": "Raad LTD"
+                    },
+                    "LGJZj": {
+                      "fill": "#00000000"
+                    },
+                    "wO4mP": {
+                      "fill": "$color-job"
+                    },
+                    "XUCig": {
+                      "fill": "$color-heading",
+                      "fontWeight": "500"
+                    },
+                    "T1WPi": {
+                      "fill": "$color-interactive"
+                    },
+                    "ONa20": {
+                      "fill": "$color-surface"
+                    },
+                    "Alq4F": {
+                      "fill": "$color-surface",
+                      "fontWeight": "600"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "A4b5N",
+                  "name": "Main",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "NSKA0",
+                      "type": "ref",
+                      "ref": "f6yCWy",
+                      "name": "Top bar",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mwXAm",
+                      "name": "Content",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": "$space-large",
+                      "padding": [
+                        8,
+                        "$space-larger",
+                        "$space-larger",
+                        "$space-larger"
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UuuJj",
+                          "name": "Top",
+                          "width": 760,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Vljeq",
+                              "name": "Breadcrumb trail",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "cOSRQ",
+                                  "name": "Step · Settings",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    12,
+                                    4,
+                                    4
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "q2lYqS",
+                                      "name": "Back circle",
+                                      "width": 24,
+                                      "height": 24,
+                                      "fill": "$color-heading",
+                                      "cornerRadius": "$radius-circle",
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "Witng",
+                                          "name": "Icon arrow-left",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "arrow-left",
+                                          "library": "lucide",
+                                          "fill": "$color-surface"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "vSlLd",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Settings",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "DjDI1",
+                                  "name": "Icon chevron-right",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "C5us16",
+                                  "name": "Step · Phone & SMS",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "jYEfR",
+                                      "name": "Icon message-circle",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "message-circle",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "PVlDq",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Phone & SMS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "sEaOr",
+                                  "name": "Icon chevron-right",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Laksn",
+                                  "name": "Step · Number paperwork",
+                                  "fill": "#00000000",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "hj9q8",
+                                      "name": "Icon file-check",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "file-check",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ew75H",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Toll-free check",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "q2fyB2",
+                                  "name": "Icon chevron-right",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "REcY7",
+                                  "name": "Step · New paperwork",
+                                  "fill": "$color-surface-background",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "c8tvv",
+                                      "name": "Icon file-plus",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "file-plus",
+                                      "library": "lucide",
+                                      "fill": "$color-heading"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "svowe",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Business details",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fN3qo",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "gap": "$space-base",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "H9wQy4",
+                                  "type": "ref",
+                                  "ref": "BfB4y",
+                                  "name": "Tile",
+                                  "fill": "$color-conversation-surface",
+                                  "stroke": "$color-conversation-surface-edge",
+                                  "descendants": {
+                                    "IAbCu": {
+                                      "icon": "file-plus",
+                                      "fill": "$color-conversation"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "IAkWG",
+                                  "name": "Title block",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "plvJy",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "content": "Verify your toll-free number",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-largest",
+                                      "fontWeight": "700",
+                                      "letterSpacing": -0.5
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "DkICR",
+                                      "name": "Description",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Check the business details we already have, then show how customers agree to your texts.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ENJGM",
+                                  "name": "Save state",
+                                  "gap": 12,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "pjJCy",
+                                      "name": "Saved",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "tOkiI",
+                                          "name": "Icon cloud-check",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "cloud-check",
+                                          "library": "lucide",
+                                          "fill": "$color-success"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "A4j1A",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "All changes saved",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-smaller",
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "T149HB",
+                                      "type": "ref",
+                                      "ref": "qpjlj",
+                                      "name": "Save draft",
+                                      "descendants": {
+                                        "lDuWW": {
+                                          "icon": "save"
+                                        },
+                                        "Dpmda": {
+                                          "content": "Save draft"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mbxzZ",
+                          "name": "Step track",
+                          "width": 760,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "q2YNT",
+                              "name": "Step · Country and kind",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "gxdMB",
+                                  "name": "Tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-success-surface",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-success-surface-edge",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "IdJGc",
+                                      "name": "Icon check",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "check",
+                                      "library": "lucide",
+                                      "fill": "$color-success"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SWkce",
+                                  "name": "Text",
+                                  "layout": "vertical",
+                                  "gap": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lIAuT",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Business",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "J1LU5W",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Review",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "Qkx9i",
+                              "name": "Line",
+                              "fill": "$color-success",
+                              "width": "fill_container",
+                              "height": 2
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JKuVk",
+                              "name": "Step · Business details",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Itsyx",
+                                  "name": "Tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-interactive",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "lBRd4",
+                                      "name": "Icon building-2",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "building-2",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "l8Q5Y",
+                                  "name": "Text",
+                                  "layout": "vertical",
+                                  "gap": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tHK98",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Texting",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "sf4Vq",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Next",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "yGvkQ",
+                              "name": "Line",
+                              "fill": "$color-border",
+                              "width": "fill_container",
+                              "height": 2
+                            },
+                            {
+                              "type": "frame",
+                              "id": "L9DqZ",
+                              "name": "Step · Documents",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Q6ivmQ",
+                                  "name": "Tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-surface-background-subtle",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "by0Fw",
+                                      "name": "Icon files",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "files",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rumda",
+                                  "name": "Text",
+                                  "layout": "vertical",
+                                  "gap": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "n3gDg0",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Proof of consent",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "fCRgB",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Add a picture",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "yGNfk",
+                              "name": "Line",
+                              "fill": "$color-border",
+                              "width": "fill_container",
+                              "height": 2
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CYkjm",
+                              "name": "Step · Check and send",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "NSMzo",
+                                  "name": "Tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-surface-background-subtle",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rKoYR",
+                                      "name": "Icon send",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "send",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Dh4bH",
+                                  "name": "Text",
+                                  "layout": "vertical",
+                                  "gap": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "j3YYfh",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Check and send",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "m9i40K",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Last step",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Qc0hf",
+                          "name": "Step card · Business details",
+                          "clip": true,
+                          "width": 760,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "ub9sS",
+                              "type": "ref",
+                              "ref": "hHVVU",
+                              "name": "Card header",
+                              "width": "fill_container",
+                              "descendants": {
+                                "S2bkqw": {
+                                  "fill": "$color-conversation-surface",
+                                  "stroke": "$color-conversation-surface-edge"
+                                },
+                                "M4w5I": {
+                                  "icon": "building-2",
+                                  "fill": "$color-conversation"
+                                },
+                                "rdm2s": {
+                                  "content": "Business details"
+                                },
+                                "qXDmB": {
+                                  "content": "Filled in from your texting registration. Check each one matches your documents."
+                                },
+                                "I1guOa": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F5JMHD",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 20,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "m3D1o",
+                                  "name": "Who for",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 10,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "mUg85",
+                                      "name": "Question",
+                                      "fill": "$color-heading",
+                                      "content": "Who will use this toll-free number?",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "z0yPr",
+                                      "name": "Choices",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "QAxkM",
+                                          "name": "Choice · A business",
+                                          "width": "fill_container",
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 12,
+                                          "stroke": "$color-interactive",
+                                          "strokeWidth": 1.5,
+                                          "gap": 14,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "id": "g0bml",
+                                              "type": "ref",
+                                              "ref": "BfB4y",
+                                              "name": "Tile",
+                                              "fill": "$color-conversation-surface",
+                                              "stroke": "$color-conversation-surface-edge",
+                                              "descendants": {
+                                                "IAbCu": {
+                                                  "icon": "building-2",
+                                                  "fill": "$color-conversation"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "s1uIXn",
+                                              "name": "Text",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "ry8ZO",
+                                                  "name": "Title",
+                                                  "fill": "$color-heading",
+                                                  "content": "A business",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": "$font-size-base",
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "a9OZfN",
+                                                  "name": "Hint",
+                                                  "fill": "$color-text-secondary",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "A company or sole trader with a registration number",
+                                                  "lineHeight": 1.4,
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": "$font-size-smaller",
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "r6WMW",
+                                              "name": "Radio",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-interactive",
+                                              "cornerRadius": "$radius-circle",
+                                              "stroke": "#00000000",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "ZANot",
+                                                  "name": "Icon check",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "check",
+                                                  "library": "lucide",
+                                                  "fill": "$color-surface"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "IYWyG",
+                                          "name": "Choice · Just me",
+                                          "width": "fill_container",
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 12,
+                                          "stroke": "$color-border",
+                                          "strokeWidth": 1,
+                                          "gap": 14,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "id": "dt4TV",
+                                              "type": "ref",
+                                              "ref": "BfB4y",
+                                              "name": "Tile",
+                                              "fill": "$color-conversation-surface",
+                                              "stroke": "$color-conversation-surface-edge",
+                                              "descendants": {
+                                                "IAbCu": {
+                                                  "icon": "user-round",
+                                                  "fill": "$color-conversation"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ssMmj",
+                                              "name": "Text",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "SBmuA",
+                                                  "name": "Title",
+                                                  "fill": "$color-heading",
+                                                  "content": "Just me",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": "$font-size-base",
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "JpUAL",
+                                                  "name": "Hint",
+                                                  "fill": "$color-text-secondary",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "A person, checked with a passport or ID card",
+                                                  "lineHeight": 1.4,
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": "$font-size-smaller",
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "vVBB5",
+                                              "name": "Radio",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": "$radius-circle",
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "YCi5j",
+                                  "name": "Group · Business",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    16,
+                                    0,
+                                    0,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "b7yDQd",
+                                      "name": "Head",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "wc189",
+                                          "name": "Title",
+                                          "fill": "$color-heading",
+                                          "content": "Business",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-large",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "D9gJmU",
+                                          "name": "Hint",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Filled from your texting registration. Change anything that is out of date.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-smaller",
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Wb15U",
+                                      "name": "Row",
+                                      "width": "fill_container",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "id": "EciP5",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · Legal business name",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "Legal business name"
+                                            },
+                                            "X0Di91": {
+                                              "content": "Raad LTD"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "w2iQGg",
+                                          "name": "Field · Where it is registered",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "T3MuD",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Where it is registered",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "eWJgx",
+                                              "name": "Box",
+                                              "width": "fill_container",
+                                              "height": 40,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": "$radius-base",
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "gap": 10,
+                                              "padding": [
+                                                0,
+                                                5,
+                                                0,
+                                                12
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "tApDy",
+                                                  "name": "Flag · CA",
+                                                  "clip": true,
+                                                  "width": 20,
+                                                  "height": 20,
+                                                  "cornerRadius": "$radius-circle",
+                                                  "stroke": "#0000001f",
+                                                  "strokeWidth": 1,
+                                                  "strokeAlignment": "inner",
+                                                  "children": [
+                                                    {
+                                                      "type": "rectangle",
+                                                      "id": "IMBkQ",
+                                                      "name": "Band",
+                                                      "fill": "#D80621",
+                                                      "width": 5,
+                                                      "height": 20
+                                                    },
+                                                    {
+                                                      "type": "rectangle",
+                                                      "id": "cgqVy",
+                                                      "name": "Band",
+                                                      "fill": "#FFFFFF",
+                                                      "width": 10,
+                                                      "height": 20
+                                                    },
+                                                    {
+                                                      "type": "rectangle",
+                                                      "id": "QE0ic",
+                                                      "name": "Band",
+                                                      "fill": "#D80621",
+                                                      "width": 5,
+                                                      "height": 20
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "p6Udje",
+                                                      "layoutPosition": "absolute",
+                                                      "x": 7,
+                                                      "y": 6,
+                                                      "name": "Leaf",
+                                                      "width": 6,
+                                                      "height": 8,
+                                                      "fill": "#D80621",
+                                                      "cornerRadius": 2
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "mvsyl",
+                                                  "name": "Value",
+                                                  "fill": "$color-heading",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "Canada",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": "$font-size-base",
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "AwOXM",
+                                                  "name": "Well",
+                                                  "width": 30,
+                                                  "height": 30,
+                                                  "fill": "$color-surface-background-subtle",
+                                                  "cornerRadius": 6,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "icon",
+                                                      "id": "u6gZ5",
+                                                      "name": "Icon chevron-down",
+                                                      "width": 14,
+                                                      "height": 14,
+                                                      "icon": "chevron-down",
+                                                      "library": "lucide",
+                                                      "fill": "$color-icon"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "nNMvX",
+                                      "name": "Row",
+                                      "width": "fill_container",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "id": "AaDm2",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · Registration number",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "Registration number"
+                                            },
+                                            "X0Di91": {
+                                              "content": "BC1234567"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "gUdTt",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · Website",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "Website"
+                                            },
+                                            "X0Di91": {
+                                              "content": "raadltd.ca"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Rs4m5",
+                                  "name": "Group · Person in charge",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    16,
+                                    0,
+                                    0,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "EW4XN",
+                                      "name": "Head",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "N4un0",
+                                          "name": "Title",
+                                          "fill": "$color-heading",
+                                          "content": "Person in charge",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-large",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xhePu",
+                                          "name": "Hint",
+                                          "fill": "$color-text-secondary",
+                                          "content": "A real person the phone company can contact about these texts.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-smaller",
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "P0YPI",
+                                      "name": "Row",
+                                      "width": "fill_container",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "id": "LmwJe",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · First name",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "First name"
+                                            },
+                                            "X0Di91": {
+                                              "content": "Jafar"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "AY3mS",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · Last name",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "Last name"
+                                            },
+                                            "X0Di91": {
+                                              "content": "Khan"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Xltk1",
+                                      "name": "Row",
+                                      "width": "fill_container",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "id": "Jipsy",
+                                          "type": "ref",
+                                          "ref": "WQADE",
+                                          "name": "Field · Email",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "lAbk4": {
+                                              "content": "Email"
+                                            },
+                                            "X0Di91": {
+                                              "content": "jafar@raadltd.ca"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "tXVWk",
+                                          "name": "Phone with hint",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "children": [
+                                            {
+                                              "id": "r6qMEg",
+                                              "type": "ref",
+                                              "ref": "WQADE",
+                                              "name": "Field · Phone",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "lAbk4": {
+                                                  "content": "Phone"
+                                                },
+                                                "X0Di91": {
+                                                  "content": "+1 604 555 0182"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "pJtWY",
+                                              "name": "Hint",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "A real business or mobile line, not a number from a texting company.",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-smaller",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gpTz4",
+                                  "name": "Group · Business address",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    16,
+                                    0,
+                                    0,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "vLavH",
+                                      "name": "Head",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "noSl7",
+                                          "name": "Title",
+                                          "fill": "$color-heading",
+                                          "content": "Business address",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-large",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "CCrPu",
+                                          "name": "Hint",
+                                          "fill": "$color-text-secondary",
+                                          "content": "The real place where your business operates.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-smaller",
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ojTdk",
+                                      "name": "Address · chosen",
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-interactive",
+                                      "strokeWidth": 1.5,
+                                      "gap": 14,
+                                      "padding": [
+                                        14,
+                                        16
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "jFhbg",
+                                          "type": "ref",
+                                          "ref": "GrSlk",
+                                          "name": "Tile",
+                                          "fill": "$color-client-surface",
+                                          "stroke": "$color-client-surface-edge",
+                                          "descendants": {
+                                            "XsJUX": {
+                                              "icon": "map-pin",
+                                              "fill": "$color-client"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "bm9R6",
+                                          "name": "Text",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "OnjPR",
+                                              "name": "Line 1",
+                                              "fill": "$color-heading",
+                                              "content": "4720 Kingsway, Unit 210",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-base",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "OjQ8y",
+                                              "name": "Line 2",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Burnaby, BC V5H 4N2, Canada",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-smaller",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "Glgr4",
+                                          "type": "ref",
+                                          "ref": "z1I4U",
+                                          "name": "Pill · Same as registration",
+                                          "fill": "$color-success-surface",
+                                          "descendants": {
+                                            "rMF3l": {
+                                              "fill": "$color-success"
+                                            },
+                                            "MPxz7": {
+                                              "content": "Same as your registration"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "b7BTnO",
+                                      "type": "ref",
+                                      "ref": "A8ydV",
+                                      "name": "Use a different address",
+                                      "descendants": {
+                                        "cQzG0": {
+                                          "content": "+ Use a different address",
+                                          "fill": "$color-interactive"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k8NXTW",
+                              "name": "Footer",
+                              "width": "fill_container",
+                              "fill": "$color-surface-background-subtle",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "Y0gpRw",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Back",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "arrow-left"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Back"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "unRcr",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Step 1 of 4 · saved as you type",
+                                  "textAlign": "center",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "id": "f0b8l8",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Continue",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "icon": "arrow-right"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Continue"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lnKlm",
+              "name": "Step 2 · Texting plan",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "C5QqBY",
+                  "name": "Step label",
+                  "fill": "$color-heading",
+                  "content": "Step 2 · Tell the phone company about your texts",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-larger",
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "rwIiW",
+                  "name": "Step note",
+                  "fill": "$color-text-secondary",
+                  "content": "The owner checks how customers agree, explains the messages and gives two real examples. Existing registration answers are already filled in.",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-base",
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "nybmk",
+                  "name": "Guided step · Texting plan",
+                  "width": 760,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "u8K5TQ",
+                      "type": "ref",
+                      "ref": "hHVVU",
+                      "name": "Card header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "S2bkqw": {
+                          "fill": "$color-conversation-surface",
+                          "stroke": "$color-conversation-surface-edge"
+                        },
+                        "M4w5I": {
+                          "icon": "message-circle"
+                        },
+                        "rdm2s": {
+                          "content": "How you will use texting"
+                        },
+                        "qXDmB": {
+                          "content": "These answers help the phone company understand the messages you send."
+                        },
+                        "I1guOa": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e582n",
+                      "name": "Messaging fields",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 20,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "goR8h",
+                          "name": "Purpose",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "JnY4M",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "What will you text customers about?",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pd8yj",
+                              "name": "Text box",
+                              "width": "fill_container",
+                              "height": 96,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "DiyMS",
+                                  "name": "Text",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "We send appointment reminders, arrival updates and replies to customers who ask us for a quote.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ddWbG",
+                          "name": "Consent method row",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "id": "ZtXu0",
+                              "type": "ref",
+                              "ref": "nRzG7",
+                              "name": "How customers agree",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a1HN7": {
+                                  "content": "How do customers agree?"
+                                },
+                                "HdlPY": {
+                                  "content": "Website form",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            },
+                            {
+                              "id": "hI08Q",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Estimated texts",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Estimated texts each month"
+                                },
+                                "X0Di91": {
+                                  "content": "Under 500"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f2GACq",
+                          "name": "Consent explanation",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fkCBY",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Explain how customers agree",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "K74uI",
+                              "name": "Text box",
+                              "width": "fill_container",
+                              "height": 96,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "mHjhi",
+                                  "name": "Text",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Customers tick an unchecked box on our website after entering their phone number. The box says they agree to appointment and service texts.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ba47V",
+                          "name": "Example texts",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "q5PDV2",
+                              "name": "Group title",
+                              "fill": "$color-heading",
+                              "content": "Example texts customers will receive",
+                              "fontFamily": "$font-family",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EOYUx",
+                              "name": "Sample messages",
+                              "width": "fill_container",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GuOVZ",
+                                  "name": "Example 1",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Tjhj0",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Example 1",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "N3E2AG",
+                                      "name": "Text box",
+                                      "width": "fill_container",
+                                      "height": 120,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        10,
+                                        12
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "XJZtd",
+                                          "name": "Text",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Hi Sam, this is Raad LTD. Your appointment is tomorrow at 10 am. Reply here if you need to change it.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "q5qGW",
+                                  "name": "Example 2",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "T9JGI",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Example 2",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "FSQho",
+                                      "name": "Text box",
+                                      "width": "fill_container",
+                                      "height": 120,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        10,
+                                        12
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "hcZSf",
+                                          "name": "Text",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Hi Sam, we are on our way and expect to arrive within 30 minutes. Reply STOP to opt out.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Mz8qP",
+                          "name": "Policy links",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "id": "O9XuRc",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Privacy policy",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Privacy policy link (optional)"
+                                },
+                                "X0Di91": {
+                                  "content": "https://raad.example/privacy"
+                                }
+                              }
+                            },
+                            {
+                              "id": "i4Nyh",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Terms",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Terms link (optional)"
+                                },
+                                "X0Di91": {
+                                  "content": "https://raad.example/terms"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BLqs7",
+              "name": "Step 3 · Proof of consent",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "qd1MK",
+                  "name": "Step label",
+                  "fill": "$color-heading",
+                  "content": "Step 3 · Show how customers agree",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-larger",
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "BZEu0",
+                  "name": "Step note",
+                  "fill": "$color-text-secondary",
+                  "content": "This follows the business and texting steps. One clear picture of the sign-up is required; the owner can add up to five.",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-base",
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "g5aVk",
+                  "name": "Guided step · Proof of consent",
+                  "width": 760,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "DbOdY",
+                      "type": "ref",
+                      "ref": "hHVVU",
+                      "name": "Card header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "S2bkqw": {
+                          "fill": "$color-conversation-surface",
+                          "stroke": "$color-conversation-surface-edge"
+                        },
+                        "M4w5I": {
+                          "icon": "file-check"
+                        },
+                        "rdm2s": {
+                          "content": "Show how customers agree"
+                        },
+                        "qXDmB": {
+                          "content": "A clear screenshot or photo helps the phone company check the sign-up."
+                        },
+                        "I1guOa": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "suEaO",
+                      "name": "Proof body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "sPryV",
+                          "name": "What to show",
+                          "width": "fill_container",
+                          "fill": "$color-informative-surface",
+                          "cornerRadius": "$radius-base",
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            14
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "O5mPp",
+                              "name": "Info icon",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "info",
+                              "library": "lucide",
+                              "fill": "$color-informative"
+                            },
+                            {
+                              "type": "text",
+                              "id": "zGH2t",
+                              "name": "Hint",
+                              "fill": "$color-informative-on-surface",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Show the phone-number field, the consent words and the button customers press.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NT9L7",
+                          "name": "Picture upload",
+                          "width": "fill_container",
+                          "height": 160,
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border-interactive",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "VELOQ",
+                              "name": "Upload icon",
+                              "width": 28,
+                              "height": 28,
+                              "icon": "image-plus",
+                              "library": "lucide",
+                              "fill": "$color-conversation"
+                            },
+                            {
+                              "type": "text",
+                              "id": "l2hn2",
+                              "name": "Upload title",
+                              "fill": "$color-heading",
+                              "content": "Add a picture of the sign-up",
+                              "fontFamily": "$font-family",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "i12iM",
+                              "name": "Upload hint",
+                              "fill": "$color-text-secondary",
+                              "content": "Add up to 5 clear pictures",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "HezFa",
+                          "name": "Privacy note",
+                          "fill": "$color-text-secondary",
+                          "content": "The picture link is sent to the phone company for this check.",
+                          "fontFamily": "$font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MrlMm",
+                  "name": "Step footer",
+                  "width": 760,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "BCHAs",
+                      "type": "ref",
+                      "ref": "qpjlj",
+                      "name": "Back",
+                      "descendants": {
+                        "lDuWW": {
+                          "icon": "arrow-left"
+                        },
+                        "Dpmda": {
+                          "content": "Back"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "XF8r1",
+                      "name": "Progress",
+                      "fill": "$color-text-secondary",
+                      "content": "Step 3 of 4 · saved as you type",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "x2oQv",
+                      "type": "ref",
+                      "ref": "Qo6GL",
+                      "name": "Continue",
+                      "descendants": {
+                        "P99oLT": {
+                          "icon": "arrow-right"
+                        },
+                        "vaRXs": {
+                          "content": "Continue"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zgHAy",
+              "name": "Step 4 · Check and send",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "VFcNx",
+                  "name": "Step label",
+                  "fill": "$color-heading",
+                  "content": "Step 4 · Check and send",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-larger",
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "gfeD0",
+                  "name": "Step note",
+                  "fill": "$color-text-secondary",
+                  "content": "A final read-back of the business, texting and proof answers. Sending locks the submitted answers while the phone company reviews this number.",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-base",
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "eXpjz",
+                  "name": "Guided step · Send for review",
+                  "width": 760,
+                  "fill": "$color-success-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-success-surface-edge",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sHA2n",
+                      "name": "Review title",
+                      "fill": "$color-heading",
+                      "content": "Ready to send for review?",
+                      "fontFamily": "$font-family",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XXy4t",
+                      "name": "Review description",
+                      "fill": "$color-success-on-surface",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Check your answers. Texting turns on only after the phone company approves this number.",
+                      "fontFamily": "$font-family",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uhz43",
+                      "name": "Actions",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "ckSUX",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "Save draft",
+                          "descendants": {
+                            "lDuWW": {
+                              "icon": "save"
+                            },
+                            "Dpmda": {
+                              "content": "Save draft"
+                            }
+                          }
+                        },
+                        {
+                          "id": "TUB5c",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Send for review",
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "send"
+                            },
+                            "vaRXs": {
+                              "content": "Send for review"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "T5gc5O",
+          "name": "Every state · Toll-free check",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "R3Wf7E",
+              "name": "States title",
+              "fill": "$color-heading",
+              "content": "Every state · clear next steps",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-larger",
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "SkQpY",
+              "name": "States note",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1200,
+              "content": "The form keeps its answers as a draft. Picture upload and sending show progress; a failed upload or rejected check explains what to fix. Under review is read-only until the phone company responds.",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "WaV2v",
+              "name": "Upload and error states",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dmrr6",
+                  "name": "Uploading picture",
+                  "width": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yArXi",
+                      "name": "State header",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ZKD9w",
+                          "name": "Icon tile",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-informative-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-informative-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "B4HHO",
+                              "name": "State icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "upload",
+                              "library": "lucide",
+                              "fill": "$color-informative"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "I42m4",
+                          "name": "State title",
+                          "fill": "$color-heading",
+                          "content": "Uploading your picture · 64%",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-large",
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "W9uB7",
+                      "name": "State description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Save and Send stay unavailable until the picture finishes uploading.",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xsby9",
+                      "name": "Upload progress track",
+                      "width": "fill_container",
+                      "height": 8,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-circle",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": "$radius-circle",
+                          "id": "iTTd7",
+                          "name": "Upload progress",
+                          "fill": "$color-interactive",
+                          "width": 380,
+                          "height": 8
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "C3tBh",
+                  "name": "Picture failed",
+                  "width": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bJmJa",
+                      "name": "State header",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "To42n",
+                          "name": "Icon tile",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-critical-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-critical-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Mohx8",
+                              "name": "State icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "circle-alert",
+                              "library": "lucide",
+                              "fill": "$color-critical"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "ouu2Y",
+                          "name": "State title",
+                          "fill": "$color-heading",
+                          "content": "The picture did not upload",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-large",
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "JpLfn",
+                      "name": "State description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Your answers are saved. Try this picture again or choose another one.",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "y502Fs",
+                      "type": "ref",
+                      "ref": "qpjlj",
+                      "name": "Try again",
+                      "descendants": {
+                        "lDuWW": {
+                          "icon": "refresh-cw"
+                        },
+                        "Dpmda": {
+                          "content": "Try again"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RCVRb",
+              "name": "Review and fix states",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QdDjW",
+                  "name": "Sending",
+                  "width": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Mfx34",
+                      "name": "State header",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QYMlr",
+                          "name": "Icon tile",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-warning-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-warning-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "ZbAqB",
+                              "name": "State icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "loader",
+                              "library": "lucide",
+                              "fill": "$color-warning"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "U3QYC4",
+                          "name": "State title",
+                          "fill": "$color-heading",
+                          "content": "Sending for review…",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-large",
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "LRpFO",
+                      "name": "State description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The button shows a spinner and cannot be pressed twice while the request is sent.",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "Nstoq",
+                      "type": "ref",
+                      "ref": "Qo6GL",
+                      "name": "Sending button",
+                      "descendants": {
+                        "P99oLT": {
+                          "icon": "loader"
+                        },
+                        "vaRXs": {
+                          "content": "Sending…"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TcNzz",
+                  "name": "Under review",
+                  "width": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "q2Z0GQ",
+                      "name": "State header",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "E3ZYkb",
+                          "name": "Icon tile",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-success-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-success-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "yiY4t",
+                              "name": "State icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "circle-check",
+                              "library": "lucide",
+                              "fill": "$color-success"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "X3GmDq",
+                          "name": "State title",
+                          "fill": "$color-heading",
+                          "content": "Sent for review",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-large",
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "itXuY",
+                      "name": "State description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The number remains unable to text. We will show the result on its number card.",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "GIdb5",
+                      "type": "ref",
+                      "ref": "qpjlj",
+                      "name": "Back to numbers",
+                      "descendants": {
+                        "lDuWW": {
+                          "icon": "arrow-left"
+                        },
+                        "Dpmda": {
+                          "content": "Back to numbers"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "L9Htdp",
+              "name": "Rejected state",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QaFzq",
+                  "name": "Action needed",
+                  "width": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f7H4F",
+                      "name": "State header",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eBAhX",
+                          "name": "Icon tile",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-critical-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-critical-surface-edge",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "zSfZH",
+                              "name": "State icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "file-x",
+                              "library": "lucide",
+                              "fill": "$color-critical"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "XY5zW",
+                          "name": "State title",
+                          "fill": "$color-heading",
+                          "content": "The phone company needs a clearer sign-up picture",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-large",
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "DAPYT",
+                      "name": "State description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Show where the customer enters their phone number and the exact words they agree to. Your saved answers are here to fix and send again.",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "id": "H5iNg",
+                      "type": "ref",
+                      "ref": "Qo6GL",
+                      "name": "Fix and send again",
+                      "descendants": {
+                        "P99oLT": {
+                          "icon": "file-pen"
+                        },
+                        "vaRXs": {
+                          "content": "Fix and send again"
+                        }
+                      }
                     }
                   ]
                 }

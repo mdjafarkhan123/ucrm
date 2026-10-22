@@ -16,8 +16,9 @@ provider setup). Comparison: `docs/global-sms-codex-review-plan.md`; evidence:
 
 ## Next
 
-Stage 10 Part 4b (toll-free check, server) merged 2026-10-23 — part note. Then 4c needs a Pencil
-drawing. Parts 2–4 live proof waits on number prices and Jafar's go-ahead.
+Stage 10 Part 4b (toll-free check, server) merged 2026-10-23. Part 4c's guided form design was approved by
+Jafar 2026-10-23 (`concept.pen` board `SCpaW`); build its draft, picture-upload and submission path next.
+Parts 2–4 live proof waits on number prices and Jafar's go-ahead.
 
 ## Constraints
 
@@ -25,4 +26,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `read memory and continue communications-activation` — finish 4a's screen check, merge it, then 4b.
+Resume: `read memory and continue communications-activation` — finish 4c against its approved board, then Part 5.
