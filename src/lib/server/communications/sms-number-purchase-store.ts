@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import type { AddressRequirement, NumberType } from './twilio-country-catalog';
+import { reconcileSenderReadiness } from './sms-number-readiness';
 
 // The durable-state boundary for the number purchase saga (Stage 10 Part 2). Every transition is one database
 // function from 20261222120000_sms_number_purchase.sql, so the money hold, the charge and the order state always
@@ -214,7 +215,10 @@ export function createSupabaseNumberPurchaseStore(
 				p_order_id: orderId
 			});
 			if (error) throw rpcFailure(error, 'Could not finish the number order.');
-			return toOrder(data as OrderRow);
+			const order = toOrder(data as OrderRow);
+			// A number whose route needs no further approval (a Canadian local number, say) goes live now.
+			await reconcileSenderReadiness(client, order.organizationId);
+			return order;
 		}
 	};
 }

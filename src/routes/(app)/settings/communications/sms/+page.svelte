@@ -1,9 +1,10 @@
 <script lang="ts">
-	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import { tick } from 'svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -12,7 +13,6 @@
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -24,12 +24,10 @@
 		startSmsRegistration,
 		submitSmsRegistration,
 		smsRegistrationKey,
-		smsRegistrationBadge,
 		SmsRegistrationWriteError,
 		type SmsRegistrationAnswers
 	} from '$lib/communications/sms-registration';
 	import {
-		fetchSmsNumbers,
 		renameSmsNumber,
 		setDefaultSmsNumber,
 		fetchSmsCompliance,
@@ -54,6 +52,16 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import fileCheckIcon from '@tabler/icons/outline/file-check.svg?raw';
 	import AddNumberDialog from '$lib/components/communications/add-number/AddNumberDialog.svelte';
+	import NumberReadinessCard from '$lib/components/communications/number-readiness/NumberReadinessCard.svelte';
+	import ReadinessSummary from '$lib/components/communications/number-readiness/ReadinessSummary.svelte';
+	import {
+		fetchNumberReadiness,
+		numberCard,
+		numberReadinessKey,
+		readinessSummary,
+		type ReadinessAction
+	} from '$lib/communications/number-readiness';
+	import { goto } from '$app/navigation';
 	import { fetchNumberCountries, numberCountriesKey } from '$lib/communications/sms-number-shop';
 
 	const queryClient = useQueryClient();
@@ -70,19 +78,69 @@
 	}
 	function registerAfterBuying() {
 		addNumberOpen = false;
-		(document.getElementById('registration') ?? document.getElementById('sms-readiness-title'))
-			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		(
+			document.getElementById('registration') ?? document.getElementById('readiness-summary-title')
+		)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 	const homeQuery = createQuery(() => ({
 		queryKey: smsRegistrationKey,
 		queryFn: fetchSmsRegistration,
 		staleTime: 15_000
 	}));
-	const numbersQuery = createQuery(() => ({
-		queryKey: smsNumbersKey,
-		queryFn: fetchSmsNumbers,
+	// Whether each number can text yet (Stage 10 Part 4): one card per number, built from its facts.
+	const readinessQuery = createQuery(() => ({
+		queryKey: numberReadinessKey,
+		queryFn: fetchNumberReadiness,
 		staleTime: 15_000
 	}));
+	const cards = $derived(
+		(readinessQuery.data?.numbers ?? []).map((number) =>
+			numberCard(number, readinessQuery.data?.us_registration ?? null)
+		)
+	);
+	const summary = $derived(readinessSummary(readinessQuery.data?.numbers ?? [], cards));
+	let actionKey = $state<string | null>(null);
+
+	function showBusinessDetails() {
+		document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	async function runAction(cardKey: string, action: ReadinessAction) {
+		switch (action.kind) {
+			case 'update_paperwork':
+			case 'see_paperwork':
+				await goto(
+					resolve('/(app)/settings/communications/sms/paperwork/[id=uuid]', {
+						id: action.paperwork_id
+					})
+				);
+				return;
+			case 'add_business_details':
+				// The business details form lives on this page; a business that has none yet starts it first.
+				if (!registration) {
+					if (actionKey) return;
+					actionKey = cardKey;
+					try {
+						await startSmsRegistration();
+						hydratedRevision = null;
+						await queryClient.invalidateQueries({ queryKey: smsRegistrationKey });
+						await queryClient.invalidateQueries({ queryKey: numberReadinessKey });
+					} catch (cause) {
+						toast.error(
+							cause instanceof Error ? cause.message : 'Your business details could not be started.'
+						);
+						return;
+					} finally {
+						actionKey = null;
+					}
+					await tick();
+				}
+				showBusinessDetails();
+				return;
+			default:
+				showBusinessDetails();
+		}
+	}
 	const complianceQuery = createQuery(() => ({
 		queryKey: smsComplianceKey,
 		queryFn: fetchSmsCompliance,
@@ -152,7 +210,6 @@
 		};
 	}
 
-	let starting = $state(false);
 	let draft = $state<SmsRegistrationAnswers>(emptyAnswers());
 	let hydratedRevision = $state<number | null>(null);
 	// Sole proprietors are the one business type Twilio lets register without an EIN/registration number, through
@@ -201,13 +258,6 @@
 	});
 
 	const registration = $derived(homeQuery.data?.registration ?? null);
-	const readiness = $derived(
-		homeQuery.data?.readiness ?? {
-			effective_mode: 'off' as const,
-			readiness_state: 'needs_setup' as const,
-			live_sender_count: 0
-		}
-	);
 	const isEditable = $derived(
 		registration
 			? registration.status === 'waiting_for_info' || registration.status === 'action_needed'
@@ -246,38 +296,6 @@
 		if (!checked) {
 			draft.business_registration_id_type = '';
 			draft.business_registration_id = '';
-		}
-	}
-
-	function registrationStatusLabel(status: string | undefined) {
-		switch (status) {
-			case 'waiting_for_info':
-				return 'Draft';
-			case 'under_review':
-				return 'Submitted · pending review';
-			case 'action_needed':
-				return 'Needs information';
-			case 'approved':
-				return 'Approved';
-			default:
-				return 'Not started';
-		}
-	}
-
-	async function handleStart() {
-		if (starting) return;
-		starting = true;
-		try {
-			await startSmsRegistration();
-			hydratedRevision = null;
-			await queryClient.invalidateQueries({ queryKey: smsRegistrationKey });
-			toast.success('Registration started.');
-		} catch (cause) {
-			toast.error(
-				cause instanceof Error ? cause.message : 'The registration could not be started.'
-			);
-		} finally {
-			starting = false;
 		}
 	}
 
@@ -393,9 +411,9 @@
 		);
 	}
 
-	function startRename(number: { id: string; display_name: string | null; phone_number: string }) {
-		renamingId = number.id;
-		renameDraft = number.display_name ?? '';
+	function startRename(senderId: string, currentName: string | null) {
+		renamingId = senderId;
+		renameDraft = currentName ?? '';
 	}
 	function cancelRename() {
 		renamingId = null;
@@ -407,6 +425,7 @@
 		try {
 			await renameSmsNumber(renamingId, renameDraft);
 			await queryClient.invalidateQueries({ queryKey: smsNumbersKey });
+			await queryClient.invalidateQueries({ queryKey: numberReadinessKey });
 			toast.success('Number name saved.');
 			renamingId = null;
 			renameDraft = '';
@@ -422,6 +441,7 @@
 		try {
 			await setDefaultSmsNumber(senderId);
 			await queryClient.invalidateQueries({ queryKey: smsNumbersKey });
+			await queryClient.invalidateQueries({ queryKey: numberReadinessKey });
 			toast.success('Default number updated.');
 		} catch (cause) {
 			toast.error(
@@ -485,28 +505,34 @@
 
 <PageContainer variant="open">
 	<div class="sms-settings record-detail--cards">
-		<SettingsPageHeader
-			title="Phone & SMS"
-			description="Understand what is ready and what needs attention."
-			icon={phoneIcon}
-			tone="task"
-			presentation="communication"
-			compactDescription
-		>
-			{#snippet actions()}
-				<Button
-					variant="secondary"
-					href={resolve('/(app)/settings/communications/sms/paperwork')}
-				>
-					<span aria-hidden="true">{@html fileCheckIcon}</span>
-					Number paperwork
-				</Button>
-				<Button onclick={() => (addNumberOpen = true)} onhover={warmAddNumber}>
-					<span aria-hidden="true">{@html plusIcon}</span>
-					Add number
-				</Button>
-			{/snippet}
-		</SettingsPageHeader>
+		<div class="sms-settings__heading">
+			<Breadcrumbs
+				items={[
+					{ label: 'Settings', href: resolve('/(app)/settings') },
+					{ label: 'Phone & SMS', icon: messageIcon }
+				]}
+			/>
+			<PageHeader
+				icon={phoneIcon}
+				tone="conversation"
+				title="Phone & SMS"
+				description="Your texting numbers, whether each one can text yet, and what to do next."
+			>
+				{#snippet actions()}
+					<Button
+						variant="secondary"
+						href={resolve('/(app)/settings/communications/sms/paperwork')}
+					>
+						<span aria-hidden="true">{@html fileCheckIcon}</span>
+						Number paperwork
+					</Button>
+					<Button onclick={() => (addNumberOpen = true)} onhover={warmAddNumber}>
+						<span aria-hidden="true">{@html plusIcon}</span>
+						Add number
+					</Button>
+				{/snippet}
+			</PageHeader>
+		</div>
 
 		{#if addNumberOpen}
 			<AddNumberDialog
@@ -516,6 +542,84 @@
 			/>
 		{/if}
 
+		<div class="sms-settings__readiness" aria-busy={readinessQuery.isPending}>
+			{#if readinessQuery.isPending}
+				<div class="sms-settings__shape" aria-label="Loading your numbers">
+					<span class="skeleton sms-settings__bone sms-settings__bone--tile"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--title"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--line"></span>
+					<span class="skeleton sms-settings__bone sms-settings__bone--bar"></span>
+				</div>
+				<div class="sms-settings__cards">
+					{#each [0, 1] as shape (shape)}
+						<div class="sms-settings__shape sms-settings__shape--card" aria-hidden="true">
+							<div class="sms-settings__shape-head">
+								<span class="skeleton sms-settings__bone sms-settings__bone--flag"></span>
+								<span class="sms-settings__shape-lines">
+									<span class="skeleton sms-settings__bone sms-settings__bone--name"></span>
+									<span class="skeleton sms-settings__bone sms-settings__bone--detail"></span>
+								</span>
+							</div>
+							<span class="sms-settings__shape-journey"></span>
+							<div class="sms-settings__shape-band">
+								<span class="skeleton sms-settings__bone sms-settings__bone--icon"></span>
+								<span class="skeleton sms-settings__bone sms-settings__bone--detail"></span>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{:else if readinessQuery.isError}
+				<div class="sms-settings__state">
+					<ErrorState
+						title="Your numbers couldn’t load"
+						description="Check your internet connection, then try again. Nothing has changed with your numbers."
+						retry={() => readinessQuery.refetch()}
+					/>
+				</div>
+			{:else if cards.length === 0}
+				<div class="sms-settings__state">
+					<EmptyState
+						title="No texting numbers yet"
+						description="Pick a number in your country and we’ll walk you through anything carriers need."
+						icon={phoneIcon}
+						tone="conversation"
+					>
+						{#snippet action()}
+							<Button onclick={() => (addNumberOpen = true)} onhover={warmAddNumber}>
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+								<span aria-hidden="true">{@html plusIcon}</span>
+								Add number
+							</Button>
+						{/snippet}
+					</EmptyState>
+				</div>
+			{:else}
+				<ReadinessSummary {summary} {cards} />
+				<div class="sms-settings__cards">
+					{#each cards as card (card.key)}
+						<NumberReadinessCard
+							{card}
+							renaming={renamingId !== null && renamingId === card.sender_id}
+							{renameSaving}
+							defaultSaving={defaultSavingId === card.sender_id}
+							actionLoading={actionKey === card.key}
+							bind:renameDraft
+							onStartRename={() => card.sender_id && startRename(card.sender_id, card.display_name)}
+							onCancelRename={cancelRename}
+							onSaveRename={saveRename}
+							onMakeDefault={() => card.sender_id && makeDefault(card.sender_id)}
+							onAction={(action) => runAction(card.key, action)}
+						/>
+					{/each}
+				</div>
+				<p class="sms-settings__foot">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+					<span aria-hidden="true">{@html infoCircleIcon}</span>
+					Rename a number or make it your default from its ⋯ menu. To release a number, contact us.
+				</p>
+			{/if}
+		</div>
+
 		{#if homeQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
 		{:else if homeQuery.isError}
@@ -524,73 +628,6 @@
 				retry={() => homeQuery.refetch()}
 			/>
 		{:else}
-			<section class="sms-settings__readiness" aria-labelledby="sms-readiness-title">
-				<div class="sms-settings__readiness-row">
-					<div class="sms-settings__readiness-head">
-						<IconTile icon={deviceMobileMessageIcon} tone="informative" />
-						<h2 id="sms-readiness-title">Readiness</h2>
-					</div>
-					<div class="sms-settings__facts">
-						<div class="sms-settings__fact">
-							<span>SMS mode</span>
-							<strong>
-								{#if readiness.effective_mode === 'operational'}<span
-										class="sms-settings__dot"
-										aria-hidden="true"
-									></span>{/if}
-								{readiness.effective_mode === 'operational' ? 'On' : 'Off'}
-							</strong>
-						</div>
-						<div class="sms-settings__fact">
-							<span>Registration</span>
-							<strong>
-								<StatusBadge
-									size="compact"
-									status={smsRegistrationBadge(readiness.readiness_state).tone}
-									>{registrationStatusLabel(registration?.status)}</StatusBadge
-								>
-							</strong>
-						</div>
-						<div class="sms-settings__fact">
-							<span>Ready numbers</span>
-							<strong>{readiness.live_sender_count}</strong>
-						</div>
-						<div class="sms-settings__fact">
-							<span>Outbound availability</span>
-							<strong>
-								{#if readiness.readiness_state === 'ready'}<span
-										class="sms-settings__dot"
-										aria-hidden="true"
-									></span>{/if}
-								{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}
-							</strong>
-						</div>
-					</div>
-				</div>
-
-				{#if !registration}
-					<p class="sms-settings__notice" role="status">
-						Start registration to let customers text your business and receive their replies.
-					</p>
-					<Button loading={starting} onclick={handleStart}>Start registration</Button>
-				{:else if registration.status === 'action_needed'}
-					<p class="sms-settings__notice sms-settings__notice--critical" role="alert">
-						This registration needs a fix before it can be resubmitted.
-					</p>
-					<Button href="#registration" variant="secondary">Fix registration</Button>
-				{:else if registration.status === 'under_review'}
-					<p class="sms-settings__notice" role="status">
-						Submitted{registration.submitted_at
-							? ` on ${new Date(registration.submitted_at).toLocaleDateString()}`
-							: ''} and waiting on a provider decision. We'll update this as soon as it arrives.
-					</p>
-				{:else if registration.status === 'approved' && readiness.readiness_state !== 'ready'}
-					<p class="sms-settings__notice" role="status">
-						Approved. A sending number still needs to be linked to finish setup.
-					</p>
-				{/if}
-			</section>
-
 			{#if registration}
 				<SectionBlock
 					tone="inactive"
@@ -909,175 +946,65 @@
 			{/if}
 
 			<div class="sms-settings__lower">
-				<div class="sms-settings__lower-left">
-					<SectionBlock tone="inactive" title="Phone numbers" icon={phoneIcon} level={2}>
-						{#if numbersQuery.isPending}
-							<LoadingSkeleton variant="table" rows={2} />
-						{:else if numbersQuery.isError}
-							<ErrorState
-								description="The phone numbers could not be loaded."
-								retry={() => numbersQuery.refetch()}
-							/>
-						{:else if !numbersQuery.data?.numbers.length}
-							<EmptyState
-								title="No numbers yet"
-								description="Add a number to start texting your customers."
-							/>
+				<SectionBlock tone="inactive" title="Holds & opt-outs" icon={banIcon} level={2}>
+					{#if holdsQuery.isPending}
+						<LoadingSkeleton variant="card" rows={2} />
+					{:else if holdsQuery.isError}
+						<ErrorState
+							description="Holds and opt-outs could not be loaded."
+							retry={() => holdsQuery.refetch()}
+						/>
+					{:else}
+						<div class="sms-settings__tiles">
+							<div class="sms-settings__tile">
+								<span>Customers opted out</span>
+								<strong>{holdsQuery.data.opt_outs.total}</strong>
+							</div>
+							<div class="sms-settings__tile">
+								<span>Active holds</span>
+								<strong>{holdsQuery.data.holds.length}</strong>
+							</div>
+						</div>
+						{#if !holdsQuery.data.holds.length}
+							<p
+								class="sms-settings__notice sms-settings__notice--success sms-settings__notice--icon"
+								role="status"
+							>
+								<span class="sms-settings__notice-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html checkCircleIcon}
+								</span>
+								No active holds. Sending is not paused for any reason right now.
+							</p>
 						{:else}
 							<ul class="sms-settings__numbers">
-								{#each numbersQuery.data.numbers as number (number.id)}
+								{#each holdsQuery.data.holds as hold (hold.id)}
 									<li class="sms-settings__number-row">
-										<IconTile icon={phoneIcon} tone="informative" />
 										<div class="sms-settings__number-main">
-											{#if renamingId === number.id}
-												<Input
-													id={`sms-number-name-${number.id}`}
-													label="Number name"
-													hideLabel
-													maxlength={60}
-													placeholder={number.phone_number}
-													bind:value={renameDraft}
-												/>
-											{:else}
-												<div class="sms-settings__number-identity">
-													<strong>{number.display_name || number.phone_number}</strong>
-													{#if number.display_name}<span>{number.phone_number}</span>{/if}
-												</div>
-											{/if}
-											<div class="sms-settings__number-badges">
-												{#if number.is_default_sender}
-													<Badge dot={false} class="sms-settings__chip-default">Default</Badge>
-												{/if}
-												<StatusBadge
-													status={number.lifecycle_state === 'ready'
-														? 'success'
-														: number.lifecycle_state === 'pending_setup'
-															? 'warning'
-															: 'critical'}
+											<div class="sms-settings__number-identity">
+												<strong>{hold.reason}</strong>
+												<span
+													>{holdSourceLabel(hold.source)} · placed {new Date(
+														hold.placed_at
+													).toLocaleDateString()}</span
 												>
-													{number.lifecycle_state === 'ready'
-														? 'Ready'
-														: number.lifecycle_state === 'pending_setup'
-															? 'Setting up'
-															: number.lifecycle_state === 'restricted'
-																? 'Restricted'
-																: 'Suspended'}
-												</StatusBadge>
-												{#if number.capabilities.sms}<Badge dot={false}>SMS</Badge>{/if}
-												{#if number.capabilities.mms}<Badge dot={false}>MMS</Badge>{/if}
-												{#if number.capabilities.voice}<Badge dot={false}>Voice</Badge>{/if}
 											</div>
-										</div>
-										<div class="sms-settings__number-actions">
-											{#if renamingId === number.id}
-												<Button
-													type="button"
-													size="small"
-													loading={renameSaving}
-													onclick={saveRename}>Save name</Button
+											<div class="sms-settings__number-badges">
+												<StatusBadge status={holdBadgeTone(hold.status)}
+													>{hold.status === 'active' ? 'Active' : hold.status}</StatusBadge
 												>
-												<Button
-													type="button"
-													size="small"
-													variant="secondary"
-													variation="subtle"
-													disabled={renameSaving}
-													onclick={cancelRename}>Cancel</Button
-												>
-											{:else}
-												<Button
-													type="button"
-													size="small"
-													variant="secondary"
-													variation="subtle"
-													onclick={() => startRename(number)}>Rename</Button
-												>
-												{#if !number.is_default_sender}
-													<Button
-														type="button"
-														size="small"
-														variant="secondary"
-														disabled={!number.can_be_default}
-														loading={defaultSavingId === number.id}
-														onclick={() => makeDefault(number.id)}>Make default</Button
-													>
-												{/if}
-											{/if}
+											</div>
 										</div>
 									</li>
 								{/each}
 							</ul>
-							<p class="sms-settings__notice sms-settings__notice--icon" role="status">
-								<span class="sms-settings__notice-icon" aria-hidden="true">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									{@html infoCircleIcon}
-								</span>
-								To release or replace a number, contact Jafar — buying and releasing numbers stay a provider-owned
-								action.
+							<p class="sms-settings__notice" role="status">
+								Holds are released by Jafar or the provider, never directly by a contractor. Contact
+								Jafar if a hold needs review.
 							</p>
 						{/if}
-					</SectionBlock>
-
-					<SectionBlock tone="inactive" title="Holds & opt-outs" icon={banIcon} level={2}>
-						{#if holdsQuery.isPending}
-							<LoadingSkeleton variant="card" rows={2} />
-						{:else if holdsQuery.isError}
-							<ErrorState
-								description="Holds and opt-outs could not be loaded."
-								retry={() => holdsQuery.refetch()}
-							/>
-						{:else}
-							<div class="sms-settings__tiles">
-								<div class="sms-settings__tile">
-									<span>Customers opted out</span>
-									<strong>{holdsQuery.data.opt_outs.total}</strong>
-								</div>
-								<div class="sms-settings__tile">
-									<span>Active holds</span>
-									<strong>{holdsQuery.data.holds.length}</strong>
-								</div>
-							</div>
-							{#if !holdsQuery.data.holds.length}
-								<p
-									class="sms-settings__notice sms-settings__notice--success sms-settings__notice--icon"
-									role="status"
-								>
-									<span class="sms-settings__notice-icon" aria-hidden="true">
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-										{@html checkCircleIcon}
-									</span>
-									No active holds. Sending is not paused for any reason right now.
-								</p>
-							{:else}
-								<ul class="sms-settings__numbers">
-									{#each holdsQuery.data.holds as hold (hold.id)}
-										<li class="sms-settings__number-row">
-											<div class="sms-settings__number-main">
-												<div class="sms-settings__number-identity">
-													<strong>{hold.reason}</strong>
-													<span
-														>{holdSourceLabel(hold.source)} · placed {new Date(
-															hold.placed_at
-														).toLocaleDateString()}</span
-													>
-												</div>
-												<div class="sms-settings__number-badges">
-													<StatusBadge status={holdBadgeTone(hold.status)}
-														>{hold.status === 'active' ? 'Active' : hold.status}</StatusBadge
-													>
-												</div>
-											</div>
-										</li>
-									{/each}
-								</ul>
-								<p class="sms-settings__notice" role="status">
-									Holds are released by Jafar or the provider, never directly by a contractor.
-									Contact Jafar if a hold needs review.
-								</p>
-							{/if}
-						{/if}
-					</SectionBlock>
-				</div>
+					{/if}
+				</SectionBlock>
 
 				<SectionBlock
 					tone="inactive"
@@ -1178,74 +1105,118 @@
 	}
 	/* Page header: a 60px blue tile beside the breadcrumb, 36px title and sentence, as in the approved frame. */
 
-	/* Readiness strip: the framed heading and the four facts share one row, with thin dividers between. */
+	/* The page's own gap already spaces the header from the summary. */
+	.sms-settings__heading :global(.page-header) {
+		margin-bottom: 0;
+	}
+	/* Number readiness (Stage 10 Part 4, board NbWfA): the summary, the number cards two to a row, one foot line. */
 	.sms-settings__readiness {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
-		padding: 18px var(--space-large);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-	}
-	.sms-settings__readiness-row {
-		display: flex;
-		align-items: center;
 		gap: var(--space-large);
 	}
-	.sms-settings__readiness-head {
+	.sms-settings__cards {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-large);
+		align-items: stretch;
+	}
+	.sms-settings__state {
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
+	}
+	.sms-settings__shape {
+		display: grid;
+		gap: var(--space-base);
+		padding: var(--space-medium);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
+
+		&--card {
+			gap: var(--space-medium);
+			overflow: hidden;
+			padding-bottom: 0;
+		}
+	}
+	.sms-settings__shape-head {
 		display: flex;
-		flex: 0 0 auto;
 		align-items: center;
 		gap: var(--space-slim);
 	}
-	.sms-settings__readiness-head h2 {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
-		letter-spacing: -0.2px;
-		line-height: var(--typography--lineHeight-tight);
-	}
-	.sms-settings__facts {
-		display: flex;
-		flex: 1 1 auto;
-		align-items: center;
-		gap: var(--space-large);
-		min-width: 0;
-		padding-left: var(--space-large);
-		border-left: var(--border-base) solid var(--color-border);
-	}
-	.sms-settings__fact {
+	.sms-settings__shape-lines {
 		display: grid;
-		flex: 1 1 0;
-		gap: var(--space-smaller);
-		min-width: 0;
+		flex: 1 1 auto;
+		gap: var(--space-small);
+	}
+	.sms-settings__shape-journey {
+		height: 96px;
+		border-radius: var(--radius-tile-large);
+		background: var(--color-surface--background--subtle);
+	}
+	.sms-settings__shape-band {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		margin: 0 calc(var(--space-medium) * -1);
+		padding: var(--space-base) var(--space-medium);
+		background: var(--color-surface--background--subtle);
+	}
+	.sms-settings__bone {
+		min-height: 0;
 
-		span {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+		&--tile,
+		&--icon {
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-tile-large);
 		}
-		strong {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
-			font-weight: 700;
+		&--icon {
+			width: 32px;
+			height: 32px;
+		}
+		&--flag {
+			flex: none;
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-circle);
+		}
+		&--title {
+			width: 30%;
+			height: 28px;
+		}
+		&--line {
+			width: 70%;
+			height: 12px;
+		}
+		&--bar {
+			height: 10px;
+			border-radius: var(--radius-circle);
+		}
+		&--name {
+			width: 40%;
+			height: 14px;
+		}
+		&--detail {
+			width: 60%;
+			height: 12px;
 		}
 	}
-	.sms-settings__fact + .sms-settings__fact {
-		padding-left: var(--space-large);
-		border-left: var(--border-base) solid var(--color-border);
-	}
-	.sms-settings__dot {
-		width: 8px;
-		height: 8px;
-		flex: 0 0 auto;
-		border-radius: var(--radius-circle);
-		background: var(--color-success);
+	.sms-settings__foot {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 500;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+			color: var(--color-informative);
+		}
 	}
 	.sms-settings__tiles {
 		display: grid;
@@ -1410,11 +1381,7 @@
 		gap: var(--space-large);
 		align-items: start;
 	}
-	.sms-settings__lower-left {
-		display: grid;
-		gap: var(--space-large);
-		min-width: 0;
-	}
+	/* The holds list rows. */
 	.sms-settings__numbers {
 		display: grid;
 		gap: var(--space-small);
@@ -1437,10 +1404,6 @@
 		align-content: start;
 		gap: 8px;
 		min-width: 12rem;
-
-		:global(.input) {
-			flex: 1 1 10rem;
-		}
 	}
 	.sms-settings__number-identity {
 		display: grid;
@@ -1461,35 +1424,8 @@
 		align-items: center;
 		gap: var(--space-small);
 	}
-	.sms-settings__number-badges :global(.sms-settings__chip-default) {
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-	}
-	.sms-settings__number-actions {
-		display: flex;
-		flex: 0 0 auto;
-		flex-wrap: wrap;
-		margin-left: auto;
-		gap: var(--space-small);
-	}
-
 	@media (max-width: 900px) {
-		.sms-settings__readiness-row {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		.sms-settings__facts {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-		.sms-settings__fact:nth-child(n + 2) {
-			border-left: 0;
-			padding-left: 0;
-		}
-		.sms-settings__fact:nth-child(even) {
-			border-left: var(--border-base) solid var(--color-border);
-			padding-left: var(--space-large);
-		}
+		.sms-settings__cards,
 		.sms-settings__messaging,
 		.sms-settings__lower {
 			grid-template-columns: minmax(0, 1fr);
@@ -1499,17 +1435,6 @@
 		.sms-settings {
 			gap: var(--space-base);
 		}
-		.sms-settings__facts {
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.sms-settings__fact:nth-child(even) {
-			border-left: 0;
-			padding-left: 0;
-		}
-		.sms-settings__fact:nth-child(n + 2) {
-			border-top: var(--border-base) solid var(--color-border);
-			padding-top: var(--space-base);
-		}
 		.sms-settings__tiles,
 		.sms-settings__fields,
 		.sms-settings__links {
@@ -1517,9 +1442,6 @@
 		}
 		.sms-settings__actions {
 			justify-content: flex-start;
-		}
-		.sms-settings__number-actions {
-			margin-left: 0;
 		}
 	}
 </style>

@@ -11,6 +11,7 @@ import {
 	createNumberPaperworkDeps,
 	syncNumberPaperwork
 } from '$lib/server/communications/sms-number-paperwork';
+import { reconcileSenderReadiness } from '$lib/server/communications/sms-number-readiness';
 
 // Stage 10 Part 3: Twilio calls this whenever a business's paperwork (a Regulatory Bundle) changes status --
 // approved, or rejected with its reason. It is a signed classic webhook from the business's own subaccount,
@@ -75,6 +76,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			paperworkId: set.id,
 			callbackReason: identifiers.data.FailureReason ?? null
 		});
+		// Approved paperwork may be the last thing a number was waiting for (Stage 10 Part 4).
+		await reconcileSenderReadiness(getOwnerSupabaseClient(), set.organizationId);
 		return accepted();
 	} catch (error) {
 		console.error('Could not follow a paperwork status callback.', {

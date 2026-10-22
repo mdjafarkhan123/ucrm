@@ -21935,6 +21935,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_reconcile_sender_readiness: {
+				Args: { p_organization_id: string; p_us_use_case: string };
+				Returns: number;
+			};
 			communication_sms_record_usage_reconciliation_finding: {
 				Args: {
 					p_organization_id: string;

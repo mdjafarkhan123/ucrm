@@ -10,6 +10,9 @@ import {
 } from '$lib/server/communications/twilio-trust-hub';
 
 vi.mock('$lib/server/env', () => ({ getServerEnv: vi.fn() }));
+vi.mock('$lib/server/communications/sms-number-readiness', () => ({
+	reconcileAllSenderReadiness: vi.fn().mockResolvedValue({ organizations: 0, switched_on: 0 })
+}));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 vi.mock('$lib/server/communications/trust-hub-submission-store', () => ({
 	createSupabaseTrustHubSubmissionStore: vi.fn()
