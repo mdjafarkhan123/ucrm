@@ -490,6 +490,12 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
   `svelte-check` 0/4218, Prettier clean. Not live-tested (Stage 9's hard constraint: no real business
   registered yet on either side); the Sink itself is not yet created on the live Twilio account.
 
+## Stage 10 (approved 2026-10-22): global texting the GHL way
+
+Plan: `docs/global-sms-behavior-contract.md`. Parts 1 country rules + ISV settings · 2 buy a number · 3 paperwork
+(bundles) · 4 registration per number (10DLC wired, toll-free verification) · 5 sending rules per country · 6 prices per
+country. Designs in Pencil before each UI. State: Part 1 in progress.
+
 ## Stage 8 parts (billing reconciliation; started 2026-09-15, non-blocked pieces run in parallel with Stage 9)
 
 Full approved scope: `docs/communications-a2-implementation-plan.md` §8. Live proof and the 200-tenant scale

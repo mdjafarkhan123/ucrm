@@ -8,16 +8,16 @@ Everything stays dark (no live traffic) until a country launch gate passes.
 
 ## Active part
 
-**Global countries — planning (2026-10-22).** Jafar: no registered business yet; make the app launch-ready for
-contractors worldwide (US, CA, AU, NZ, BR, UK…) now; real end-to-end proof waits for the first paying customer.
-Platform ISV Primary Customer Profile `BU0a5a8f75e733bf8f1020e8d923a017f5` approved 2026-10-19 (not yet in app config).
-Today the app is US-only (registration country fixed to US, 10DLC only, no number search/purchase, no bundles).
-Research: `docs/research/global-sms-country-requirements-2026-10-22.md`.
+**Global texting (Stage 10), approved 2026-10-22.** Plan: `docs/global-sms-behavior-contract.md` (core agreement —
+read it). Follow GHL: every country with Twilio stock except Asia; rules read live from Twilio, never hardcoded.
+Research: `docs/research/global-sms-country-requirements-2026-10-22.md`. Platform ISV profile
+`BU0a5a8f75e733bf8f1020e8d923a017f5` approved 2026-10-19.
 
 ## Exact next action
 
-Jafar answers the six product choices in the research file's "Open questions", then write the global-countries
-plan (behavior + build order) for his approval. No code before that approval.
+Part 1 server foundation (country rules module + ISV settings) on branch `claude/comms-global-sms`. Pencil designs
+for Add number, Compliance, per-number readiness and Jafar country controls run as separate design sessions before
+Parts 2–6 UI. Real purchases/registrations wait for the first paying customer and Jafar's yes.
 
 Pre-existing and unrelated to this campaign, found in an earlier session, do not re-investigate: a full local
 pgTAP run and a full `vitest run` both surface dozens of failures outside communications (stale Stage-1 SMS
