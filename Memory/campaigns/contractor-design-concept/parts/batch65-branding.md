@@ -1,7 +1,7 @@
 # Batch 65 · Branding
 
-**Board:** `concept.pen` → "Concept · Batch 65 · Branding · Options A and B · 2026-10-22" (`FjLSw`), right of
-Batch 64. **Waiting for Jafar's choice.** Piece: `(app)/settings/branding` (list-6a). Opened from Branding on the
+**Board:** `concept.pen` → "Concept · Batch 65 · Branding · Approved A · 2026-10-22" (`FjLSw`), right of
+Batch 64. **Approved A (Brand studio) by Jafar 2026-10-22**; Option B removed from the board. Piece: `(app)/settings/branding` (list-6a). Opened from Branding on the
 approved Settings home (Batch 63 A) and the "Logo in Branding" link on Business profile (Batch 64 B).
 
 ## Research (what to show, not the look)
@@ -35,3 +35,12 @@ staff view with the last editor; someone-saved-first message; leave-page warning
 - Today the colour reaches only the website chat and the quote's fallback mark; both options show it on the
   customer page's top line and main button. Needs Jafar's yes before the customer pages change.
 - After approval: draw the staff view and loading for the chosen option (checklist row asks for both).
+
+## After approval (2026-10-22)
+
+- Drawn: "Logo states" panel `xSOZT` (No logo yet, New logo · Not saved yet, Saved · Being checked, Removed · Undo).
+- New behaviour (quick picks, colour-code box, readability check, colour on the customer quote top line and main
+  button) is taken as covered by the approval of A, as with Batch 64; confirm with Jafar if the builder is unsure.
+- **Next:** draw the staff view (read-only notice with lock, no Replace/Remove/Reset/quick picks/save bar) and the
+  someone-saved-first state (critical notice, See their version); loading follows Batch 48. Then add look rules to
+  design `layout.md` § Branding, wait for Jafar's Ctrl+S, commit `concept.pen`, merge for building.
