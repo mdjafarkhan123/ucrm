@@ -42,5 +42,9 @@ B: beside the search. The row left the Talking to customers list (9 settings).
   state).
 - The settings search box is new behaviour (blueprint said "later"): Jafar's approval of A covers it.
 
-**Next:** draw the next Settings screen (one form page,
-e.g. Business profile).
+**Built 2026-10-22** (branch `claude/build-batch63`, evidence `docs/evidence/2026-10-22-batch63/`): page
+`(app)/settings/+page.svelte` with `components/settings/home/*`; captions come from the new `/api/settings/summary`
+(`lib/server/settings/home-summary.ts`) so rows show at once; "Ready for customers" is `lib/settings/home-ready.ts`.
+Left out because the app holds no data for them: the 2-step pill and the desktop-alerts switch (a link to My alerts).
+
+**Next:** draw the next Settings screen (one form page, e.g. Business profile).
