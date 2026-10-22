@@ -392,3 +392,23 @@ Approved B", `S4I7i`).
   (`--color-surface--background`, radius 8, padding 8 10): "Then $249 a month" or "That's $207.50 a month" 14/600
   heading over an optional 12 quiet line ("Paid upfront", "Join by <date> to get it."). No offer or saving: the price
   line alone.
+
+## Mark as lost pop-up
+
+A Pipeline card's Mark as lost and Outcomes' Lost reason (`pipeline/MarkOpportunityLostDialog`). Approved A by
+Jafar 2026-10-22 (Pencil: "Batch 59 · Mark as lost pop-up · Approved A", `o0HfC`).
+
+- Default form pop-up (600). Header: 40 tile in the card's record colour (request `inbox`, quote `file-text`), the
+  title ("Mark as lost" or "Lost reason"), the hint "Request · <card name> · <client>" ("Quote #318 · …" on a quote).
+- Body, fields 16 apart. Mark as lost: a warning notice strip (`notices.md`, `triangle-alert`) saying what happens to
+  a request or a quote. Lost reason: "What the customer said" first when they declined in their own words
+  (`--color-surface--background`, a 3px `--color-border` line at the left, radius 8, padding 12 14; a 12/600 quiet
+  label over the words 14 `--color-text`, line height 1.5), then a 14 lock and "Only your team sees this reason…"
+  12/500 quiet.
+- Reason (optional) is the dropdown (`inputs.md`); a retired reason reads "<name> (retired)". Note is the big text
+  box, 96 high, with "52 / 1,000" 12/500 quiet at the right under it; with "Other" its label reads
+  "Note (required for “Other”)".
+- Footer: Cancel, then Mark as lost (danger · confirm, `circle-x`) or Save reason (main, `check`).
+- Reasons loading: the dropdown disabled with "Loading reasons…". "Other" without a note: Mark as lost disabled.
+  Saving: the spinner takes the button's icon; Cancel and × disabled. Couldn't save: a critical notice strip at the
+  top of the body with the server's words; the reason and note stay.
