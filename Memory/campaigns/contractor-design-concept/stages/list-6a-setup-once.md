@@ -19,7 +19,7 @@ Key, tick rule and coverage command: `list-index.md`.
 
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
-| `(app)/settings` | loading, permission-limited, owner view | ⬜ | ⬜ |
+| `(app)/settings` | loading, permission-limited, owner view | 🟡 Batch 63 `PZ8xu` A/B 2026-10-22 | ⬜ |
 | `(app)/settings/alerts` | pop-ups: "Allow alerts on this computer?" 🔁C · loading | ⬜ | ⬜ |
 | `(app)/settings/automation` | loading, empty, permission-limited | ⬜ | ⬜ |
 | `(app)/settings/automation/[id]` | `settings/automation/ActivationImpactDialog` 🔁F, `settings/automation/RecipeDetailView` · pop-ups: "form" 🔁F, "Archive this automation?" 🔁C, "Discard your changes?" 🔁C, "Restore this automation?" 🔁C, "Duplicate automation" 🔁F · tabs ×1 · menus ×1 · loading, empty, permission-limited | ⬜ | ⬜ |
