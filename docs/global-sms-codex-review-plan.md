@@ -1,6 +1,8 @@
 # Global SMS launch readiness — Codex comparison plan
 
-**Status:** Separate proposal for Jafar's next-session review, 2026-10-22. This does not replace the [other agent's plan](global-sms-behavior-contract.md) or authorize a build.
+**Status:** Comparison reviewed 2026-10-22. Jafar approved the combined agreement in the
+[canonical plan](global-sms-behavior-contract.md), incorporating the corrections below. This document remains
+the historical comparison; follow the canonical plan and campaign checkpoint for current authorization.
 
 ## Goal and reference
 

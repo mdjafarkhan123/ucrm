@@ -2,7 +2,9 @@
 
 ## Context
 
-Jafar wants texting to work for contractors in every country, copying GoHighLevel (GHL) exactly.
+Jafar wants the GoHighLevel (GHL) texting experience wherever the required behavior is supported: choose a
+number, complete required business details, follow approval progress, then text in the inbox. Uplift handles
+Twilio and provider setup behind the scenes; contractors never need their own Twilio account or dashboard.
 There is no registered business yet, so the goal is a launch-ready app now. The real end-to-end test waits for
 the first paying customer.
 
@@ -13,13 +15,14 @@ Today the app texts for **US contractors only**:
 - the app has no way to search for or buy numbers (`twilio-provisioning.ts` only attaches an already-bought number);
 - there is no paperwork flow for countries outside the US and Canada.
 
-Sending, replies, opt-outs, the balance, the inbox and Automation already work for any country.
+Sending, replies, opt-outs, the balance, the inbox and Automation already exist and should be reused. Their
+existence does not establish that every country or sender-to-destination route is ready for activation.
 
 ### How GHL does it (from GHL's own help pages)
 
 - **Countries:** GHL publishes no fixed list. Its phone system (LC Phone) runs on Twilio's platform-for-other-
-  businesses (ISV) model, which is our setup too. A business can buy a number in any country where Twilio sells
-  one. The country picker shows Twilio's live stock, and prices follow Twilio's prices for each country.
+  businesses (ISV) model, which is our setup too. Businesses search supported countries and number types. HighLevel documents country, capability and inventory-dependent availability. Uplift uses
+  its own Twilio account's live inventory; identical availability between providers is not assumed.
   Sources: [Purchase a number](https://help.gohighlevel.com/support/solutions/articles/155000003226),
   [LC Phone pricing](https://help.gohighlevel.com/en/support/solutions/articles/48001223556).
 - **Buying a number:** Settings → Phone System → Add Number → pick a country → filter by local or toll-free and
@@ -35,7 +38,7 @@ Sending, replies, opt-outs, the balance, the inbox and Automation already work f
   switched on is refused. Source: [LC Phone error codes](https://help.gohighlevel.com/support/solutions/articles/155000005526).
 - **Countries with no texting numbers (for example New Zealand and Brazil):** this is a phone-company rule, not
   something GHL chose. The number list simply shows no texting-capable numbers there. Those businesses use
-  WhatsApp instead (a separate later channel).
+  WhatsApp as a possible separate later channel; Uplift does not offer that fallback in this build.
   Evidence: `docs/research/global-sms-country-requirements-2026-10-22.md`.
 
 Following GHL settles last session's six questions:
@@ -47,15 +50,23 @@ Following GHL settles last session's six questions:
 
 ## Approach
 
-**Always read the rules live from Twilio, never write them into our code** (Twilio's own warning, and GHL's
-"source of truth at purchase"). Our code stays general, so a new country works without a code change.
+**Read number inventory, purchase paperwork and provider prices live from Twilio.** Twilio warns against
+hardcoding regulatory-bundle requirements. Its Regulations API describes purchase paperwork, not every
+messaging, consent or destination rule. Reuse a general discovery flow, then verify applicable sender and
+destination rules before activation; a newly listed country is not automatically ready.
+
+Uplift adapts GHL's documented customer journey. The provider corrections below are part of the approved
+agreement, not optional contractor settings. Sources: [Twilio Regulations](https://www.twilio.com/docs/phone-numbers/regulatory/api/regulations),
+[Geo Permissions](https://www.twilio.com/docs/messaging/guides/sms-geo-permissions),
+[Advanced Opt-Out](https://www.twilio.com/docs/messaging/tutorials/advanced-opt-out).
 
 ### Part 1 — Country rules and the platform profile
 - Save the approved platform profile ID `BU0a5a8f75e733bf8f1020e8d923a017f5` and the monitoring email as server
   settings in `src/lib/server/env.ts`.
 - Build one server module that asks Twilio live what each country offers:
   - number types and whether each can text, send pictures or take calls (the AvailablePhoneNumbers API);
-  - the paperwork each needs (the Regulations API).
+  - the paperwork each needs, including end-user type (the Regulations API);
+  - account-specific number and message prices (the separate Pricing APIs).
 - Keep a short cache.
 - The country list is every country Twilio sells numbers in. The app blocks no region: Jafar controls who can use
   texting by who he sells subscriptions to (Jafar, 2026-10-22).
@@ -63,44 +74,61 @@ Following GHL settles last session's six questions:
 ### Part 2 — Contractor buys a number (like GHL's Add Number)
 - Phone & SMS settings gets an "Add number" dialog:
   - pick a country (the existing country picker), number type and abilities;
-  - see numbers with their monthly price;
+  - see numbers with their capabilities, final monthly selling price and applicable setup charges;
   - buy.
 - Server: search and buy in the contractor's own Twilio subaccount. Then reuse the existing attach step in
   `twilio-provisioning.ts` to join the Messaging Service and create the sender record. The sender table already
   has `country_code`, `sender_type` and the ability columns.
-- Every purchase is idempotent (it cannot buy twice), shows a loading state, and is audited.
+- Every purchase is idempotent (it cannot buy twice), shows a loading state, and is audited. Reconcile an
+  interrupted purchase with Twilio before retrying so neither a second number nor duplicate charge is created.
+- Explain provider outages, empty stock and no supported texting-number option distinctly. Voice-only numbers
+  are never shown as texting-ready.
 
 ### Part 3 — Paperwork (Regulatory Bundle / Address), like GHL's Compliance area
 - A "Compliance" section in Phone & SMS settings:
   - create a bundle for a country and number type;
   - the form fields are built from Twilio's live requirements;
-  - documents go to R2;
-  - submit, see the status, fix and resubmit when rejected.
+  - documents go to private, organization-isolated R2 storage;
+  - reuse supplied business answers and approved paperwork where applicable;
+  - submit, see plain approval progress, fix the explained problem and resubmit when rejected.
 - Server: Twilio's create → link → evaluate → submit sequence, stored in a ledger like the existing Trust Hub
   ledger (`trust-hub-submission-store.ts` pattern).
 - Status updates come by webhook, with a daily check as a safety net. This reuses the
   `trust-hub-status-poll-cron.ts` pattern.
 - The purchase in Part 2 asks for an approved bundle or address whenever Twilio requires one.
 
-### Part 4 — Registration per number, not per country
+### Part 4 — Readiness per sender and destination
 - Remove the fixed `US` and register per sender:
-  - **US local:** the existing 10DLC flow, finally wired to a "Submit" action;
+  - **US/Canada local texting US recipients:** the existing 10DLC flow, wired to a "Submit" action;
   - **US/Canada toll-free:** a new Toll-Free Verification flow (Twilio API) that reuses the contractor's already
     collected business answers;
-  - **Canada local:** no 10DLC for Canadian customers;
-  - **Other countries:** the approved bundle is enough.
-- The readiness strip shows what each number still needs.
+  - **Canada local texting Canadian recipients:** no US 10DLC requirement;
+  - **Other routes:** verify applicable sender registration, permitted use cases and destination restrictions
+    in addition to any approved purchase bundle.
+- Number ownership, paperwork approval and texting readiness are separate facts. Show the next action with
+  plain states such as "Business details needed", "Under review", "Action needed" and "Ready to text".
+- Platform ISV approval does not replace each contractor's identity or registration.
+- Twilio confirms that US and Canadian local numbers require registration for US recipients:
+  [registration requirements](https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account).
 
 ### Part 5 — Sending rules per country
-- An allowed-countries list for each contractor. Home country is on by default, others can be switched on.
-  Sends to a country that isn't on are refused at enqueue (`sms-estimate` and the enqueue command).
-- Picture messages follow each number's own picture ability instead of a fixed US/CA list
-  (`sms-estimate/+server.ts:76`). Where pictures can't be sent, Twilio's converter sends a link instead.
-- Twilio's Advanced Opt-Out handles STOP words in other languages. Quiet hours follow the customer's country.
+- Default the contractor's intended destination to its home country; this does not bypass readiness checks.
+  Contractors request additional destinations inside Uplift and see "Setting up" until verified.
+- Uplift operations handles Twilio destination permissions. Twilio does not allow changing SMS Geo Permissions
+  through its API; an authorized Uplift administrator uses the Twilio dashboard where necessary and verifies
+  the outcome. Account inheritance may already provide the permission; never assume a local switch enables it.
+- Check recipient destination, sender suitability, consent, opt-out, recipient-local sending restrictions,
+  credit and rate at estimate, enqueue and dispatch. Reuse existing sending guards.
+- Picture messages follow both sender and destination support. Where Twilio supports conversion to a link,
+  configure it and tell the contractor how the picture will arrive; otherwise explain the restriction.
+- Explicitly configure supported opt-out languages and replies. Twilio matches configured keywords; it does
+  not translate them. Preserve carrier-specific toll-free opt-out behavior.
 
 ### Part 6 — Prices per country
-- Retail rates are already stored by destination. Add per-country number and text prices: Twilio's price plus
-  our margin, set in Jafar's existing rate controls.
+- Reuse the existing credit ledger, destination retail rates and Jafar's rate controls. Twilio's costs inform
+  Jafar's published selling rates and margin; provider cost and customer charge remain separate.
+- Show the final selling price before sending or committing to a purchase, including applicable recurring
+  and setup charges. Preserve the rate used for each charge so later price changes do not rewrite billing.
 
 ### Not in this build (later, recorded as deferred)
 - GHL's paid identity check (Persona) before +1 numbers.
@@ -108,19 +136,32 @@ Following GHL settles last session's six questions:
 - Moving an existing number in from another provider (porting).
 
 ## Order and design
-1. Pencil designs come first, per the design skill: the Add number dialog, the Compliance list and form, the
-   per-number readiness, and Jafar's country controls. Jafar approves them, then they get built.
+1. **Current instruction (2026-10-22): update the campaign only; no Pencil design or implementation now.**
+   Jafar will start a new session for designing. Pencil designs come first, per the design skill: the Add number
+   dialog, the Compliance list and form, per-number readiness, charges, and Uplift's internal setup controls.
+   Jafar approves them, then they get built.
 2. Part 1 is the server foundation.
 3. Parts 2 and 3 run together, because a purchase needs the paperwork.
 4. Then Part 4, then Parts 5 and 6.
 
+## Interfaces
+
+Extend existing organization-scoped `/api/*` services for country/number discovery, compliance submissions,
+purchases, readiness and destination requests. Validate writes with Zod and keep credentials, the approved
+ISV profile ID and provider operations server-side. Reuse sender identities, registrations, SMS mode,
+conversations, retail-rate versions and balance records.
+
 ## Verification (no money spent)
-- Unit tests against fake Twilio replies for every new flow (vitest, like `twilio-trust-hub.spec.ts`).
+- Unit tests against fake Twilio replies for every new flow: rejection/resubmission, stock changes, provider
+  failures, duplicate/interrupted purchases, destination permission mismatch, unsupported MMS, opt-outs and
+  credit reservation/settlement (vitest, like `twilio-trust-hub.spec.ts`).
 - Read-only live Twilio calls prove real country data loads: number search and requirements for the US, Canada,
   the UK, Australia, Germany and Brazil. Nothing is bought.
-- Browser check in Chrome at 1440 wide, in light and dark: search shows real numbers and prices, the paperwork
-  form shows the UK's real fields, New Zealand and Brazil show "no texting numbers".
-- Real purchase, registration and a live text wait for the first paying customer, with Jafar's yes.
+- Follow `docs/screen-check.md` on desktop/mobile and light/dark, covering loading, empty, pending, error and
+  ready states. Search shows actual account inventory and selling prices; forms reflect real requirements.
+- With the first paying business and Jafar's authorization, prove purchase, required registration, destination
+  permission, outbound delivery, inbound reply, opt-out and billing before activation. Repeat applicable checks
+  for later destinations. Global selection is not proof of worldwide delivery.
 
 ## Platform location (settled 2026-10-22)
 Uplift being registered in Bangladesh is not a Twilio limit. The ISV guide requires only an approved Primary Business
@@ -138,4 +179,12 @@ registers as a Standard brand with its local company number
 Jafar accepted this plan's direction on 2026-10-22 ("follow GHL totally"; every country Twilio supports; no region blocked in the app — Jafar simply does not sell to Asia).
 Each new screen still needs its Pencil design approved before it is built.
 
-**Review pending:** Jafar will review this plan with another agent in the next session before any build starts.
+**Combined agreement approved 2026-10-22:** after comparing Claude's plan and
+[Codex's comparison](global-sms-codex-review-plan.md), Jafar instructed "Implement the plan." The final
+agreement retains the GHL journey with the readiness, destination-permission, language and billing corrections
+above. His goal: contractors find it easy while Uplift handles provider work behind the scenes.
+
+**Latest scope instruction:** "dont do any pencil design now" and "just udate the campaign". This session
+records approval and updates Memory only. No Stage 10 implementation or Pencil work has started. Next delivery
+step, when Jafar resumes it, is Pencil design review; approval of this plan does not approve new screens or live
+provider spending.
