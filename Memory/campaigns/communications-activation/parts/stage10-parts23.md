@@ -1,8 +1,7 @@
 # Stage 10 Parts 2 + 3 — Buy a number, and its paperwork
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 2, § Part 3
-**Stage:** Waiting to merge · **Branch / folder:** `claude/stage10-parts23` in `.worktrees/stage10-parts23` (pushed)
-**Claim:** `4e0ad188b841` (owner `claude-stage10-opus`) — keep until merged.
+**Stage:** Built and merged to main 2026-10-22 · live proof waits (see Next)
 **Done when:** a business can buy a texting number from Add number (board `qaFQf`) and send country paperwork
 (board `A0URqF`), every state matches its board, then merged to main.
 
@@ -13,7 +12,7 @@ Migrations `20261222120000`/`…120100` (live); saga `sms-number-purchase.ts`; U
 renewal not built (needs research + Jafar's decision before any live purchase); sweep for orders stuck
 "purchasing"; bought/refusal states unscreenshotted (need a real buy).
 
-## Part 3 — built 2026-10-22 (merging)
+## Part 3 — built 2026-10-22 (merged)
 
 - DB (applied live): `20261223090000_sms_number_paperwork.sql` — sets, documents (file = protected setup document,
   fact key `texting.number_paperwork`), history. Server: `twilio-regulatory.ts`, `sms-number-paperwork*.ts`; API under
@@ -30,8 +29,8 @@ renewal not built (needs research + Jafar's decision before any live purchase); 
 
 ## Next
 
-Merge `claude/stage10-parts23` to main, push, release claim `4e0ad188b841`; then Stage 10 Part 4 (readiness per
-number, board `NbWfA`).
+Code is done; the part closes after live proof: Jafar sets number prices, then one real buy and one real paperwork
+send with truthful business details and his go-ahead. Meanwhile build Stage 10 Part 4 (readiness, board `NbWfA`).
 
 ## Questions for Jafar
 

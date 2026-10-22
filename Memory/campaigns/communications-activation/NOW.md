@@ -16,8 +16,8 @@ built 2026-10-22 on branch `claude/stage10-parts23`, not merged** — `parts/sta
 
 ## Next
 
-Merge Parts 2 + 3 if not yet on main (part note), then Stage 10 Part 4: readiness of each number (board `NbWfA`,
-plan § Part 4). Open question for Jafar in the part note (decision email).
+Stage 10 Part 4: readiness of each number (board `NbWfA`, plan § Part 4). Parts 2 + 3 are merged; their live
+proof waits on number prices and Jafar's go-ahead. Open question for Jafar in the part note (decision email).
 
 ## Constraints
 
