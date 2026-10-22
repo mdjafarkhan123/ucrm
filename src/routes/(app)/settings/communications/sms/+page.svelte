@@ -107,6 +107,13 @@
 
 	async function runAction(cardKey: string, action: ReadinessAction) {
 		switch (action.kind) {
+			case 'toll_free_check':
+				await goto(
+					resolve('/(app)/settings/communications/sms/toll-free/[senderId]', {
+						senderId: action.sender_id
+					})
+				);
+				return;
 			case 'update_paperwork':
 			case 'see_paperwork':
 				await goto(

@@ -75,6 +75,7 @@
 		add_business_details: pencilIcon,
 		fix_business_details: filePencilIcon,
 		see_business_details: eyeIcon,
+		toll_free_check: filePencilIcon,
 		update_paperwork: filePencilIcon,
 		see_paperwork: eyeIcon
 	};
