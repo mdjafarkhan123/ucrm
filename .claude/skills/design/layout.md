@@ -449,6 +449,39 @@ paperwork · Approved", `A0URqF`, Jafar 2026-10-22). Texting parts use `--color-
 - **States:** list empty, loading and couldn't load use page states inside the list card. Sending: the button's
   spinner, Back dimmed. Sent: a centred card with a 40 success `send` tile, "Sent for review" 24/700, Back to paperwork.
 
+## Number readiness
+
+Whether each texting number can text yet, on Phone & SMS (Pencil: "Communications · Number readiness · Approved
+B", `NbWfA`, Jafar 2026-10-22). Texting parts use `--color-conversation`.
+
+- **Page:** the breadcrumb trail (Settings › Phone & SMS), the page header (40 conversation `phone` tile; Number
+  paperwork secondary `file-check`, Add number main `plus`), then a summary card, the number cards two to a row
+  (24 apart), and one 12/500 quiet foot line with a 14 informative `info`.
+- **Summary card:** white, padding 24, gap 32. Left: a 40 conversation `message-circle` tile beside "CAN YOU
+  TEXT YET?" 12/600 uppercase quiet; the count at 34/700 heading ("2 of 4", "All 3") beside its words 16/600;
+  one 14 quiet line naming what needs you, or "Nothing needs you"; a bar of one 10-high round segment per number
+  in its status colour, 4 apart; a legend of 8 dots and 12/500 quiet counts. Right: a 440 subtle box (radius 12,
+  1px border, padding 14 16), "WHERE YOU CAN TEXT", one row per country (24 round flag, name 14/600, status
+  pill: Ready `success`, Setting up `warning`), then a 13/600 `--color-interactive` link with `plus`.
+- **Number card:** white, radius 16, 1px border; Action needed and Texting paused take a 1.5px
+  `--color-critical` edge. Top (padding 20, gap 18): a 40 round flag, the name 16/600 (a plain-label Default tag
+  with `star` beside it) over the number, country and kind 12/500 quiet, and the ⋯ icon button. The journey on a
+  subtle box (radius 12, padding 14 12): four 104-wide steps (Bought, Paperwork, Approval, Texting), each a 28
+  circle over its name 12/600 and a 12/500 quiet hint, joined by 2px lines (`--color-success--surface-edge`
+  between done steps, `--color-border` after). Circles: done `success` `check`, waiting `warning` `hourglass`
+  (`loader` while connecting), your turn `informative` `pencil`, failed `critical` `x`, not yet white with a
+  border and its number. Then the ability chips (28 high, white, 1px border, 14 conversation icon, 12/600).
+- **Status band:** the card's foot in the status `--surface`, padding 14 20, gap 12: a 32 white tile (status
+  `--surface-edge` edge, 16 icon), the title 14/600 over one 12/500 line, both in `--onSurface`, and at most one
+  small secondary button at the right. Statuses: Business details needed `informative` (`building-2`), Under
+  review `warning` (`hourglass`), Action needed `critical` (`file-x`), Ready to text `success`
+  (`circle-check`), Getting your number ready `warning` (`loader`), Texting paused `critical` (`circle-pause`).
+- **Card actions:** the ⋯ opens the action menu (276) with Rename and Make default; Make default is disabled
+  (`--color-disabled`) with a 12 quiet hint until the number can text. Renaming puts a 36 field with a 1.5px
+  `--color-interactive` edge in place of the name, with Cancel and Save name (small main, `check`).
+- **States:** loading shows shapes for the summary and each card (the band as a subtle strip); no numbers and
+  couldn't load use page states in a white card (conversation `phone` with Add number; critical with Try again).
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

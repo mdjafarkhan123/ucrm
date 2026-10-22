@@ -16,19 +16,18 @@
 - [x] Number paperwork (Compliance) list and form — Jafar approved 2026-10-22 ("approved"), board `A0URqF`
   renamed "Number paperwork · Approved". Every state drawn and approved the same day ("approved"), light only (Jafar: "no need to draw dark
   mode"). Rules in `.claude/skills/design/layout.md` § Number paperwork.
-- [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text") —
-  options A (numbers list with a 4-step track per row + side panel for one number) and B (summary "2 of 4 can
-  text" + one card per number with its journey and a status band) drawn 2026-10-22 on board `NbWfA`, waiting
-  for Jafar's choice. Status colours: details needed `informative`, under review `warning`, action needed
-  `critical`, ready `success`.
+- [x] Readiness of each number — Jafar approved B 2026-10-22 ("I see the design B I approved"): summary "2 of 4
+  numbers can text" + one card per number with its four-step journey and a status band. Option A deleted; board
+  `NbWfA` renamed "Number readiness · Approved B". Every state drawn the same day (page states, summary none/all,
+  turned down, just bought, another country on its way, texting paused, ⋯ menu, renaming, sending, saving
+  default), light only, waiting for Jafar's look. Rules in `.claude/skills/design/layout.md` § Number readiness.
 - [ ] Charges shown before sending or buying.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Ask Jafar to choose A or B on board `NbWfA` (or a mix). On his yes: delete the unchosen option, rename the
-board "Approved", then draw every state (loading, empty, couldn't load, each status, a number that lost a
-destination) light only, and add the rules to the design skill. If `concept.pen` is uncommitted, ask Jafar for
+Ask Jafar to look at the readiness states on `NbWfA`; record his yes here. Then draw charges shown before sending
+or buying (research GHL/Twilio price display first), light only. If `concept.pen` is uncommitted, ask Jafar for
 Ctrl+S and commit it from main.
 
 ## Notes
