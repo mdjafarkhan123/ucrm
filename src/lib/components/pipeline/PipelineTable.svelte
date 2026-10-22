@@ -363,7 +363,7 @@
 			</td>
 			<td>
 				<span class="pipeline-table__age">
-					<StageAgeChip label={age.label} description={age.description} />
+					<StageAgeChip label={age.label} description={age.description} words={false} />
 					{#if quiet}
 						<Badge size="small" status="warning">{quiet.label}</Badge>
 					{/if}

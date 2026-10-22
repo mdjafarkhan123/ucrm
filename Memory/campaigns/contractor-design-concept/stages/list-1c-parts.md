@@ -19,7 +19,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `packages/PackagePrice` |  | ✅ Batch 57 `S4I7i` B 2026-10-22 | ⬜ |
 | `payments/OtherWaysToPay` |  | ✅ Batch 58 `s5UUVu` A 2026-10-22 | ✅ 2026-10-22 |
 | `pipeline/MarkOpportunityLostDialog` | 🔁F pop-up · loading | ✅ Batch 59 `o0HfC` A 2026-10-22 | ✅ 2026-10-22 |
-| `pipeline/StageAgeChip` |  | ✅ Batch 60 `B0GT1L` B 2026-10-22 | ⬜ |
+| `pipeline/StageAgeChip` |  | ✅ Batch 60 `B0GT1L` B 2026-10-22 | ✅ 2026-10-22 |
 | `quotes/QuoteClientViewBlock` |  | ⬜ | ⬜ |
 | `quotes/QuoteEmailPreview` |  | ⬜ | ⬜ |
 | `quotes/SendQuoteDialog` | ◆ pop-up · loading | ⬜ | ⬜ |
