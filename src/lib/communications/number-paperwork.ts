@@ -466,8 +466,30 @@ export type PaperworkList = { paperwork: PaperworkSummary[]; reused: ReusedDetai
 
 const BASE = '/api/settings/communications/sms/paperwork';
 
+/** A refused paperwork call: the server's own words, its code and, for a send, what is still missing. */
+export type PaperworkRequestError = Error & {
+	status: number;
+	code: string | null;
+	problems: PaperworkFix[];
+	fieldErrors: Record<string, string[]>;
+};
+
+async function refusal(response: Response, fallback: string): Promise<PaperworkRequestError> {
+	const body = (await response.json().catch(() => null)) as {
+		error?: string;
+		code?: string;
+		problems?: PaperworkFix[];
+		field_errors?: Record<string, string[]>;
+	} | null;
+	const error = httpError(response, body?.error || fallback) as PaperworkRequestError;
+	error.code = body?.code ?? null;
+	error.problems = body?.problems ?? [];
+	error.fieldErrors = body?.field_errors ?? {};
+	return error;
+}
+
 async function readJson<T>(response: Response, fallback: string): Promise<T> {
-	if (!response.ok) throw await httpError(response, fallback);
+	if (!response.ok) throw await refusal(response, fallback);
 	return (await response.json()) as T;
 }
 
@@ -543,7 +565,7 @@ export async function sendPaperwork(
 
 export async function deletePaperwork(id: string): Promise<void> {
 	const response = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
-	if (!response.ok) throw await httpError(response, 'The draft could not be deleted.');
+	if (!response.ok) throw await refusal(response, 'The draft could not be deleted.');
 }
 
 export const paperworkKeys = {
@@ -551,3 +573,28 @@ export const paperworkKeys = {
 	list: () => [...paperworkKeys.all, 'list'] as const,
 	detail: (id: string) => [...paperworkKeys.all, 'detail', id] as const
 };
+
+export async function startPaperworkUpload(
+	id: string,
+	documentType: string,
+	file: File
+): Promise<{ file_id: string; mime_type: string; upload_url: string }> {
+	return readJson(
+		await fetch(`${BASE}/${id}/documents`, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({
+				document_type: documentType,
+				file_name: file.name,
+				mime_type: file.type,
+				size_bytes: file.size
+			})
+		}),
+		'That file could not be added.'
+	);
+}
+
+export async function finishPaperworkUpload(id: string, fileId: string): Promise<void> {
+	const response = await fetch(`${BASE}/${id}/documents/${fileId}/complete`, { method: 'POST' });
+	if (!response.ok) throw await refusal(response, 'That file could not be added.');
+}

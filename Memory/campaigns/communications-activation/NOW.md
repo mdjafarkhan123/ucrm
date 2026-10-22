@@ -15,8 +15,9 @@ built 2026-10-22 on branch `claude/stage10-parts23`, not merged** — `parts/sta
 
 ## Next
 
-Build Part 3 (paperwork, board `A0URqF`) in `.worktrees/stage10-parts23`, then merge Parts 2+3. Before any live
-purchase: Jafar's number prices and the monthly renewal decision (open items in the part note).
+Part 3 server is built and pushed; build its screens (step list in `parts/stage10-parts23.md` § Next) in
+`.worktrees/stage10-parts23`, then merge Parts 2+3. Before any live purchase: Jafar's number prices and the
+monthly renewal decision.
 
 ## Constraints
 
@@ -24,4 +25,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `continue communication campaign` — build Stage 10 Part 3 in the branch above.
+Resume: `read memory and continue communications-activation` — build the Stage 10 Part 3 screens.
