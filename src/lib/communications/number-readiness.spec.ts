@@ -30,6 +30,7 @@ function number(overrides: Partial<ReadinessNumber> = {}): ReadinessNumber {
 			needs_paperwork: false
 		},
 		paperwork: null,
+		toll_free_check: null,
 		...overrides
 	};
 }
@@ -121,6 +122,57 @@ describe('numberCard', () => {
 		expect(card.steps[2].state).toBe('your_turn');
 		expect(card.status).toBe('business_details_needed');
 		expect(card.action).toBeNull();
+	});
+
+	it('follows a toll-free number through its own check: sent, turned down, approved', () => {
+		const tollFree = (check: Partial<NonNullable<ReadinessNumber['toll_free_check']>>) =>
+			number({
+				sender_type: 'toll_free',
+				number_type: 'toll_free',
+				toll_free_check: {
+					id: 'check-1',
+					status: 'under_review',
+					failure_reason: null,
+					submitted_at: '2026-10-21T10:00:00Z',
+					decided_at: null,
+					edit_expires_at: null,
+					...check
+				}
+			});
+
+		const sent = numberCard(tollFree({}), null, now);
+		expect(sent.steps[2]).toMatchObject({ state: 'waiting', hint: 'Sent Oct 21' });
+		expect(sent.status).toBe('under_review');
+		expect(sent.line).toContain('toll-free');
+
+		const turnedDown = numberCard(
+			tollFree({
+				status: 'needs_fix',
+				failure_reason: 'Business email must use an official domain.',
+				edit_expires_at: '2026-10-28T10:00:00Z'
+			}),
+			// A US registration's own state never decides a toll-free number.
+			registration('approved'),
+			now
+		);
+		expect(turnedDown.steps[2]).toMatchObject({ state: 'failed', hint: 'Turned down' });
+		expect(turnedDown.status).toBe('action_needed');
+		expect(turnedDown.title).toBe('Carriers turned down your toll-free check');
+		expect(turnedDown.line).toBe(
+			'Business email must use an official domain. Send the fix by Oct 28.'
+		);
+
+		const approved = numberCard(tollFree({ status: 'approved' }), null, now);
+		expect(approved.steps[2].state).toBe('done');
+		expect(approved.status).toBe('getting_ready');
+
+		const live = numberCard(
+			{ ...tollFree({ status: 'approved' }), lifecycle_state: 'ready' },
+			null,
+			now
+		);
+		expect(live.status).toBe('ready_to_text');
+		expect(live.line).toBe('Customers in US and Canada get your texts from this number.');
 	});
 
 	it('shows a number still being bought as connecting, with no sender yet', () => {

@@ -4,12 +4,13 @@ import { SMS_REGISTRATION_USE_CASE } from './sms-registration';
 import type {
 	ReadinessNumber,
 	ReadinessOrder,
-	ReadinessPaperwork
+	ReadinessPaperwork,
+	ReadinessTollFreeCheck
 } from '$lib/communications/number-readiness';
 
 // Joins the rows behind number readiness (Stage 10 Part 4) into one fact list per number: the number itself,
 // the order that bought it, and the paperwork for its country and kind. A number still being connected has an
-// order but no sender yet, so it gets its own entry too. The join is pure; the switch-on helpers below call the
+// order but no sender yet, so it gets its own entry too. A toll-free number also carries its carrier check. The join is pure; the switch-on helpers below call the
 // database command that turns passed approvals into live numbers.
 
 export type ReadinessSenderRow = {
@@ -54,6 +55,8 @@ export type ReadinessPaperworkRow = {
 	decided_at: string | null;
 };
 
+export type ReadinessTollFreeCheckRow = ReadinessTollFreeCheck & { sender_identity_id: string };
+
 function order(row: ReadinessOrderRow): ReadinessOrder {
 	return {
 		state: row.state as ReadinessOrder['state'],
@@ -78,8 +81,16 @@ function paperwork(row: ReadinessPaperworkRow | undefined): ReadinessPaperwork |
 export function readinessNumbers(
 	senders: ReadinessSenderRow[],
 	orders: ReadinessOrderRow[],
-	paperworkRows: ReadinessPaperworkRow[]
+	paperworkRows: ReadinessPaperworkRow[],
+	tollFreeRows: ReadinessTollFreeCheckRow[] = []
 ): ReadinessNumber[] {
+	const tollFreeCheckFor = (senderId: string): ReadinessTollFreeCheck | null => {
+		const row = tollFreeRows.find((check) => check.sender_identity_id === senderId);
+		if (!row) return null;
+		const { sender_identity_id: _sender, ...check } = row;
+		void _sender;
+		return check;
+	};
 	const paperworkFor = (country: string, numberType: string | null) =>
 		paperwork(
 			paperworkRows.find((row) => row.country_code === country && row.number_type === numberType)
@@ -110,7 +121,8 @@ export function readinessNumbers(
 			is_default_sender: sender.is_default_sender,
 			created_at: sender.created_at,
 			order: bought ? order(bought) : null,
-			paperwork: paperworkFor(country, numberType)
+			paperwork: paperworkFor(country, numberType),
+			toll_free_check: tollFreeCheckFor(sender.id)
 		};
 	});
 
@@ -130,7 +142,8 @@ export function readinessNumbers(
 			is_default_sender: false,
 			created_at: row.created_at,
 			order: order(row),
-			paperwork: paperworkFor(row.country_code, row.number_type)
+			paperwork: paperworkFor(row.country_code, row.number_type),
+			toll_free_check: null
 		}));
 
 	// The default first, then the oldest, so the cards keep their places as numbers are added.
