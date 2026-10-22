@@ -409,6 +409,46 @@ Branding · Approved A", `FjLSw`, Jafar 2026-10-22). Full-width page frame, bloc
 - **Staff who can't change it:** an `informative` notice strip with a lock under the page header; no Replace,
   Remove, Reset, quick picks or save bar; the colour code field shows the disabled look; the preview still works.
 
+## Number paperwork
+
+The documents a country asks for before a texting number can be bought there (Pencil: "Communications · Number
+paperwork · Approved", `A0URqF`, Jafar 2026-10-22). Texting parts use `--color-conversation`.
+
+- **List page:** full-width page frame. The breadcrumb trail (Settings › Phone & SMS › Number paperwork,
+  `file-check`) and page header (40 conversation `file-check` tile; New paperwork, main, `file-plus`). Then the list
+  card filling the left and a 360 side column, 24 apart.
+  - **List card:** Card header (`files`, hint "4 sets · 1 needs a fix"), an uppercase 12 head row on
+    `--color-surface--background--subtle`, rows padding 14 20 with a 1px line between: a 32 round flag, the country
+    and kind 14/600 over "Business · sent Oct 18" 12/500 quiet, a 140 numbers column (14 icon, 12 text: a number in
+    heading with a conversation `phone`, or "None yet" quiet with `hourglass`), a 130 status column (Draft
+    `inactive`, Under review `warning`, Approved `success`, Needs a fix `critical`), then `chevron-right`.
+  - **Needs a fix row:** sits first, filled `--color-critical--surface`, its meta in `--onSurface`. Under it a white
+    box (radius 12, 1px critical `--surface-edge`, padding 12 14): a 32 critical tile (`file-x`), what's wrong 14/600
+    over the reason 12 quiet, and Fix and send again (small secondary, `file-pen`).
+  - Foot band (subtle, 1px line on top, padding 12 20): a 14 informative `info` and one 12/500 quiet line.
+  - **Side cards:** How it works (informative `route`): numbered 28 informative circles joined by a 2px
+    `--surface-edge` line, title 14/600 over a 12 quiet hint. Details we reuse (client `building-2`): fact rows
+    (32 tile, label 12/500 quiet over value 14/600) and a subtle foot band with a 13/600 `--color-interactive` link.
+- **New paperwork:** the setup-steps frame (760 column): breadcrumb ending in New paperwork, header with the save
+  state and Save draft, the step track (Country and kind, Business details, Documents, Check and send), one step
+  card in conversation tiles, the footer bar (Back, "Step 2 of 4 · saved as you type", Continue).
+  - **Business details:** two radio tiles (A business, Just me), then groups (1px line on top, 16/600 title, 12
+    quiet hint), fields two to a row. The chosen address is a radio card with a 1.5px `--color-interactive` edge,
+    a 32 client `map-pin` tile and a success pill.
+  - **Documents:** one box per document (white, radius 12, 1px border, padding 16): 32 tile, name 14/600 over what
+    it must show 12 quiet, a state pill (Needed `warning`, 64% `informative`, Checking `warning`, Didn't upload
+    `critical`, Added `success`); "What counts" chips (28 high, subtle, 1px border, a 14 success `check`); the file
+    box (`files.md` upload look) or the file line (subtle, radius 8, the 40 progress ring around a 32 round tile). A
+    lock notice strip (`informative`) says files stay private.
+  - **Check and send:** fact rows with a quiet Change, "WHAT HAPPENS NEXT" boxes as on the Add number pop-up, a
+    `success` notice strip that paperwork is free, Send for review (main, `send`).
+- **Opened set:** the flag (40) beside the title, a large status pill. A status card: a band in the status
+  `--surface` (40 white tile, 16/600 title and 12 line in `--onSurface`) with the action at the right; Needs a fix
+  adds a 1.5px `--color-critical` edge and the form-error rows below. Then What you sent (the Check rows; the row
+  to fix filled `--color-critical--surface` with Replace).
+- **States:** list empty, loading and couldn't load use page states inside the list card. Sending: the button's
+  spinner, Back dimmed. Sent: a centred card with a 40 success `send` tile, "Sent for review" 24/700, Back to paperwork.
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

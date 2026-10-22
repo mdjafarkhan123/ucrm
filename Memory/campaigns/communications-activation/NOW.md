@@ -15,7 +15,7 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 ## Next
 
 Add number pop-up approved B with every state and dark mode 2026-10-22 (`concept.pen` board `qaFQf`). Number
-paperwork (Compliance) list and form drawn 2026-10-22 on board `A0URqF`, waiting for Jafar's review. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
+paperwork list and form approved with every state 2026-10-22 (`A0URqF`). Per-number readiness is the next drawing. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
 
 ## Constraints
 
