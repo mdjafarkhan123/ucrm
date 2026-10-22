@@ -493408,7 +493408,7 @@
       "id": "A0URqF",
       "x": 57784,
       "y": -1273,
-      "name": "Concept · Communications · Number paperwork · 2026-10-22",
+      "name": "Concept · Communications · Number paperwork · Approved · 2026-10-22",
       "width": 1536,
       "fill": "$color-surface-background",
       "layout": "vertical",
@@ -493428,7 +493428,7 @@
               "id": "PXX3r",
               "name": "Eyebrow",
               "fill": "$color-interactive",
-              "content": "COMMUNICATIONS · STAGE 10 · NUMBER PAPERWORK · FOR JAFAR TO REVIEW · 2026-10-22",
+              "content": "COMMUNICATIONS · STAGE 10 · NUMBER PAPERWORK · APPROVED BY JAFAR · 2026-10-22",
               "fontFamily": "$font-family",
               "fontSize": "$font-size-overline",
               "fontWeight": "700",
@@ -498385,6 +498385,3071 @@
                               "content": "Send for review"
                             }
                           }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "igu6v",
+          "name": "Every state",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "Z1KEe",
+              "name": "Label",
+              "fill": "$color-heading",
+              "content": "Every state",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-larger",
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "ye4fi",
+              "name": "Note",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1200,
+              "content": "The list card when there is nothing yet, while it loads and when it can't load; an opened set in each status; a document box as a file goes up; a field to fix; sending; and sent. No dark-mode drawing: dark comes from the colour tokens and is checked on the built screen (Jafar, 2026-10-22).",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "AIDye",
+              "name": "Row · List card",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Yc8RA",
+                  "name": "Empty",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rJvIb",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "EMPTY · NO PAPERWORK YET",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yVVkt",
+                      "name": "Card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "J2hsk",
+                          "type": "ref",
+                          "ref": "hHVVU",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "S2bkqw": {
+                              "fill": "$color-conversation-surface",
+                              "stroke": "$color-conversation-surface-edge"
+                            },
+                            "M4w5I": {
+                              "icon": "files",
+                              "fill": "$color-conversation"
+                            },
+                            "rdm2s": {
+                              "content": "Your paperwork"
+                            },
+                            "qXDmB": {
+                              "content": "Nothing yet"
+                            },
+                            "I1guOa": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uLJXh",
+                          "name": "State",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            32,
+                            40
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "y8Dd1G",
+                              "type": "ref",
+                              "ref": "BfB4y",
+                              "name": "Tile",
+                              "fill": "$color-conversation-surface",
+                              "stroke": "$color-conversation-surface-edge",
+                              "descendants": {
+                                "IAbCu": {
+                                  "icon": "files",
+                                  "fill": "$color-conversation"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "hSyhS",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "No paperwork yet",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-larger",
+                              "fontWeight": "600",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "T3XSv",
+                              "name": "Line",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "Most countries outside the US and Canada ask for it before you can buy a texting number there.",
+                              "lineHeight": 1.45,
+                              "textAlign": "center",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uC4KS",
+                              "name": "Action",
+                              "padding": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "id": "T8Vmq",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "New paperwork",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "icon": "file-plus"
+                                    },
+                                    "vaRXs": {
+                                      "content": "New paperwork"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AwDvY",
+                  "name": "Loading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zE3cI",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "LOADING",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EOf3V",
+                      "name": "Card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "Cy9B4",
+                          "type": "ref",
+                          "ref": "hHVVU",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "S2bkqw": {
+                              "fill": "$color-conversation-surface",
+                              "stroke": "$color-conversation-surface-edge"
+                            },
+                            "M4w5I": {
+                              "icon": "files",
+                              "fill": "$color-conversation"
+                            },
+                            "rdm2s": {
+                              "content": "Your paperwork"
+                            },
+                            "qXDmB": {
+                              "content": "Loading…"
+                            },
+                            "I1guOa": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "V6sLL",
+                          "name": "Bones",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "QTCBG",
+                              "name": "Bone row",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-circle",
+                                  "id": "jt9Ha",
+                                  "name": "Square",
+                                  "fill": "$color-border",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "pVyK0",
+                                  "name": "Lines",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 5,
+                                      "id": "wqR5V",
+                                      "name": "Line",
+                                      "fill": "$color-border",
+                                      "width": 180,
+                                      "height": 10
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 4,
+                                      "id": "JsLV9",
+                                      "name": "Line",
+                                      "fill": "$color-surface-background-subtle",
+                                      "width": 120,
+                                      "height": 8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 10,
+                                  "id": "R8dll",
+                                  "name": "Pill",
+                                  "fill": "$color-border",
+                                  "width": 56,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "c9haw",
+                              "name": "Bone row",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-circle",
+                                  "id": "Wy40K",
+                                  "name": "Square",
+                                  "fill": "$color-border",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "sML7t",
+                                  "name": "Lines",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 5,
+                                      "id": "A5gJH",
+                                      "name": "Line",
+                                      "fill": "$color-border",
+                                      "width": 150,
+                                      "height": 10
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 4,
+                                      "id": "fC53a",
+                                      "name": "Line",
+                                      "fill": "$color-surface-background-subtle",
+                                      "width": 200,
+                                      "height": 8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 10,
+                                  "id": "G8ui3A",
+                                  "name": "Pill",
+                                  "fill": "$color-border",
+                                  "width": 56,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ytm7n",
+                              "name": "Bone row",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-circle",
+                                  "id": "tdDyt",
+                                  "name": "Square",
+                                  "fill": "$color-border",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Ekh9j",
+                                  "name": "Lines",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 5,
+                                      "id": "g98xAp",
+                                      "name": "Line",
+                                      "fill": "$color-border",
+                                      "width": 200,
+                                      "height": 10
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 4,
+                                      "id": "N6P1wZ",
+                                      "name": "Line",
+                                      "fill": "$color-surface-background-subtle",
+                                      "width": 140,
+                                      "height": 8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 10,
+                                  "id": "AVC30",
+                                  "name": "Pill",
+                                  "fill": "$color-border",
+                                  "width": 56,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ye4ZM",
+                              "name": "Bone row",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-circle",
+                                  "id": "eCV82",
+                                  "name": "Square",
+                                  "fill": "$color-border",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "w6nf0",
+                                  "name": "Lines",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 5,
+                                      "id": "gcUTa",
+                                      "name": "Line",
+                                      "fill": "$color-border",
+                                      "width": 130,
+                                      "height": 10
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "cornerRadius": 4,
+                                      "id": "pSK3I",
+                                      "name": "Line",
+                                      "fill": "$color-surface-background-subtle",
+                                      "width": 170,
+                                      "height": 8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 10,
+                                  "id": "mXBW5",
+                                  "name": "Pill",
+                                  "fill": "$color-border",
+                                  "width": 56,
+                                  "height": 20
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XjNNR",
+                  "name": "Couldn't load",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hPqaG",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "COULDN'T LOAD",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DTwkw",
+                      "name": "Card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "vz3Rk",
+                          "type": "ref",
+                          "ref": "hHVVU",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "S2bkqw": {
+                              "fill": "$color-conversation-surface",
+                              "stroke": "$color-conversation-surface-edge"
+                            },
+                            "M4w5I": {
+                              "icon": "files",
+                              "fill": "$color-conversation"
+                            },
+                            "rdm2s": {
+                              "content": "Your paperwork"
+                            },
+                            "qXDmB": {
+                              "content": "Couldn't load"
+                            },
+                            "I1guOa": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "c9Bfxj",
+                          "name": "State",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            32,
+                            40
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "s5btE",
+                              "type": "ref",
+                              "ref": "BfB4y",
+                              "name": "Tile",
+                              "fill": "$color-critical-surface",
+                              "stroke": "$color-critical-surface-edge",
+                              "descendants": {
+                                "IAbCu": {
+                                  "icon": "triangle-alert",
+                                  "fill": "$color-critical"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "WiBOh",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "Paperwork couldn't load",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-larger",
+                              "fontWeight": "600",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "k2d5M",
+                              "name": "Line",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 320,
+                              "content": "We couldn't reach the phone company just now. Your paperwork is safe.",
+                              "lineHeight": 1.45,
+                              "textAlign": "center",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rDjmI",
+                              "name": "Action",
+                              "padding": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "id": "RQPZW",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Try again",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "refresh-cw"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Try again"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "uqmbE",
+              "name": "Row · Opened set",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "y5dNRz",
+                  "name": "Needs a fix",
+                  "width": 760,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yW0zg",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "OPENED SET · NEEDS A FIX",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Hb9uf",
+                      "name": "Page",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 24,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uhbNJ",
+                          "name": "Page header",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "kgEEe",
+                              "name": "Flag · GB",
+                              "clip": true,
+                              "width": 40,
+                              "height": 40,
+                              "fill": "#012169",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "#0000001f",
+                              "strokeWidth": 1,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "id": "Rg6X4",
+                                  "x": 0,
+                                  "y": 14.399999999999999,
+                                  "name": "Part",
+                                  "fill": "#FFFFFF",
+                                  "width": 40,
+                                  "height": 11.200000000000001
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "MSW9s",
+                                  "x": 14.399999999999999,
+                                  "y": 0,
+                                  "name": "Part",
+                                  "fill": "#FFFFFF",
+                                  "width": 11.200000000000001,
+                                  "height": 40
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "e7S6pY",
+                                  "x": 0,
+                                  "y": 16.8,
+                                  "name": "Part",
+                                  "fill": "#C8102E",
+                                  "width": 40,
+                                  "height": 6.4
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "lHD9v",
+                                  "x": 16.8,
+                                  "y": 0,
+                                  "name": "Part",
+                                  "fill": "#C8102E",
+                                  "width": 6.4,
+                                  "height": 40
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Khbcq",
+                              "name": "Title block",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "K7zYe",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "United Kingdom · Mobile paperwork",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-largest",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.5
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "nrIfM",
+                                  "name": "Description",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Business · Raad LTD · sent Oct 18",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "fpdO9",
+                              "type": "ref",
+                              "ref": "z1I4U",
+                              "name": "Pill · Needs a fix",
+                              "padding": [
+                                6,
+                                12
+                              ],
+                              "gap": 8,
+                              "fill": "$color-critical-surface",
+                              "descendants": {
+                                "rMF3l": {
+                                  "fill": "$color-critical",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                "MPxz7": {
+                                  "content": "Needs a fix",
+                                  "fill": "$color-critical-on-surface"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WZpk0",
+                          "name": "Status card · Needs a fix",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-critical",
+                          "strokeWidth": 1.5,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fqZgr",
+                              "name": "Band",
+                              "width": "fill_container",
+                              "fill": "$color-critical-surface",
+                              "gap": 12,
+                              "padding": [
+                                14,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "E1QQ2M",
+                                  "name": "Tile",
+                                  "width": 40,
+                                  "height": 40,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "dLD3A",
+                                      "name": "Icon file-x",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "file-x",
+                                      "library": "lucide",
+                                      "fill": "$color-critical"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mo0OV",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ahoWp",
+                                      "name": "Title",
+                                      "fill": "$color-critical-on-surface",
+                                      "content": "The phone company sent it back",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "j4YNpy",
+                                      "name": "Line",
+                                      "fill": "$color-critical-on-surface",
+                                      "content": "Fix the one thing below and send it again. Everything else is kept.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "ziSY4",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Fix and send again",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "icon": "file-pen"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Fix and send again"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "b4Fux5",
+                              "name": "Fix row",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "D5yGEb",
+                                  "name": "Number",
+                                  "width": 20,
+                                  "height": 20,
+                                  "fill": "$color-critical-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lBHac",
+                                      "name": "N",
+                                      "fill": "$color-critical-on-surface",
+                                      "content": "1",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PWfTy",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "jG8dC",
+                                      "name": "Field",
+                                      "fill": "$color-heading",
+                                      "content": "Proof of business address",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "afz5q",
+                                      "name": "What to do",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Their words: \"Document older than 3 months.\" Upload a bill or bank letter dated after July 22.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "Qjzvr",
+                                  "name": "Icon arrow-down-right",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "arrow-down-right",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cbVDU",
+                          "name": "Card · What you sent",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "pPhEc",
+                              "type": "ref",
+                              "ref": "hHVVU",
+                              "name": "Card header",
+                              "width": "fill_container",
+                              "descendants": {
+                                "S2bkqw": {
+                                  "fill": "$color-conversation-surface",
+                                  "stroke": "$color-conversation-surface-edge"
+                                },
+                                "M4w5I": {
+                                  "icon": "file-text",
+                                  "fill": "$color-conversation"
+                                },
+                                "rdm2s": {
+                                  "content": "What you sent"
+                                },
+                                "qXDmB": {
+                                  "content": "Sent Oct 18 by Jafar Khan"
+                                },
+                                "I1guOa": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JTMhL",
+                              "name": "Row · Who owns the numbers",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "padding": [
+                                12,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "pVXBP",
+                                  "type": "ref",
+                                  "ref": "GrSlk",
+                                  "name": "Tile",
+                                  "fill": "$color-conversation-surface",
+                                  "stroke": "$color-conversation-surface-edge",
+                                  "descendants": {
+                                    "XsJUX": {
+                                      "icon": "building-2",
+                                      "fill": "$color-conversation"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "FELgg",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SFl4w",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Who owns the numbers",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "A8Dskt",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "A business · Raad LTD · BC1234567, Canada",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "w3hTvB",
+                              "name": "Row · Person in charge",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                12,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "QznKN",
+                                  "type": "ref",
+                                  "ref": "GrSlk",
+                                  "name": "Tile",
+                                  "fill": "$color-time-surface",
+                                  "stroke": "$color-time-surface-edge",
+                                  "descendants": {
+                                    "XsJUX": {
+                                      "icon": "user-round",
+                                      "fill": "$color-time"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G5w3qR",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Q1tz0A",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Person in charge",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "IAQfp",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Jafar Khan · jafar@raadltd.ca · +1 604 555 0182",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XGmRc",
+                              "name": "Row · Business address",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                12,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "ybhRj",
+                                  "type": "ref",
+                                  "ref": "GrSlk",
+                                  "name": "Tile",
+                                  "fill": "$color-client-surface",
+                                  "stroke": "$color-client-surface-edge",
+                                  "descendants": {
+                                    "XsJUX": {
+                                      "icon": "map-pin",
+                                      "fill": "$color-client"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "jA8a5",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "v7C92",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Business address",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "nXVQL",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "4720 Kingsway, Unit 210, Burnaby, BC V5H 4N2, Canada",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vknHS",
+                              "name": "Row · Documents",
+                              "width": "fill_container",
+                              "fill": "$color-critical-surface",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                12,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "v24EH",
+                                  "type": "ref",
+                                  "ref": "GrSlk",
+                                  "name": "Tile",
+                                  "fill": "$color-surface",
+                                  "stroke": "$color-critical-surface-edge",
+                                  "descendants": {
+                                    "XsJUX": {
+                                      "icon": "file-x",
+                                      "fill": "$color-critical"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "w57yE",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "A5lYOh",
+                                      "name": "Label",
+                                      "fill": "$color-critical-on-surface",
+                                      "content": "Documents",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "kPuDN",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Proof of address · Hydro-bill-March-2026.pdf",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "Zb43o",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Replace",
+                                  "height": 32,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "gap": 6,
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "upload"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Replace",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZPJFc",
+                  "name": "Other statuses",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Px6y4",
+                      "name": "Opened set · Under review",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "P5kzTL",
+                          "name": "State label",
+                          "fill": "$color-text-secondary",
+                          "content": "OPENED SET · UNDER REVIEW",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-smaller",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oVRpu",
+                          "name": "Status card",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Y8oLg",
+                              "name": "Band",
+                              "width": "fill_container",
+                              "fill": "$color-warning-surface",
+                              "gap": 12,
+                              "padding": [
+                                14,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "vsMFl",
+                                  "name": "Tile",
+                                  "width": 40,
+                                  "height": 40,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "SSbJ1",
+                                      "name": "Icon hourglass",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "hourglass",
+                                      "library": "lucide",
+                                      "fill": "$color-warning-on-surface"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ABtS9",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "NU4Sr",
+                                      "name": "Title",
+                                      "fill": "$color-warning-on-surface",
+                                      "content": "Under review",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "nLD3l",
+                                      "name": "Line",
+                                      "fill": "$color-warning-on-surface",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Sent Oct 21. The phone company usually answers within 5 business days. We'll email you.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tm3al",
+                              "name": "Facts",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LiEsx",
+                                  "name": "Fact · Country and kind",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BhfV8",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Country and kind",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "v1zxzI",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Australia · Mobile numbers",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M4sgL3",
+                                  "name": "Fact · Sent by",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I0lLy",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Sent by",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "C6Jl3Q",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Jafar Khan · Oct 21",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iZzQd",
+                                  "name": "Fact · Changes",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LKpsI",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Changes",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "iFkHc",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Locked while it's checked",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZudXb",
+                      "name": "Opened set · Approved",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DdbaD",
+                          "name": "State label",
+                          "fill": "$color-text-secondary",
+                          "content": "OPENED SET · APPROVED",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-smaller",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SHuD9",
+                          "name": "Status card",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "p6ljjs",
+                              "name": "Band",
+                              "width": "fill_container",
+                              "fill": "$color-success-surface",
+                              "gap": 12,
+                              "padding": [
+                                14,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "pYTfZ",
+                                  "name": "Tile",
+                                  "width": 40,
+                                  "height": 40,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "A6nMK5",
+                                      "name": "Icon badge-check",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "badge-check",
+                                      "library": "lucide",
+                                      "fill": "$color-success"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UwLM6",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "bErWe",
+                                      "name": "Title",
+                                      "fill": "$color-success-on-surface",
+                                      "content": "Approved",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "n601kS",
+                                      "name": "Line",
+                                      "fill": "$color-success-on-surface",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Approved Oct 12. Use it for any French mobile number you buy.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-smaller",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "F3Xz9",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Add a number",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "plus"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Add a number"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ISzjU",
+                              "name": "Facts",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GowMd",
+                                  "name": "Fact · Country and kind",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "zEkhP",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Country and kind",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "KyCTg",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "France · Mobile numbers",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MTe4K",
+                                  "name": "Fact · Numbers using it",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "rnWEW",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Numbers using it",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ndoKQ",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "+33 6 44 21 08 17",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ANC7v",
+                                  "name": "Fact · Good until",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ev2Lr",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": 140,
+                                      "content": "Approved on",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "fisX9",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Oct 12, 2026 · kept on file",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Xc5NQ",
+              "name": "Row · Document box",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pSFit",
+                  "name": "Uploading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EgY2Y",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "UPLOADING",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d55Zej",
+                      "name": "Document · Proof of address",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": 12,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "g2vF8t",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "oAvrX",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-client-surface",
+                              "stroke": "$color-client-surface-edge",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "map-pin-house",
+                                  "fill": "$color-client"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "teZVo",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xzB0K",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "Proof of business address",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WSFJH",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Dated in the last 3 months",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "cPkAq",
+                              "type": "ref",
+                              "ref": "z1I4U",
+                              "name": "Pill · Uploading",
+                              "fill": "$color-informative-surface",
+                              "descendants": {
+                                "rMF3l": {
+                                  "fill": "$color-informative"
+                                },
+                                "MPxz7": {
+                                  "content": "64%",
+                                  "fill": "$color-informative-on-surface"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "azQ6h",
+                          "name": "File line",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RTiSP",
+                              "name": "Ring",
+                              "width": 40,
+                              "height": 40,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "FB1rH",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Track",
+                                  "innerRadius": 0.9,
+                                  "fill": "$color-surface-background",
+                                  "width": 40,
+                                  "height": 40
+                                },
+                                {
+                                  "type": "ellipse",
+                                  "id": "J54JA",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Arc",
+                                  "innerRadius": 0.9,
+                                  "startAngle": 90,
+                                  "sweepAngle": -230.4,
+                                  "fill": "$color-interactive",
+                                  "width": 40,
+                                  "height": 40
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qB0DO",
+                                  "x": 4,
+                                  "y": 4,
+                                  "name": "File tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "f593MP",
+                                      "name": "Icon file-text",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "file-text",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "i59x1E",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YCUbR",
+                                  "name": "Name",
+                                  "fill": "$color-heading",
+                                  "content": "Hydro-bill-Sept-2026.pdf",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "m4w9jd",
+                                  "name": "Line",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "1.4 of 2.2 MB",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "PYvqQ",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Cancel upload",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "x"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DRhFo",
+                  "name": "Checking",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JCVlW",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "CHECKING",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PnTc8",
+                      "name": "Document · Proof of address",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": 12,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "n2mrG",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "i4kIa",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-client-surface",
+                              "stroke": "$color-client-surface-edge",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "map-pin-house",
+                                  "fill": "$color-client"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vd536",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "wVxXk",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "Proof of business address",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "xOEA5",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Dated in the last 3 months",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "BN7vW",
+                              "type": "ref",
+                              "ref": "z1I4U",
+                              "name": "Pill · Checking",
+                              "fill": "$color-warning-surface",
+                              "descendants": {
+                                "rMF3l": {
+                                  "fill": "$color-warning"
+                                },
+                                "MPxz7": {
+                                  "content": "Checking",
+                                  "fill": "$color-warning-on-surface"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DwBJY",
+                          "name": "File line",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Ev3WV",
+                              "name": "Ring",
+                              "width": 40,
+                              "height": 40,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LS09F",
+                                  "x": 4,
+                                  "y": 4,
+                                  "name": "File tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "falPq",
+                                      "name": "Icon loader",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "loader",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "FdPpn",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "P5zkx",
+                                  "name": "Name",
+                                  "fill": "$color-heading",
+                                  "content": "Hydro-bill-Sept-2026.pdf",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "pr8X4",
+                                  "name": "Line",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Uploaded, now being checked for safety",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z4gWpe",
+              "name": "Row · Document box 2",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZkMzi",
+                  "name": "Didn't upload",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "q7gvS",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "DIDN'T UPLOAD",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LCd22",
+                      "name": "Document · Proof of address",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": 12,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "a252jG",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "l3tt3l",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-client-surface",
+                              "stroke": "$color-client-surface-edge",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "map-pin-house",
+                                  "fill": "$color-client"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "K5WLQ",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JDklS",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "Proof of business address",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "P0kiN",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Dated in the last 3 months",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "NpQ9N",
+                              "type": "ref",
+                              "ref": "z1I4U",
+                              "name": "Pill · Didn't upload",
+                              "fill": "$color-critical-surface",
+                              "descendants": {
+                                "rMF3l": {
+                                  "fill": "$color-critical"
+                                },
+                                "MPxz7": {
+                                  "content": "Didn't upload",
+                                  "fill": "$color-critical-on-surface"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "u6Jko",
+                          "name": "File line",
+                          "width": "fill_container",
+                          "fill": "$color-critical-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-critical-surface-edge",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "XOiaV",
+                              "name": "Ring",
+                              "width": 40,
+                              "height": 40,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "MxlqY",
+                                  "x": 4,
+                                  "y": 4,
+                                  "name": "File tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "ZCUDs",
+                                      "name": "Icon triangle-alert",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "triangle-alert",
+                                      "library": "lucide",
+                                      "fill": "$color-critical"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VKGe1",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "WwiNc",
+                                  "name": "Name",
+                                  "fill": "$color-heading",
+                                  "content": "scan-0042.heic",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "VDXx1",
+                                  "name": "Line",
+                                  "fill": "$color-critical-on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "This kind of file can't be sent. Use a PDF, JPG or PNG under 10 MB.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "nzPcf",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Choose another",
+                              "height": 32,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "gap": 6,
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "upload"
+                                },
+                                "Dpmda": {
+                                  "content": "Choose another",
+                                  "fontSize": 13
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "USz80",
+                  "name": "Added",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "FCZux",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "ADDED",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZSVDb",
+                      "name": "Document · Proof of address",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": 12,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "FkG19",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "D3dAHk",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-client-surface",
+                              "stroke": "$color-client-surface-edge",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "map-pin-house",
+                                  "fill": "$color-client"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Almws",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "q1wuay",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "Proof of business address",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "h2WI9",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Dated in the last 3 months",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "tL5KN",
+                              "type": "ref",
+                              "ref": "z1I4U",
+                              "name": "Pill · Added",
+                              "fill": "$color-success-surface",
+                              "descendants": {
+                                "rMF3l": {
+                                  "fill": "$color-success"
+                                },
+                                "MPxz7": {
+                                  "content": "Added",
+                                  "fill": "$color-success-on-surface"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RGB6B",
+                          "name": "File line",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "m636Y",
+                              "name": "Ring",
+                              "width": 40,
+                              "height": 40,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "f6XFA",
+                                  "x": 4,
+                                  "y": 4,
+                                  "name": "File tile",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$color-success-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "jTfQh",
+                                      "name": "Icon file-check",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "file-check",
+                                      "library": "lucide",
+                                      "fill": "$color-success"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GjJWJ",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MSJxQ",
+                                  "name": "Name",
+                                  "fill": "$color-heading",
+                                  "content": "Hydro-bill-Sept-2026.pdf",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "eucMI",
+                                  "name": "Line",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "2.2 MB · added just now",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "ZCF8u",
+                              "type": "ref",
+                              "ref": "A8ydV",
+                              "name": "Replace",
+                              "descendants": {
+                                "cQzG0": {
+                                  "content": "Replace",
+                                  "fill": "$color-interactive"
+                                }
+                              }
+                            },
+                            {
+                              "id": "J4Mfd",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Remove",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "trash-2"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "e46dT",
+              "name": "Row · Fix, sending, sent",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BPiKM",
+                  "name": "A field to fix",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "xOxmY",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "A FIELD TO FIX",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YNMcl",
+                      "name": "Card",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "idnqZ",
+                          "name": "Field · Registration number · error",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "OjF6B",
+                              "name": "Label row",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ekqAh",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Registration number",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "oP0Wh",
+                                  "name": "Must",
+                                  "fill": "$color-critical",
+                                  "content": "*",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ItxNR",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-critical",
+                              "strokeWidth": 1.5,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "a72kTm",
+                                  "name": "Placeholder",
+                                  "fill": "$color-text-secondary",
+                                  "content": "e.g. BC1234567",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "sB5jk",
+                              "name": "Error",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ZXu7u",
+                                  "name": "Icon circle-alert",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "circle-alert",
+                                  "library": "lucide",
+                                  "fill": "$color-critical"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NYzvB",
+                                  "name": "Message",
+                                  "fill": "$color-critical",
+                                  "content": "Add the number on your company registration.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MXr7S",
+                          "name": "Field · Phone · error",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "HrN5Q",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Phone",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wKoVw",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-critical",
+                              "strokeWidth": 1.5,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "uUVAn",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "+44 7700 900123",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "T76OB",
+                              "name": "Error",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "HcrQl",
+                                  "name": "Icon circle-alert",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "circle-alert",
+                                  "library": "lucide",
+                                  "fill": "$color-critical"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "u6DCwr",
+                                  "name": "Message",
+                                  "fill": "$color-critical",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "This is a number from a texting company. Use your own business or mobile line.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-smaller",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "is90n",
+                  "name": "Sending",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "R69yLx",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "SENDING",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZNW23",
+                      "name": "Footer · sending",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "gap": 8,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "JNT8m",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "Back · disabled",
+                          "opacity": 0.5,
+                          "descendants": {
+                            "lDuWW": {
+                              "icon": "arrow-left"
+                            },
+                            "Dpmda": {
+                              "content": "Back"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "fGTh1",
+                          "name": "Hint",
+                          "fill": "$color-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sending to the phone company…",
+                          "textAlign": "center",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-smaller",
+                          "fontWeight": "500"
+                        },
+                        {
+                          "id": "LpGVb",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Send for review · loading",
+                          "descendants": {
+                            "P99oLT": {
+                              "id": "J1fpB",
+                              "type": "ref",
+                              "ref": "NQIwV",
+                              "name": "Spinner",
+                              "width": 16,
+                              "height": 16,
+                              "descendants": {
+                                "jps81": {
+                                  "fill": "#FFFFFF40"
+                                },
+                                "o6sBbg": {
+                                  "fill": "$color-surface"
+                                }
+                              }
+                            },
+                            "vaRXs": {
+                              "content": "Sending…"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n0UCd",
+                  "name": "Sent",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kQ3bZ",
+                      "name": "State label",
+                      "fill": "$color-text-secondary",
+                      "content": "SENT",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-smaller",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LkaC2",
+                      "name": "Step card · Sent",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "iFtxj",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-success-surface",
+                          "stroke": "$color-success-surface-edge",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "send",
+                              "fill": "$color-success"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "MbwDc",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "content": "Sent for review",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-largest",
+                          "fontWeight": "700",
+                          "letterSpacing": -0.5
+                        },
+                        {
+                          "type": "text",
+                          "id": "HB226",
+                          "name": "Line",
+                          "fill": "$color-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "The phone company usually answers within 1 to 5 business days. We'll email you, and the answer shows on Number paperwork.",
+                          "lineHeight": 1.45,
+                          "textAlign": "center",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-base",
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZNMHU",
+                          "name": "Actions",
+                          "gap": 8,
+                          "padding": [
+                            6,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "id": "niQO0",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Back to paperwork",
+                              "descendants": {
+                                "P99oLT": {
+                                  "icon": "files"
+                                },
+                                "vaRXs": {
+                                  "content": "Back to paperwork"
+                                }
+                              }
+                            }
+                          ]
                         }
                       ]
                     }
