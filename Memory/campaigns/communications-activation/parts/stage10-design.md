@@ -21,19 +21,17 @@
   `NbWfA` renamed "Number readiness · Approved B". Every state drawn the same day (page states, summary none/all,
   turned down, just bought, another country on its way, texting paused, ⋯ menu, renaming, sending, saving
   default), light only; Jafar approved the states the same day ("saved, approved"). Rules in `.claude/skills/design/layout.md` § Number readiness.
-- [ ] Charges shown before sending or buying — options A and B drawn 2026-10-22 on board `nLAe4` ("Charges
-  before sending · Options A and B"), light only, waiting for Jafar's choice. Buying is already covered by the Add
-  number bill (`qaFQf`); the board covers the inbox reply box: A = refined cost strip with a destination pill and a
-  "What this text costs" pop-over; B = new concept, price on Send ("Send · $0.33"), country pill in the To line,
-  segment blocks that fill as you type, balance beside Send. States on both: at home, another country, not enough
-  balance (Send off, Add credit → Balance page). New vs live: destination price, balance check before Send.
+- [ ] Charges shown before sending or buying — Jafar approved B 2026-10-22 ("approved", after my recommendation of
+  B as drawn, without A's cost card): price on Send ("Send · $0.33"), country and price per segment in the To line,
+  segment blocks under the message, balance beside Send; not enough balance turns them red, Send off, Add credit →
+  Balance. Option A deleted; board `nLAe4` renamed "Charges before sending · Approved B". Buying is covered by the
+  Add number bill (`qaFQf`). Remaining states being drawn, light only.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Wait for Jafar to pick A or B on board `nLAe4`; then delete the other option, draw the remaining
-states (estimating, can't estimate, emoji segments, picture text, automation text) and record the rule in the
-design skill. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Draw B's remaining states on `nLAe4` (empty, estimating, emoji, picture text, country not switched on, no price
+for the country, couldn't work out the price, sending), show Jafar, then record the rule in the design skill. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
 
 ## Notes
 
