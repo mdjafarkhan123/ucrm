@@ -24,6 +24,11 @@ export function getTwilioStatusWebhookUrl(): string {
 	return `${origin.origin}/api/webhooks/twilio/status`;
 }
 
+/** Twilio's callback for a business's number paperwork (Stage 10 Part 3), registered on every Bundle we create. */
+export function getTwilioNumberPaperworkWebhookUrl(): string {
+	return getTwilioStatusWebhookUrl().replace(/\/status$/, '/number-paperwork');
+}
+
 /** A decrypted Auth Token candidate, tagged with its rotation lifecycle. `prior` carries a retirement
  *  instant; it is accepted only while that instant is still in the future. `current`/`staged` have none. */
 export type ValidationTokenCandidate =

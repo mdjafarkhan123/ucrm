@@ -1,5 +1,6 @@
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { getSmsCountryCatalog, type SmsCountryCatalog } from './sms-country-catalog';
+import { createSupabaseNumberPaperworkStore } from './sms-number-paperwork-store';
 import {
 	createSupabaseNumberPurchaseStore,
 	NumberOrderRefusedError,
@@ -149,7 +150,10 @@ export async function buyNumber(
 const PURCHASE_STALE_MS = 60_000;
 
 /** Carry an existing order as far as it can go now. Safe to call repeatedly and concurrently. */
-export async function driveOrder(deps: NumberPurchaseDeps, initial: NumberOrder): Promise<NumberOrder> {
+export async function driveOrder(
+	deps: NumberPurchaseDeps,
+	initial: NumberOrder
+): Promise<NumberOrder> {
 	let order = initial;
 	if (order.state === 'completed' || order.state === 'failed') return order;
 
@@ -367,47 +371,47 @@ function refusal(code: string): NumberPurchaseError {
 	}
 }
 
-// Part 3 (paperwork) replaces this with its approved-bundle lookup. Until then no paperwork is ever approved, so a
-// country that needs it is refused before any money is held.
-const noApprovedPaperwork: NumberPaperworkPort = { findApproved: async () => null };
-
 /** Wire the live store, catalog, Twilio adapter and subaccount setup. */
 export function createNumberPurchaseDeps(): NumberPurchaseDeps {
-	const provisioning = createTwilioProvisioningDeps();
+	const client = getOwnerSupabaseClient();
 	return {
-		store: createSupabaseNumberPurchaseStore(getOwnerSupabaseClient()),
+		store: createSupabaseNumberPurchaseStore(client),
 		catalog: getSmsCountryCatalog(),
-		twilio: createTwilioNumberPurchaseClient(provisioning.twilio),
-		paperwork: noApprovedPaperwork,
-		async subaccount(organizationId) {
-			const ready = await getSubaccountAccess(provisioning, organizationId);
-			if (ready) return ready;
-			try {
-				await provisionTwilioForOrganization(provisioning, {
-					organizationId,
-					inboundRequestUrl: getTwilioInboundWebhookUrl(),
-					statusCallback: getTwilioStatusWebhookUrl()
-				});
-			} catch (error) {
-				if (error instanceof TwilioProvisioningError && error.retryable) {
-					throw new NumberPurchaseError(
-						'provider_unavailable',
-						'The phone company could not be reached.'
-					);
-				}
-				throw new NumberPurchaseError(
-					'twilio_setup_needs_review',
-					'Uplift needs to finish this business’s texting account.'
-				);
-			}
-			const access = await getSubaccountAccess(provisioning, organizationId);
-			if (!access) {
-				throw new NumberPurchaseError(
-					'twilio_setup_needs_review',
-					'Uplift needs to finish this business’s texting account.'
-				);
-			}
-			return access;
-		}
+		twilio: createTwilioNumberPurchaseClient(createTwilioProvisioningDeps().twilio),
+		paperwork: createSupabaseNumberPaperworkStore(client),
+		subaccount: ensureTwilioSubaccount
 	};
+}
+
+/** The business's Twilio subaccount, set up first when it has none (its first number or its first paperwork). */
+export async function ensureTwilioSubaccount(organizationId: string): Promise<SubaccountAccess> {
+	const provisioning = createTwilioProvisioningDeps();
+	const ready = await getSubaccountAccess(provisioning, organizationId);
+	if (ready) return ready;
+	try {
+		await provisionTwilioForOrganization(provisioning, {
+			organizationId,
+			inboundRequestUrl: getTwilioInboundWebhookUrl(),
+			statusCallback: getTwilioStatusWebhookUrl()
+		});
+	} catch (error) {
+		if (error instanceof TwilioProvisioningError && error.retryable) {
+			throw new NumberPurchaseError(
+				'provider_unavailable',
+				'The phone company could not be reached.'
+			);
+		}
+		throw new NumberPurchaseError(
+			'twilio_setup_needs_review',
+			'Uplift needs to finish this business’s texting account.'
+		);
+	}
+	const access = await getSubaccountAccess(provisioning, organizationId);
+	if (!access) {
+		throw new NumberPurchaseError(
+			'twilio_setup_needs_review',
+			'Uplift needs to finish this business’s texting account.'
+		);
+	}
+	return access;
 }
