@@ -692,6 +692,8 @@
 		gap: var(--space-small);
 		padding: var(--space-base) var(--space-large);
 		background: var(--color-surface);
+		// The brand colour's line across the top of the customer's page (Batch 65).
+		border-top: 4px solid var(--customer-quote-brand);
 		border-bottom: 1px solid var(--color-border);
 	}
 
