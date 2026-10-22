@@ -175,7 +175,7 @@ function readAddress(value: Json | null): PaperworkAddress | null {
 	};
 }
 
-function readFixes(value: Json | null): PaperworkFix[] {
+export function readFixes(value: Json | null): PaperworkFix[] {
 	if (!Array.isArray(value)) return [];
 	return value.flatMap((row) => {
 		if (!row || typeof row !== 'object' || Array.isArray(row)) return [];

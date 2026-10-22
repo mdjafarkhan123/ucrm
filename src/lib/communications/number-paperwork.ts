@@ -441,6 +441,8 @@ export type PaperworkSummary = {
 	decided_at: string | null;
 	updated_at: string;
 	failure_reason: string | null;
+	/** The first thing to correct, while the set needs a fix. */
+	first_fix: PaperworkFix | null;
 	/** Numbers bought with this paperwork. */
 	numbers: string[];
 };
@@ -460,6 +462,8 @@ export type ReusedDetails = {
 	registration_number: string | null;
 	address: string | null;
 	person: string | null;
+	/** The registration's business address, to tell a set that it uses the same one. */
+	address_parts: PaperworkAddress | null;
 };
 
 export type PaperworkList = { paperwork: PaperworkSummary[]; reused: ReusedDetails };

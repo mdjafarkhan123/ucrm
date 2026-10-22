@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '$lib/database.types';
 import {
 	chosenDocumentKinds,
+	prefillAddress,
 	resolveDocumentChoices,
 	type PaperworkDetail,
 	type PaperworkForm,
@@ -13,6 +14,7 @@ import type { NumberType } from '$lib/communications/sms-number-shop';
 import {
 	mapPaperwork,
 	mapPaperworkDocument,
+	readFixes,
 	type StoredPaperwork,
 	type StoredPaperworkDocument
 } from './sms-number-paperwork-store';
@@ -72,7 +74,7 @@ export async function listPaperworkSummaries(
 ): Promise<PaperworkSummary[]> {
 	const { data, error } = await client
 		.from('communication_sms_number_paperwork')
-		.select(COLUMNS)
+		.select(`${COLUMNS}, fixes`)
 		.eq('organization_id', organizationId)
 		.order('created_at', { ascending: false })
 		.limit(100);
@@ -98,6 +100,7 @@ export async function listPaperworkSummaries(
 		decided_at: row.decided_at,
 		updated_at: row.updated_at,
 		failure_reason: row.failure_reason,
+		first_fix: row.status === 'needs_fix' ? (readFixes(row.fixes)[0] ?? null) : null,
 		numbers: numbers.get(row.id) ?? []
 	}));
 }
@@ -140,7 +143,8 @@ export function reusedDetails(registration: RegistrationAnswers | null): ReusedD
 		address: address?.line1
 			? [address.line1, address.city, address.region].filter(Boolean).join(', ')
 			: null,
-		person: personName || null
+		person: personName || null,
+		address_parts: prefillAddress(registration, registration?.legal_business_name ?? '')
 	};
 }
 
@@ -228,6 +232,7 @@ export async function presentPaperwork(
 		decided_at: paperwork.decidedAt,
 		updated_at: paperwork.updatedAt,
 		failure_reason: paperwork.failureReason,
+		first_fix: paperwork.status === 'needs_fix' ? (paperwork.fixes[0] ?? null) : null,
 		numbers: numbers.get(paperwork.id) ?? [],
 		revision: paperwork.revision,
 		answers: paperwork.answers,

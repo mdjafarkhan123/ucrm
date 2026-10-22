@@ -5,6 +5,13 @@ import type {
 } from '$lib/communications/number-paperwork';
 import type { NumberType } from '$lib/communications/sms-number-shop';
 import { countryDisplayName } from '$lib/settings/country-names';
+import { chosenDocumentKinds } from '$lib/communications/number-paperwork';
+import flagIcon from '@tabler/icons/outline/flag.svg?raw';
+import buildingIcon from '@tabler/icons/outline/building.svg?raw';
+import userIcon from '@tabler/icons/outline/user.svg?raw';
+import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+import fileCheckIcon from '@tabler/icons/outline/file-check.svg?raw';
+import fileXIcon from '@tabler/icons/outline/file-x.svg?raw';
 
 // Words and pills the Number paperwork pages share (design skill `layout.md` → Number paperwork).
 
@@ -92,47 +99,107 @@ export function setMeta(set: PaperworkSummary): string {
 
 export type FactRow = {
 	key: string;
+	icon: string;
+	tone: string;
 	label: string;
 	value: string;
-	step: 'details' | 'documents' | 'start';
+	step: 'start' | 'details' | 'documents';
+	/** A document the phone company sent back. */
+	needsFix?: boolean;
 };
 
 /** What the set says, as the Check step and the opened set read it back. */
-export function factRows(detail: PaperworkDetail, businessName: string): FactRow[] {
-	const rows: FactRow[] = [
-		{ key: 'kind', label: 'Country and kind', value: setTitle(detail), step: 'start' }
-	];
+export function paperworkFacts(detail: PaperworkDetail, businessName: string): FactRow[] {
 	const answers = detail.answers;
 	const person = [answers.first_name, answers.last_name].filter(Boolean).join(' ');
+	const rows: FactRow[] = [
+		{
+			key: 'kind',
+			icon: flagIcon,
+			tone: 'informative',
+			label: 'Country and kind',
+			value: setTitle(detail),
+			step: 'start'
+		}
+	];
 	if (detail.end_user_type === 'business') {
-		const registration = [answers.business_registration_number].filter(Boolean).join('');
+		const registered = [
+			answers.business_registration_number,
+			registrationPlace(answers.business_registration_identifier)
+		]
+			.filter(Boolean)
+			.join(', ');
 		rows.push({
 			key: 'owner',
+			icon: buildingIcon,
+			tone: 'conversation',
 			label: 'Who owns the numbers',
-			value: ['A business', businessName, registration].filter(Boolean).join(' · '),
+			value: ['A business', answers.business_name || businessName, registered]
+				.filter(Boolean)
+				.join(' · '),
 			step: 'details'
 		});
+		const contact = [person, answers.email, answers.phone_number].filter(Boolean).join(' · ');
+		if (contact) {
+			rows.push({
+				key: 'person',
+				icon: userIcon,
+				tone: 'informative',
+				label: 'Person in charge',
+				value: contact,
+				step: 'details'
+			});
+		}
 	} else {
 		rows.push({
 			key: 'owner',
+			icon: userIcon,
+			tone: 'informative',
 			label: 'Who owns the numbers',
-			value: `Just me · ${person}`,
+			value: ['Just me', person, answers.email].filter(Boolean).join(' · '),
 			step: 'details'
 		});
-	}
-	const contact = [person, answers.email, answers.phone_number].filter(Boolean).join(' · ');
-	if (contact && detail.end_user_type === 'business') {
-		rows.push({ key: 'person', label: 'Person in charge', value: contact, step: 'details' });
 	}
 	if (detail.form.needsAddress && detail.address) {
 		rows.push({
 			key: 'address',
+			icon: mapPinIcon,
+			tone: 'client',
 			label: detail.end_user_type === 'business' ? 'Business address' : 'Home address',
 			value: addressLine(detail.address),
 			step: 'details'
 		});
 	}
+	const fixed = new Set(
+		detail.fixes
+			.filter((fix) => fix.step === 'documents')
+			.map((fix) => fix.target.split(':')[1])
+	);
+	for (const kind of chosenDocumentKinds(detail.form.requirements, detail.document_choices)) {
+		if (!kind.needsFile) continue;
+		const file = detail.documents.find((document) => document.document_type === kind.documentType)
+			?.file;
+		const needsFix = fixed.has(kind.documentType);
+		rows.push({
+			key: `document-${kind.documentType}`,
+			icon: needsFix ? fileXIcon : fileCheckIcon,
+			tone: needsFix ? 'critical' : 'success',
+			label: 'Documents',
+			value: [kind.label, file && file.state !== 'deleted' ? file.name : 'Not added yet']
+				.filter(Boolean)
+				.join(' · '),
+			step: 'documents',
+			needsFix
+		});
+	}
 	return rows;
+}
+
+function registrationPlace(identifier: string | undefined): string {
+	if (!identifier) return '';
+	const country = identifier.split(':')[0];
+	if (country === 'UK') return countryName('GB');
+	return /^[A-Z]{2}$/.test(country) ? countryName(country) : '';
 }
 
 export function addressLine(address: PaperworkDetail['address']): string {
@@ -145,4 +212,35 @@ export function addressLine(address: PaperworkDetail['address']): string {
 	]
 		.filter(Boolean)
 		.join(', ');
+}
+
+const FIELD_HINTS: Record<string, string> = {
+	phone_number: 'A real business or mobile line, not a number from a texting company.'
+};
+
+/** A quiet line under a field the phone company is strict about. */
+export function fieldHint(name: string): string {
+	return FIELD_HINTS[name] ?? '';
+}
+
+const FIELD_PLACEHOLDERS: Record<string, string> = {
+	business_registration_number: 'e.g. BC1234567',
+	business_website: 'e.g. yourbusiness.com',
+	email: 'name@yourbusiness.com',
+	phone_number: '+447700900123'
+};
+
+export function fieldPlaceholder(field: { name: string; kind: string }): string {
+	return FIELD_PLACEHOLDERS[field.name] ?? (field.kind === 'phone' ? '+447700900123' : '');
+}
+
+/** "2.2 MB", "640 KB". */
+export function fileSize(bytes: number): string {
+	if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	return `${bytes > 0 ? Math.max(1, Math.round(bytes / 1024)) : 0} KB`;
+}
+
+/** "a United Kingdom mobile number", "an Australia mobile number". */
+export function withArticle(words: string): string {
+	return `${/^[aeiou]/i.test(words) ? 'an' : 'a'} ${words}`;
 }

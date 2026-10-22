@@ -1,6 +1,7 @@
 <script lang="ts">
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -51,6 +52,7 @@
 	import checkCircleIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import infoCircleIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import fileCheckIcon from '@tabler/icons/outline/file-check.svg?raw';
 	import AddNumberDialog from '$lib/components/communications/add-number/AddNumberDialog.svelte';
 	import { fetchNumberCountries, numberCountriesKey } from '$lib/communications/sms-number-shop';
 
@@ -492,6 +494,13 @@
 			compactDescription
 		>
 			{#snippet actions()}
+				<Button
+					variant="secondary"
+					href={resolve('/(app)/settings/communications/sms/paperwork')}
+				>
+					<span aria-hidden="true">{@html fileCheckIcon}</span>
+					Number paperwork
+				</Button>
 				<Button onclick={() => (addNumberOpen = true)} onhover={warmAddNumber}>
 					<span aria-hidden="true">{@html plusIcon}</span>
 					Add number

@@ -221,10 +221,13 @@ export async function presignAttachmentUpload(input: {
 export function uploadAttachmentFile(
 	uploadUrl: string,
 	file: Blob,
-	onProgress?: (fraction: number) => void
+	onProgress?: (fraction: number) => void,
+	signal?: AbortSignal
 ) {
 	return new Promise<void>((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
+		signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+		xhr.onabort = () => reject(new DOMException('The upload was stopped.', 'AbortError'));
 		xhr.open('PUT', uploadUrl);
 		xhr.setRequestHeader('content-type', file.type);
 		xhr.upload.onprogress = (event) => {
