@@ -23,8 +23,8 @@
    in Pencil, then a commit of `concept.pen`; design claim `13f52b282f7e` stays until then.
    Batch 51 New campaign · Goal step `t0L1xo` approved A, built 2026-10-21 (`docs/evidence/2026-10-21-batch51/`;
    Pencil board still needs the step-6 tidy-up). Batch 53 Customers step `RPlkr` approved B, built 2026-10-21
-   (`docs/evidence/2026-10-21-batch53/`; board needs the tidy-up too). Batch 54 Email step `Nuydc` approved B 2026-10-21, built in code on branch `claude/build-batch54`, live check half done, waiting to merge (`parts/batch54-email-step-build.md`; claim `bd9e7bb472e1`). Next drawing: Delivery, then Review
-   (`stages/list-1c-parts.md`). Gaps: Field-worker Home
+   (`docs/evidence/2026-10-21-batch53/`; board needs the tidy-up too). Batch 54 Email step `Nuydc` B built, checked and merged 2026-10-22 (`docs/evidence/2026-10-21-batch54/`; Pencil tidy-up and two questions for Jafar in `parts/batch54-email-step-build.md`). Batch 55 Delivery step `DWtO4` approved B 2026-10-21, waiting to be built. Batch 56 Review step `qCDG0` approved B
+   2026-10-21, waiting to be built (hand-off in `parts/c5-shared-parts.md`). Next drawing: the next ⬜ row in `stages/list-1c-parts.md`. Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
 3. **Jafar decides:** checklist order and pop-up marks
    (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
