@@ -303,7 +303,7 @@ describe('buyNumber', () => {
 
 		// A minute later, Twilio shows the first call did buy it.
 		t.advance(61_000);
-		t.twilio.findOwnedPhoneNumber.mockResolvedValueOnce({
+		vi.mocked(t.twilio.findOwnedPhoneNumber).mockResolvedValueOnce({
 			phoneNumberSid: PN_SID,
 			phoneNumber: NUMBER,
 			capabilities: { sms: true, mms: true, voice: true }
@@ -344,7 +344,7 @@ describe('buyNumber', () => {
 
 		await codeOf(buyNumber(t.deps, input));
 		t.advance(61_000);
-		t.twilio.findOwnedPhoneNumber.mockResolvedValueOnce(null).mockResolvedValueOnce({
+		vi.mocked(t.twilio.findOwnedPhoneNumber).mockResolvedValueOnce(null).mockResolvedValueOnce({
 			phoneNumberSid: PN_SID,
 			phoneNumber: NUMBER,
 			capabilities: { sms: true, mms: true, voice: true }
