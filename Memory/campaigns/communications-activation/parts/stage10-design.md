@@ -13,16 +13,21 @@
 - [x] States and dark mode drawn on `qaFQf` 2026-10-22 (Jafar: "complete"): Germany paperwork first, Brazil
   nothing to text, searching, no numbers, phone company unreachable, paperwork bill, buying, connection dropped and
   checking, bought. Rules in `.claude/skills/design/modals.md` § Add number pop-up.
-- [ ] Compliance list and form (paperwork per country).
+- [ ] Compliance list and form — drawn 2026-10-22 on board `A0URqF` "Concept · Communications · Number paperwork"
+  (Settings › Phone & SMS › Number paperwork): the list (one row per country and kind, Draft / Under review /
+  Approved / Needs a fix with the reason in the row), then a four-step page (country and kind, business details
+  filled from the texting registration, documents, check and send). One design: it is a new screen, and
+  `guide.md` asks for options only when the app already has the screen. Waiting for Jafar's review.
 - [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text").
 - [ ] Charges shown before sending or buying.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Next session: draw the Compliance list and form (paperwork per country) on a new board, researched from GHL's
-Regulatory Bundle/Address area and Twilio's Regulations API. If `concept.pen` is still uncommitted, ask Jafar for
-Ctrl+S and commit it from main first. The Add number pop-up can be built once its paperwork and readiness
+Show Jafar board `A0URqF` and wait. On his yes: record it here, rename the board "Approved", draw its states
+(empty, loading, couldn't load, uploading / checking / failed file, under review read-only, approved, sending)
+and dark mode, then add a "Number paperwork" section to `.claude/skills/design/layout.md`. If `concept.pen` is
+uncommitted, ask Jafar for Ctrl+S and commit it from main. The Add number pop-up can be built once its paperwork and readiness
 screens are approved, per the plan's order.
 
 ## Notes
