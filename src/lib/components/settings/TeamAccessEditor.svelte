@@ -5,6 +5,7 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import {
@@ -46,6 +47,11 @@
 	const canAssignAdministrator = $derived(page.data.organization?.role === 'owner');
 	const hasRoleChange = $derived(Boolean(access && roleDraft && roleDraft !== access.member.role));
 	const selectedRole = $derived(access?.roles.find((role) => role.id === roleDraft));
+	const roleOptions = $derived(
+		(access?.roles ?? [])
+			.filter((role) => role.id !== 'admin' || canAssignAdministrator)
+			.map((role) => ({ value: role.id, label: role.label, disabled: !role.available }))
+	);
 	const roleAdjustmentPreview = $derived.by(() => {
 		if (!access || !hasRoleChange || !selectedRole) return [];
 		const defaults = new Set(selectedRole.default_control_ids);
@@ -270,14 +276,13 @@
 				</div>
 
 				{#if roleDraft}
-					<label class="team-access-editor__role-picker" for="team-member-role">
-						<span>Role</span>
-						<select id="team-member-role" bind:value={roleDraft} disabled={savingRole}>
-							{#each access.roles.filter((role) => role.id !== 'admin' || canAssignAdministrator) as role (role.id)}
-								<option value={role.id} disabled={!role.available}>{role.label}</option>
-							{/each}
-						</select>
-					</label>
+					<Select
+						id="team-member-role"
+						label="Role"
+						options={roleOptions}
+						bind:value={roleDraft}
+						disabled={savingRole}
+					/>
 					{#if selectedRole}<p class="team-access-editor__preview">{selectedRole.summary}</p>{/if}
 					{#if hasRoleChange}
 						<fieldset class="team-access-editor__choice">
@@ -487,30 +492,14 @@
 		font-size: var(--typography--fontSize-small);
 	}
 
-	.team-access-editor__role-picker,
 	.team-access-editor__choice {
 		display: grid;
 		gap: var(--space-small);
 	}
 
-	.team-access-editor__role-picker > span,
 	.team-access-editor__choice legend {
 		color: var(--color-heading);
 		font-weight: 700;
-	}
-
-	.team-access-editor__role-picker select {
-		min-height: 40px;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-text);
-		background: var(--color-surface);
-	}
-
-	.team-access-editor__role-picker select:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
 	}
 
 	.team-access-editor__choice {

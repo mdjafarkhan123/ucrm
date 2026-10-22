@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import SetupStepCard from '$lib/components/layout/SetupStepCard.svelte';
 	import { IMPORT_FIELD_OPTIONS } from '$lib/imports/api';
 
@@ -10,7 +11,6 @@
 	import columnsIcon from '@tabler/icons/outline/columns-3.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
-	import chevronIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// Generic on purpose: this step is shared by every import wizard (clients, Price Book, opening balances,
 	// ...), each with its own field enum. dont_overwrite is optional because an import with no partial-merge
@@ -45,6 +45,10 @@
 	} = $props();
 
 	const matchedCount = $derived(headers.filter((header) => mapping[header]).length);
+	const mappingOptions = $derived([
+		{ value: '', label: "Don't import this column" },
+		...fieldOptions
+	]);
 
 	// Up to three real sample values for a column, so the office can confirm a match at a glance.
 	function samples(header: string): string {
@@ -111,22 +115,15 @@
 				</div>
 				<span class="map__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 				<div class="map__field" role="cell">
-					<span class="field-box" class:field-box--unset={!entry}>
-						<span class="field-box__mark" aria-hidden="true">
-							{@html entry ? circleCheckIcon : alertIcon}
-						</span>
-						<select
-							value={entry?.field ?? ''}
-							aria-label={`Field for the ${header} column`}
-							onchange={(event) => setField(header, event.currentTarget.value)}
-						>
-							<option value="">Don't import this column</option>
-							{#each fieldOptions as option (option.value)}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
-						<span class="field-box__chevron" aria-hidden="true">{@html chevronIcon}</span>
-					</span>
+					<Select
+						id={`import-field-${index}`}
+						value={entry?.field ?? ''}
+						options={mappingOptions}
+						ariaLabel={`Field for the ${header} column`}
+						placeholder="Don't import this column"
+						icon={entry ? circleCheckIcon : alertIcon}
+						onchange={(value) => setField(header, value)}
+					/>
 				</div>
 				{#if showOverwriteToggle}
 					<div class={['map__overwrite', !entry && 'map__overwrite--off']} role="cell">
@@ -263,78 +260,6 @@
 
 			&--off {
 				opacity: 0.45;
-			}
-		}
-	}
-
-	.field-box {
-		position: relative;
-		display: flex;
-		align-items: center;
-		height: 40px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		transition: border-color 0.12s;
-
-		&:hover {
-			border-color: var(--color-interactive);
-		}
-		&:focus-within {
-			border-color: var(--color-interactive);
-			box-shadow: var(--shadow-focus);
-		}
-
-		&__mark,
-		&__chevron {
-			position: absolute;
-			top: 50%;
-			display: block;
-			transform: translateY(-50%);
-			pointer-events: none;
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-		&__mark {
-			left: var(--space-slim);
-			color: var(--color-success);
-		}
-		&__chevron {
-			right: var(--space-slim);
-			color: var(--color-icon--secondary);
-		}
-
-		select {
-			width: 100%;
-			height: 100%;
-			padding: 0 36px;
-			border: none;
-			border-radius: inherit;
-			background: transparent;
-			color: var(--color-heading);
-			font-family: inherit;
-			font-size: var(--typography--fontSize-base);
-			cursor: pointer;
-			appearance: none;
-
-			&:focus-visible {
-				outline: none;
-			}
-		}
-
-		&--unset {
-			border: 1.5px solid var(--color-warning);
-
-			.field-box__mark {
-				color: var(--color-warning--onSurface);
-			}
-			select {
-				color: var(--color-warning--onSurface);
-				font-weight: 600;
 			}
 		}
 	}

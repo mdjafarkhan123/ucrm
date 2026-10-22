@@ -5,6 +5,7 @@
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
 	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -113,6 +114,17 @@
 	const requestProperties = $derived(
 		data.properties.filter((property) => property.client_id === requestForm.client_id)
 	);
+	const clientOptions = $derived([
+		{ value: '', label: 'Choose customer' },
+		...data.clients.map((client) => ({ value: client.id, label: client.display_name }))
+	]);
+	const requestPropertyOptions = $derived([
+		{ value: '', label: 'Choose property' },
+		...requestProperties.map((property) => ({
+			value: property.id,
+			label: `${property.label || property.address_line1} · ${property.city}`
+		}))
+	]);
 
 	async function fetchOverview(): Promise<Overview> {
 		const response = await fetch('/api/crm/overview');
@@ -451,15 +463,14 @@
 							void save('property', propertyForm);
 						}}
 					>
-						<label
-							>Customer<select bind:value={propertyForm.client_id}
-								><option value="">Choose customer</option
-								>{#each data.clients as client (client.id)}<option value={client.id}
-										>{client.display_name}</option
-									>{/each}</select
-							>{#if errorFor('client_id')}<small class="field-error">{errorFor('client_id')}</small
-								>{/if}</label
-						>
+						<Select
+							id="field-worker-property-customer"
+							label="Customer"
+							placeholder="Choose customer"
+							options={clientOptions}
+							bind:value={propertyForm.client_id}
+							errorMessage={errorFor('client_id')}
+						/>
 						<label
 							>Property label<input
 								bind:value={propertyForm.label}
@@ -498,25 +509,22 @@
 						}}
 					>
 						<div class="form-grid">
-							<label
-								>Customer<select
-									bind:value={requestForm.client_id}
-									onchange={() => (requestForm.property_id = '')}
-									><option value="">Choose customer</option
-									>{#each data.clients as client (client.id)}<option value={client.id}
-											>{client.display_name}</option
-										>{/each}</select
-								></label
-							><label
-								>Property<select
-									bind:value={requestForm.property_id}
-									disabled={!requestForm.client_id}
-									><option value="">Choose property</option
-									>{#each requestProperties as property (property.id)}<option value={property.id}
-											>{property.label || property.address_line1} · {property.city}</option
-										>{/each}</select
-								></label
-							>
+							<Select
+								id="field-worker-request-customer"
+								label="Customer"
+								placeholder="Choose customer"
+								options={clientOptions}
+								bind:value={requestForm.client_id}
+								onchange={() => (requestForm.property_id = '')}
+							/>
+							<Select
+								id="field-worker-request-property"
+								label="Property"
+								placeholder="Choose property"
+								options={requestPropertyOptions}
+								bind:value={requestForm.property_id}
+								disabled={!requestForm.client_id}
+							/>
 						</div>
 						<label
 							>What do they need?<input
@@ -824,7 +832,6 @@
 		font-weight: 700;
 	}
 	.modal input,
-	.modal select,
 	.modal textarea {
 		width: 100%;
 		padding: 11px 12px;
