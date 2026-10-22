@@ -37,3 +37,9 @@ Opened from Edit profile on the approved Settings home (Batch 63 A, `PZ8xu`).
 - Business email: kept, because Jafar approved B with it (it also shows on the approved Settings home).
 - Only one section open at a time; opening another asks to save or drop the open one.
 - Screens: page `o5GAHJ` (Contact open), dark `C7YEUR`, opened sections panel `wZCYI`, staff view `t8ZDv`.
+
+**Built 2026-10-22** (branch `codex/build-batch64`, evidence `docs/evidence/2026-10-22-batch64/`): page
+`(app)/settings/business-profile/+page.svelte` with `components/settings/profile/*`. Each section saves on its own;
+the profile save still sends the whole profile. Left out: the **business email** field (needs a new column and
+overlaps Email setup senders; Jafar to decide) and the drawing's "Changed from" sample line. Old live preview rail
+(`_components/BusinessPreview.svelte`) deleted.
