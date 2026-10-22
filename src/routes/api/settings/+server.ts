@@ -9,6 +9,7 @@ import {
 	SMS_REGISTRATION_SENDER_TYPE,
 	SMS_REGISTRATION_USE_CASE
 } from '$lib/server/communications/sms-registration';
+import { settingsHomePermissions } from '$lib/server/settings/home-permissions';
 import { loadInquiryAlertSettings } from '$lib/server/team/inquiry-alerts';
 
 // What the Settings home needs and nothing more: who is signed in, whether they may change business
@@ -95,32 +96,7 @@ export const GET: RequestHandler = async (event) => {
 				role: check.auth.organization.role
 			},
 			organization: { name: check.auth.organization.name },
-			permissions: {
-				business_edit: hasPermission(check.access, 'settings.business.edit'),
-				team_manage: hasPermission(check.access, 'team.manage'),
-				communications_manage: communicationsManage,
-				// Snippets are gated on the same permission as sending a message, not channel management --
-				// a granted staff member who can send but not manage connections still needs this card.
-				// Snippets and reply templates only exist to be dropped into an inbox reply, so they go
-				// with the shared inbox when the plan does not include it.
-				snippets_manage:
-					check.access.features['communications.inbox'] === true &&
-					hasPermission(check.access, 'conversations.send'),
-				taxes_manage: hasPermission(check.access, 'settings.taxes.manage'),
-				price_book_manage: hasPermission(check.access, 'settings.price_book.manage'),
-				checklists_manage: hasPermission(check.access, 'settings.checklists.manage'),
-				forms_manage: hasPermission(check.access, 'settings.forms.manage'),
-				reviews_manage: hasPermission(check.access, 'reviews.manage'),
-				quotes_manage: hasPermission(check.access, 'settings.quotes.manage'),
-				invoices_manage: hasPermission(check.access, 'settings.invoices.manage'),
-				payments_manage: hasPermission(check.access, 'settings.payments.manage'),
-				// The Pipeline card goes with the Pipeline: no board, no settings for it.
-				pipeline_view: hasPermission(check.access, 'pipeline.view'),
-				// Whether Automation would show for this member — plan includes it and they may view it. In 6B
-				// the card is still held back by a journey-ready flag on the client, so this alone never
-				// reveals it; it wires the gate so publishing the feature in 6D turns the card on.
-				automations_view: hasPermission(check.access, 'automations.view')
-			},
+			permissions: settingsHomePermissions(check.access),
 			readiness: {
 				business_profile: businessProfileReadiness({
 					name: check.auth.organization.name,

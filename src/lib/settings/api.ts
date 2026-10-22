@@ -49,6 +49,65 @@ export async function fetchSettingsHome(): Promise<SettingsHome> {
 	return response.json();
 }
 
+export type SettingsHomeSummary = {
+	business: {
+		phone: string | null;
+		email: string | null;
+		website: string | null;
+		place: string | null;
+		trade: string | null;
+		address: string | null;
+		timezone: string;
+		currency_code: string | null;
+		service_radius_miles: number | null;
+		open_today: string | null;
+		logo_url: string | null;
+		brand_color: string | null;
+	};
+	/** One short caption per setting ("GST 5% default"); null when the member may not open it or it failed to read. */
+	values: Record<
+		| 'branding'
+		| 'hours'
+		| 'taxes'
+		| 'quotes'
+		| 'invoices'
+		| 'products'
+		| 'checklists'
+		| 'pipeline'
+		| 'team'
+		| 'roles'
+		| 'activity'
+		| 'website_chat'
+		| 'request_forms'
+		| 'email_templates'
+		| 'snippets'
+		| 'contact_matching'
+		| 'blocked_addresses'
+		| 'automations',
+		string | null
+	>;
+	/** Plain facts the "Ready for customers" list is worked out from. */
+	signals: {
+		logo: boolean | null;
+		profile_details: boolean | null;
+		tax_default: boolean | null;
+		products: number | null;
+		team_members: number | null;
+		request_forms: number | null;
+		email_verified: boolean | null;
+		payments_connected: boolean | null;
+		review_link: boolean | null;
+	};
+};
+
+export const settingsHomeSummaryKey = ['settings', 'home', 'summary'] as const;
+
+export async function fetchSettingsHomeSummary(): Promise<SettingsHomeSummary> {
+	const response = await fetch('/api/settings/summary');
+	if (!response.ok) throw httpError(response, 'Settings details could not be loaded.');
+	return response.json();
+}
+
 export type SettingsEditor = { name: string | null; at: string | null } | null;
 
 export type BusinessProfile = {
