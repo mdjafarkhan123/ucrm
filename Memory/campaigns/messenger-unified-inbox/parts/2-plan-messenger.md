@@ -12,13 +12,13 @@
 - [x] Verified from Meta docs 2026-10-18: Send API shape, Page token lifetime, Human Agent tag, `subscribed_apps`, Facebook Login for Business, Graph version (pin v25.0)
 - [x] `docs/research/messenger-transport-webhooks.md` written (verified / inference / proposal kept apart)
 - [x] `docs/messenger-implementation-plan.md` written with performance design verdict
-- [ ] Bring Jafar the three open choices (replies after 24h, reconnect history, customer matching), each with its recommendation, in everyday English
-- [ ] Record approval date in the roadmap and NOW.md (then Part 3 may start)
+- [x] Bring Jafar the three open choices (replies after 24h, reconnect history, customer matching), each with its recommendation, in everyday English
+- [x] Record approval date in the roadmap and NOW.md (then Part 3 may start)
 
 ## Next
 
-Ask Jafar the three choices and for approval of the plan. Still unverified until a real call (Part 7): exact `tag` field
-for Human Agent. Do not set `MESSENGER_GRAPH_VERSION` until Part 5 (value will be `v25.0`).
+Done 2026-10-23: Jafar approved the plan and all three recommendations (24h block now, Human Agent requested in
+Part 10's App Review; history kept on reconnect; new lead, staff link). Part 3 is next.
 
 ## Notes
 

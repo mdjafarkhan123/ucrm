@@ -63,20 +63,23 @@ current Pencil concept and the design skill; Jafar approves designs before the i
 - Webhook host `https://app.upliftcontractor.com` (Jafar confirmed); Meta app "Ucrm Messaging", App ID
   `1419027217062214`; the three Meta values are set in `.env`.
 
-## Still unclear
+## Decided
 
-Research on 2026-10-18 (`docs/research/messenger-transport-webhooks.md`) answered the Meta questions. Three product
-choices wait for Jafar; recommendations are in `docs/messenger-implementation-plan.md`:
+Jafar approved on 2026-10-23 (research: `docs/research/messenger-transport-webhooks.md`; plan:
+`docs/messenger-implementation-plan.md`):
 
-- Manual replies after 24 hours — recommended: blocked with a plain reason now; Meta's 7-day Human Agent option added
-  after Meta approves it (it needs App Review).
-- Old conversations when a Page is disconnected and reconnected — recommended: history stays, same thread resumes.
-- Customer matching — recommended: unknown customers become a new lead, never merged by name alone; staff can link a
-  thread to an existing client. Customer names also need Meta's profile-access approval, so until then a new
-  customer shows as "Facebook user".
+- Manual replies after 24 hours are blocked with a plain reason, as GoHighLevel documents. Meta's 7-day Human Agent
+  option is requested in the go-live App Review and enabled only after Meta approves it.
+- When a Page is disconnected and reconnected, history stays and the same customer's thread resumes.
+- An unknown Messenger customer becomes a new lead, never merged by name alone; staff can link the thread to an
+  existing client. Until Meta approves profile access, a new customer shows as "Facebook user".
 
 Answered by research: contractors who connect their own Page do not need their own Meta verification (Uplift, as the
 app owner and Tech Provider, does; re-check at submission in Part 10).
+
+## Still unclear
+
+Nothing blocks building. Confirmed only by a real call in Part 7: the exact Human Agent `tag` field.
 
 ## Not doing
 
