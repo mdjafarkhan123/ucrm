@@ -12,6 +12,7 @@
 | `--color-surface--background--subtle` | Table header row |
 | `--color-surface--hover` | Row and menu-item hover |
 | `--color-surface--active` | Current page in the sidebar |
+| `--color-surface--key` | White button (raised key); `--key-hover` and `--key-pressed` for its states |
 | `--color-border` | Card and divider edges |
 | `--color-border--interactive` | Field and secondary-button edges |
 | `--color-heading` | Titles and numbers |

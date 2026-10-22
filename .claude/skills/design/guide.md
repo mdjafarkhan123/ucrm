@@ -14,9 +14,9 @@
 5. Colourful icons across the whole app.
 6. The main button of each area is brand green, with white text. Light greens appear only in dark mode.
 7. **Nothing blends in.** Every element's fill differs from the colour behind it, in light and dark mode.
-   A part takes the opposite of what it sits on, or carries a clear edge. Buttons and input boxes are white
-   with a thin edge everywhere (brand green on buttons, soft grey on boxes); other parts on a white card are grey,
-   on the page or a coloured top white.
+   A part takes the opposite of what it sits on, or carries a clear edge. White buttons are raised white keys
+   (a soft shadow ring, no drawn line); input boxes are white with a thin soft-grey edge; other parts on a white
+   card are grey, on the page or a coloured top white.
 8. **Built from the app's own colours and sizes** (`src/lib/styles/_variables.scss`). Add a new one only when
    nothing fits.
 11. **Desktop web app.** Design at 1440px wide; No need to check phone version

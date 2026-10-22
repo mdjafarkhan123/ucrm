@@ -441,6 +441,8 @@ Jafar kept the top bar on the page colour (2026-10-21). Builder: update `_variab
 brand-green edge (danger: red edge) and field boxes white with the soft grey edge everywhere, like Jobber; grey
 fills dropped. Pencil components and every hand-drawn box changed at the source (`buttons.md`, `inputs.md`, guide rule 7).
 Builder: `ui/Button` white kinds and `ui/Input`/`ui/Select`/`Textarea` boxes.
+**Superseded for buttons (Jafar 2026-10-22, Batch 62 B):** white buttons are raised white keys with no drawn
+line; see `parts/batch62-white-buttons.md`. Field boxes keep the soft grey edge.
 
 ## Switch component — approved 2026-10-21
 
