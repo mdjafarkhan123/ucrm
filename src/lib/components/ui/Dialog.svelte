@@ -15,6 +15,7 @@
 		iconTone = 'success',
 		flush = false,
 		badge,
+		closeDisabled = false,
 		onClose,
 		children,
 		footer
@@ -34,6 +35,8 @@
 		flush?: boolean;
 		/** A small pill beside the title, e.g. "Recurring". */
 		badge?: Snippet;
+		/** While something can't be interrupted, the × is greyed and Escape or a click outside does nothing. */
+		closeDisabled?: boolean;
 		onClose: () => void;
 		children: Snippet;
 		/** A bar under the body for the dialog's actions, so they stay in view while the body scrolls. */
@@ -44,7 +47,7 @@
 <DialogPrimitive.Root
 	{open}
 	onOpenChange={(next) => {
-		if (!next) onClose();
+		if (!next && !closeDisabled) onClose();
 	}}
 >
 	<DialogPrimitive.Portal>
@@ -52,6 +55,8 @@
 		<DialogPrimitive.Content
 			class="dialog__content dialog__content--{size}"
 			style={width ? `--modal--width: ${width}px` : undefined}
+			escapeKeydownBehavior={closeDisabled ? 'ignore' : 'close'}
+			interactOutsideBehavior={closeDisabled ? 'ignore' : 'close'}
 			onOpenAutoFocus={(event) => {
 				if (!initialFocusId) return;
 				const target = document.getElementById(initialFocusId);
@@ -60,7 +65,7 @@
 				target.focus();
 			}}
 		>
-			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} />
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} {closeDisabled} />
 			<div class="dialog__body" class:dialog__body--flush={flush}>
 				{@render children()}
 			</div>

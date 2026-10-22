@@ -20,6 +20,7 @@
 		disabled = false,
 		invalid = false,
 		errorMessage = '',
+		only,
 		onchange
 	}: {
 		/** ISO 3166-1 alpha-2 code, e.g. "PK". */
@@ -34,15 +35,20 @@
 		disabled?: boolean;
 		invalid?: boolean;
 		errorMessage?: string;
+		/** Offer only these ISO codes, e.g. the countries where Twilio has numbers in stock. */
+		only?: readonly string[];
 		onchange?: (code: string) => void;
 	} = $props();
 
 	// The full list costs about 30 ms to build on a desktop (several times that on a phone), so it waits until
 	// someone points at or focuses the box; a saved country is named and flagged straight from its code.
 	let warmed = $state(false);
+	let allowed = $derived(only ? new Set(only) : null);
 	let items = $derived(
 		warmed
-			? allCountryOptions().map((country) => ({ value: country.code, label: country.name }))
+			? allCountryOptions()
+					.filter((country) => !allowed || allowed.has(country.code))
+					.map((country) => ({ value: country.code, label: country.name }))
 			: []
 	);
 	let query = $state('');
@@ -51,7 +57,13 @@
 	let selectedFlag = $derived(countryFlag(value));
 	let inputValue = $derived(open ? query : selectedName);
 	// Reopening on a chosen country shows the whole list, not just that one country.
-	let results = $derived(warmed ? searchCountries(query === selectedName ? '' : query) : []);
+	let results = $derived(
+		warmed
+			? searchCountries(query === selectedName ? '' : query).filter(
+					(country) => !allowed || allowed.has(country.code)
+				)
+			: []
+	);
 	let searchKey = $derived(query === selectedName ? '' : query);
 	// Drawing all 250 rows at once took about 125 ms on a desktop, so the list grows as it is scrolled,
 	// the way Polaris's combobox loads more results; typing still searches every country.

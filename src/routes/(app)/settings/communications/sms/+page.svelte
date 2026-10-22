@@ -50,9 +50,27 @@
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 	import checkCircleIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import infoCircleIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import AddNumberDialog from '$lib/components/communications/add-number/AddNumberDialog.svelte';
+	import { fetchNumberCountries, numberCountriesKey } from '$lib/communications/sms-number-shop';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+
+	// Add number (Stage 10 Part 2). Its country list loads when the button is pointed at, not with the page.
+	let addNumberOpen = $state(false);
+	function warmAddNumber() {
+		void queryClient.prefetchQuery({
+			queryKey: numberCountriesKey,
+			queryFn: fetchNumberCountries,
+			staleTime: 10 * 60_000
+		});
+	}
+	function registerAfterBuying() {
+		addNumberOpen = false;
+		(document.getElementById('registration') ?? document.getElementById('sms-readiness-title'))
+			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
 	const homeQuery = createQuery(() => ({
 		queryKey: smsRegistrationKey,
 		queryFn: fetchSmsRegistration,
@@ -472,7 +490,22 @@
 			tone="task"
 			presentation="communication"
 			compactDescription
-		/>
+		>
+			{#snippet actions()}
+				<Button onclick={() => (addNumberOpen = true)} onhover={warmAddNumber}>
+					<span aria-hidden="true">{@html plusIcon}</span>
+					Add number
+				</Button>
+			{/snippet}
+		</SettingsPageHeader>
+
+		{#if addNumberOpen}
+			<AddNumberDialog
+				open
+				onClose={() => (addNumberOpen = false)}
+				onRegister={registerAfterBuying}
+			/>
+		{/if}
 
 		{#if homeQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
@@ -879,7 +912,7 @@
 						{:else if !numbersQuery.data?.numbers.length}
 							<EmptyState
 								title="No numbers yet"
-								description="A sending number is set up by Jafar once registration is approved. Contact Jafar to request one."
+								description="Add a number to start texting your customers."
 							/>
 						{:else}
 							<ul class="sms-settings__numbers">
