@@ -14,7 +14,7 @@
   nothing to text, searching, no numbers, phone company unreachable, paperwork bill, buying, connection dropped and
   checking, bought. Rules in `.claude/skills/design/modals.md` § Add number pop-up.
 - [x] Number paperwork (Compliance) list and form — Jafar approved 2026-10-22 ("approved"), board `A0URqF`
-  renamed "Number paperwork · Approved". Every state drawn the same day, light only (Jafar: "no need to draw dark
+  renamed "Number paperwork · Approved". Every state drawn and approved the same day ("approved"), light only (Jafar: "no need to draw dark
   mode"). Rules in `.claude/skills/design/layout.md` § Number paperwork.
 - [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text").
 - [ ] Charges shown before sending or buying.
