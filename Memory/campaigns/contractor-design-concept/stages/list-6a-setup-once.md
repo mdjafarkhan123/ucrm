@@ -26,7 +26,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `(app)/settings/automation/[id]/edit` | `settings/automation/RecipeEditorLoader` · loading | ⬜ | ⬜ |
 | `(app)/settings/automation/new` | `settings/automation/PresetLibrary` | ⬜ | ⬜ |
 | `(app)/settings/branding` | loading, permission-limited | ✅ Batch 65 `FjLSw` A 2026-10-22 | ✅ 2026-10-22 (`docs/evidence/2026-10-22-batch65/`) |
-| `(app)/settings/business-hours` | loading, permission-limited | ⬜ | ⬜ |
+| `(app)/settings/business-hours` | loading, permission-limited | ✅ Batch 39 `DhRBV` B 2026-10-21 (the page is the week planner; Jafar 2026-10-22: no redesign) | ✅ 2026-10-21 (`docs/evidence/2026-10-21-batch39/`) |
 | `(app)/settings/business-profile` | loading, permission-limited | ✅ Batch 64 `dw4fp` B 2026-10-22 | ✅ 2026-10-22 (`docs/evidence/2026-10-22-batch64/`; business email left out) |
 | `(app)/settings/checklists` | `settings/ChecklistTemplateDialog` 🔁F · pop-ups: "form" 🔁F · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `(app)/settings/communications/balance` | pop-ups: "Request a top-up" 🔁F · loading, empty | ⬜ | ⬜ |
