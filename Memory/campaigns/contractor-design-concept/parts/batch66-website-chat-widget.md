@@ -34,6 +34,14 @@ public config); copy "Email (optional)", "We'll reply right here", "Not sent · 
 errors ("Enter your full name.", "Enter the whole phone number…") instead of "Invalid value"; message-first
 order; "Message us" pill label.
 
+## Build (2026-10-22)
+
+Built on `claude/build-batch66-website-chat`: `src/widget/website-chat.ts` restyled to every drawn state, logo from
+Branding through `logoPath` in the public config and `src/routes/api/webchat/logo/+server.ts`, friendlier mistakes.
+Evidence: `docs/evidence/2026-10-22-batch66/README.md`.
+
 ## Next
 
-Jafar's Ctrl+S in Pencil, then commit `concept.pen` from main and merge this branch to main for building.
+1. Jafar's yes to fix the chat-message trigger bug (README); then send one real message live as the journey proof.
+2. Settings preview `src/lib/components/communications/WebsiteChatPreview.svelte` still shows the old look (ask first).
+3. Pencil step-6 tidy-up of `yyWfm`.

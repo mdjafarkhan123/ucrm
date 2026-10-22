@@ -67,6 +67,7 @@ type WidgetPublicConfig = {
 	contactRequirement: ContactRequirement;
 	privacyPolicyUrl: string | null;
 	status: WidgetStatus;
+	logoPath?: string | null;
 };
 
 // One accepted conversation, as the browser remembers it. The token is the visitor's only proof of
@@ -136,7 +137,7 @@ type IdentityDraft = {
 	let draft: IdentityDraft | null = null;
 	let submitting = false;
 	let accepted = false;
-	// A field only starts showing "Invalid value" once the visitor has actually left it or tried to
+	// A field only starts showing its mistake once the visitor has actually left it or tried to
 	// send. Validating while someone is still typing their email calls them wrong mid-word.
 	let touched = new Set<keyof IdentityDraft>();
 	let formBanner = '';
@@ -184,7 +185,8 @@ type IdentityDraft = {
 	//
 	// The app's design tokens, copied as literal values because this bundle cannot import
 	// `_variables.scss` -- there is no SCSS pipeline out here and no `:root` of ours to inherit
-	// from. Keep these in step with `src/lib/styles/_variables.scss` when a token changes.
+	// from. Keep these in step with `src/lib/styles/_variables.scss` when a token changes. The look
+	// follows the approved Pencil board (Batch 66, Welcome card) and `layout.md` § Website chat widget.
 	//
 	// Light palette only, on purpose: the widget is organization-branded furniture on someone
 	// else's website, so it should not flip to a dark theme because the visitor's OS is dark while
@@ -196,29 +198,43 @@ type IdentityDraft = {
 	all: initial;
 
 	--wc-color-brand: ${brandColor};
+	--wc-color-brand--deep: color-mix(in srgb, var(--wc-color-brand) 78%, #000000);
+	--wc-color-brand--glow: color-mix(in srgb, var(--wc-color-brand) 35%, transparent);
+	--wc-color-on-brand: #ffffff;
+	--wc-color-on-brand--soft: rgba(255, 255, 255, 0.82);
+	--wc-color-on-brand--well: rgba(255, 255, 255, 0.18);
+	--wc-color-on-brand--key: rgba(255, 255, 255, 0.15);
 	--wc-color-surface: #ffffff;
 	--wc-color-surface-hover: #f9f8f6;
 	--wc-color-surface-subtle: #f9f8f6;
 	--wc-color-border: #dadfe2;
+	--wc-color-border-interactive: #dadfe2;
 	--wc-color-heading: #032b3a;
 	--wc-color-text: #233d48;
+	--wc-color-text-secondary: #49646f;
 	--wc-color-icon: #233d48;
 	--wc-color-icon-secondary: #84979f;
-	--wc-color-on-brand: #ffffff;
+	--wc-color-inactive: #49646f;
+	--wc-color-inactive-surface: #eef1f2;
 	--wc-color-focus: #84979f;
 	--wc-color-critical: #d24232;
-	--wc-color-placeholder: #84979f;
+	--wc-color-critical-surface: #faecea;
+	--wc-color-critical-on-surface: #7a0c00;
+	--wc-color-placeholder: #49646f;
+	--wc-color-skeleton: #eef1f2;
 
-	--wc-space-base: 16px;
-	--wc-space-large: 24px;
-	--wc-radius-small: 4px;
-	--wc-radius-base: 8px;
-	--wc-radius-large: 16px;
+	--wc-font-size-smaller: 12px;
 	--wc-font-size-base: 14px;
 	--wc-font-size-large: 16px;
+	--wc-font-size-largest: 24px;
 	--wc-line-height-base: 1.25;
-	--wc-shadow-base: 0px 1px 4px 0px #0000001a, 0px 4px 12px 0px #0000000d;
-	--wc-shadow-high: 0px 16px 16px 0px #00000013, 0px 0px 8px 0px #0000000d;
+	--wc-line-height-text: 1.45;
+	--wc-shadow-panel: 0px 20px 48px 0px rgba(3, 43, 58, 0.18), 0px 2px 6px 0px rgba(3, 43, 58, 0.08);
+	--wc-shadow-card: 0px 4px 14px 0px rgba(3, 43, 58, 0.08);
+	--wc-shadow-pop: 0px 12px 28px 0px rgba(3, 43, 58, 0.16);
+	--wc-shadow-teaser: 0px 12px 30px 0px rgba(3, 43, 58, 0.12), 0px 0px 0px 1px var(--wc-color-border);
+	--wc-shadow-key: 0px 2px 6px 0px rgba(3, 43, 58, 0.12), 0px 0px 0px 1px var(--wc-color-border);
+	--wc-shadow-launcher: 0px 8px 20px 0px var(--wc-color-brand--glow), 0px 2px 4px 0px rgba(0, 0, 0, 0.1);
 	--wc-shadow-focus: 0px 0px 0px 2px var(--wc-color-surface), 0px 0px 0px 4px var(--wc-color-focus);
 	--wc-timing-base: 0.2s;
 }
@@ -227,109 +243,149 @@ type IdentityDraft = {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	font-family: Inter, Helvetica, Arial, sans-serif;
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
 
 button { font: inherit; cursor: pointer; }
-svg { display: block; }
+svg { display: block; flex: 0 0 auto; }
+[hidden] { display: none !important; }
 
-.wc-avatar {
+/* -- Logo mark: the Branding logo, or the business's initials on its colour -- */
+
+.wc-logo {
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
-	border-radius: 100%;
 	background: var(--wc-color-brand);
 	color: var(--wc-color-on-brand);
-	font-weight: 600;
+	font-weight: 700;
 	overflow: hidden;
 }
 
-.wc-avatar--base { width: 32px; height: 32px; font-size: 12px; }
-.wc-avatar--medium { width: 40px; height: 40px; font-size: var(--wc-font-size-base); }
+.wc-logo--image { background: var(--wc-color-surface); }
+.wc-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+.wc-logo--24 { width: 24px; height: 24px; border-radius: 7px; font-size: 10px; }
+.wc-logo--32 { width: 32px; height: 32px; border-radius: 8px; font-size: var(--wc-font-size-smaller); }
+.wc-logo--40 { width: 40px; height: 40px; border-radius: 12px; font-size: var(--wc-font-size-base); }
 
 /* -- Launcher -- */
 
 .wc-launcher {
 	position: fixed;
-	bottom: var(--wc-space-large);
-	display: grid;
-	place-items: center;
-	width: 56px;
-	height: 56px;
+	bottom: 24px;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	height: 52px;
+	padding: 0 22px 0 18px;
 	border: none;
-	border-radius: 100%;
+	border-radius: 999px;
 	background: var(--wc-color-brand);
 	color: var(--wc-color-on-brand);
-	box-shadow: var(--wc-shadow-high);
-	transition: transform var(--wc-timing-base) ease-out;
+	font-size: var(--wc-font-size-large);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
+	box-shadow: var(--wc-shadow-launcher);
+	transition: transform var(--wc-timing-base) ease-out, filter var(--wc-timing-base) ease-out;
 }
 
-.wc-launcher:hover { transform: scale(1.05); }
+.wc-launcher:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.wc-launcher:active { transform: translateY(0); filter: brightness(0.95); }
 
 .wc-launcher:focus-visible {
 	outline: transparent;
-	box-shadow: var(--wc-shadow-high), var(--wc-shadow-focus);
+	box-shadow: var(--wc-shadow-launcher), var(--wc-shadow-focus);
 }
 
-.wc-launcher svg { width: 28px; height: 28px; }
+.wc-launcher svg { width: 22px; height: 22px; }
 
-.wc-launcher--bottom_right { right: var(--wc-space-large); }
-.wc-launcher--bottom_left { left: var(--wc-space-large); }
+.wc-launcher--open {
+	justify-content: center;
+	width: 52px;
+	padding: 0;
+}
 
-/* -- Teaser -- */
+.wc-launcher--bottom_right { right: 24px; }
+.wc-launcher--bottom_left { left: 24px; }
+
+/* -- Teaser: a speech bubble pointing at the launcher -- */
 
 .wc-teaser {
 	position: fixed;
-	bottom: 84px;
+	bottom: 96px;
 	display: flex;
-	align-items: center;
-	gap: var(--wc-space-base);
-	max-width: 280px;
-	padding: var(--wc-space-base);
-	border: none;
-	border-radius: var(--wc-radius-large);
-	background: var(--wc-color-surface);
-	box-shadow: var(--wc-shadow-base);
-	text-align: left;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 12px;
+	width: 300px;
 	animation: wc-teaser-in var(--wc-timing-base) ease-out;
 }
 
-.wc-teaser:focus-visible {
-	outline: transparent;
-	box-shadow: var(--wc-shadow-base), var(--wc-shadow-focus);
+.wc-teaser--bottom_right { right: 24px; }
+.wc-teaser--bottom_left { left: 24px; align-items: flex-start; }
+
+.wc-teaser__bubble {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+	padding: 14px 16px 16px;
+	border: none;
+	border-radius: 20px 20px 4px 20px;
+	background: var(--wc-color-surface);
+	box-shadow: var(--wc-shadow-teaser);
+	text-align: left;
+	transition: transform var(--wc-timing-base) ease-out;
 }
 
-.wc-teaser--bottom_right { right: var(--wc-space-large); }
-.wc-teaser--bottom_left { left: var(--wc-space-large); }
+.wc-teaser--bottom_left .wc-teaser__bubble { border-radius: 20px 20px 20px 4px; }
+.wc-teaser__bubble:hover { transform: translateY(-1px); }
+
+.wc-teaser__bubble:focus-visible {
+	outline: transparent;
+	box-shadow: var(--wc-shadow-teaser), var(--wc-shadow-focus);
+}
+
+.wc-teaser__who {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: var(--wc-font-size-smaller);
+	font-weight: 700;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-heading);
+}
 
 .wc-teaser__text {
-	flex: 1;
-	font-size: var(--wc-font-size-base);
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-text);
+	font-size: var(--wc-font-size-large);
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--wc-color-heading);
 }
 
 .wc-teaser__dismiss {
 	display: grid;
 	place-items: center;
-	flex: 0 0 auto;
-	width: 20px;
-	height: 20px;
+	width: 28px;
+	height: 28px;
 	border: none;
-	background: none;
-	color: var(--wc-color-icon-secondary);
+	border-radius: 999px;
+	background: var(--wc-color-surface);
+	color: var(--wc-color-icon);
+	box-shadow: var(--wc-shadow-key);
 }
 
-.wc-teaser__dismiss:hover { color: var(--wc-color-icon); }
+.wc-teaser__dismiss:hover { background: var(--wc-color-surface-hover); }
 
 .wc-teaser__dismiss:focus-visible {
 	outline: transparent;
-	box-shadow: var(--wc-shadow-focus);
+	box-shadow: var(--wc-shadow-key), var(--wc-shadow-focus);
 }
 
-.wc-teaser__dismiss svg { width: 16px; height: 16px; }
+.wc-teaser__dismiss svg { width: 14px; height: 14px; }
 
 @keyframes wc-teaser-in {
 	from { opacity: 0; transform: translateY(8px); }
@@ -340,222 +396,302 @@ svg { display: block; }
 
 .wc-panel {
 	position: fixed;
-	bottom: var(--wc-space-large);
+	bottom: 92px;
 	display: flex;
 	flex-direction: column;
-	width: min(360px, calc(100vw - 2 * var(--wc-space-large)));
-	height: min(600px, calc(100vh - 2 * var(--wc-space-large)));
-	border-radius: var(--wc-radius-base);
-	background: var(--wc-color-surface);
-	box-shadow: var(--wc-shadow-high);
-	overflow: hidden;
-}
-
-.wc-panel--bottom_right { right: var(--wc-space-large); }
-.wc-panel--bottom_left { left: var(--wc-space-large); }
-
-.wc-panel__header {
-	display: flex;
-	align-items: center;
-	gap: var(--wc-space-base);
-	flex: 0 0 auto;
-	padding: var(--wc-space-base);
-	border-bottom: 1px solid var(--wc-color-border);
+	width: min(392px, calc(100vw - 48px));
+	max-height: min(720px, calc(100vh - 116px));
+	border: 1px solid var(--wc-color-border);
+	border-radius: 24px;
 	background: var(--wc-color-surface-subtle);
-}
-
-.wc-panel__title {
-	flex: 1;
-	font-size: var(--wc-font-size-large);
-	font-weight: 700;
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-heading);
+	box-shadow: var(--wc-shadow-panel);
 	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+	animation: wc-panel-in var(--wc-timing-base) ease-out;
 }
 
-.wc-panel__close {
+.wc-panel--chat { height: min(680px, calc(100vh - 116px)); background: var(--wc-color-surface); }
+
+.wc-panel--bottom_right { right: 24px; }
+.wc-panel--bottom_left { left: 24px; }
+
+@keyframes wc-panel-in {
+	from { opacity: 0; transform: translateY(12px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.wc-panel__scroll {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.wc-close {
 	display: grid;
 	place-items: center;
 	flex: 0 0 auto;
-	width: 28px;
-	height: 28px;
+	width: 32px;
+	height: 32px;
 	border: none;
-	border-radius: var(--wc-radius-small);
-	background: none;
-	color: var(--wc-color-icon-secondary);
+	border-radius: 10px;
+	background: var(--wc-color-on-brand--key);
+	color: var(--wc-color-on-brand);
+	transition: background var(--wc-timing-base) ease-out;
 }
 
-.wc-panel__close:hover {
-	color: var(--wc-color-icon);
-	background: var(--wc-color-surface-hover);
-}
+.wc-close:hover { background: rgba(255, 255, 255, 0.25); }
 
-.wc-panel__close:focus-visible {
+.wc-close:focus-visible {
 	outline: transparent;
-	box-shadow: var(--wc-shadow-focus);
+	box-shadow: 0 0 0 2px var(--wc-color-on-brand);
 }
 
-.wc-panel__close svg { width: 20px; height: 20px; }
+.wc-close svg { width: 16px; height: 16px; }
 
-.wc-panel__body {
-	flex: 1;
-	overflow-y: auto;
-	padding: var(--wc-space-base);
+/* -- Welcome top -- */
+
+.wc-hero {
+	display: flex;
+	flex-direction: column;
+	padding: 20px 20px 69px 24px;
+	background:
+		radial-gradient(120% 160% at 95% 0%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 60%),
+		linear-gradient(200deg, var(--wc-color-brand), var(--wc-color-brand--deep));
+	color: var(--wc-color-on-brand);
 }
 
-.wc-panel__footer {
-	flex: 0 0 auto;
-	padding: 8px var(--wc-space-base);
-	border-top: 1px solid var(--wc-color-border);
-	background: var(--wc-color-surface-subtle);
-	text-align: center;
-	font-size: 12px;
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-icon-secondary);
-}
-
-/* The widget credits the contractor, never UCRM -- a contractor's customers see only the
-   contractor (website-chat-behavior-contract.md). */
-.wc-panel__footer em { font-style: normal; font-weight: 600; color: var(--wc-color-text); }
-
-/* -- Identity form -- */
-
-.wc-intro {
+.wc-hero__top {
 	display: flex;
 	align-items: flex-start;
-	gap: 8px;
-	margin-bottom: 12px;
+	justify-content: space-between;
 }
 
-.wc-intro__bubble {
-	padding: 10px 12px;
-	border-radius: var(--wc-radius-base);
-	background: var(--wc-color-surface-subtle);
-	font-size: var(--wc-font-size-base);
-	line-height: 1.45;
-	color: var(--wc-color-text);
-}
-
-.wc-form { display: flex; flex-direction: column; gap: 10px; }
-
-.wc-field { display: flex; flex-direction: column; gap: 4px; }
-
-.wc-input,
-.wc-textarea {
-	width: 100%;
-	padding: 10px 12px;
-	border: 1px solid var(--wc-color-border);
-	border-radius: var(--wc-radius-small);
+.wc-hero__tile {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
 	background: var(--wc-color-surface);
+}
+
+.wc-hero__words {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 18px 4px 0 0;
+}
+
+.wc-hero__business {
+	font-size: var(--wc-font-size-base);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-on-brand--soft);
+}
+
+.wc-hero__greeting {
+	font-size: var(--wc-font-size-largest);
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.5px;
+	color: var(--wc-color-on-brand);
+	overflow-wrap: anywhere;
+}
+
+/* -- Card -- */
+
+.wc-card-space { margin-top: -49px; padding: 0 12px; }
+
+.wc-card {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 18px;
+	border: 1px solid var(--wc-color-border);
+	border-radius: 20px;
+	background: var(--wc-color-surface);
+	box-shadow: var(--wc-shadow-card);
+}
+
+.wc-group { display: flex; flex-direction: column; gap: 6px; }
+
+.wc-group__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.wc-group__label {
+	font-size: var(--wc-font-size-base);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-heading);
+}
+
+.wc-group__hint {
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-text-secondary);
+}
+
+.wc-box {
+	position: relative;
+	border: 1px solid var(--wc-color-border-interactive);
+	border-radius: 10px;
+	background: var(--wc-color-surface);
+	transition: border-color var(--wc-timing-base) ease-out, box-shadow var(--wc-timing-base) ease-out;
+}
+
+.wc-box:focus-within {
+	border-color: var(--wc-color-brand);
+	box-shadow: 0 0 0 1px var(--wc-color-brand);
+}
+
+/* Declared after the focus rule on purpose: a box that is both focused and wrong must stay red. Focus
+   tells the visitor where they are; the mistake is the more important of the two to keep visible. */
+.wc-box--invalid,
+.wc-box--invalid:focus-within {
+	border-color: var(--wc-color-critical);
+	box-shadow: 0 0 0 0.5px var(--wc-color-critical);
+}
+
+.wc-textarea {
+	display: block;
+	width: 100%;
+	height: 84px;
+	padding: 10px 12px;
+	border: none;
+	border-radius: 10px;
+	background: transparent;
+	font-size: var(--wc-font-size-base);
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-heading);
+	resize: none;
+}
+
+.wc-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	padding: 0 12px;
+}
+
+.wc-row + .wc-row { border-top: 1px solid var(--wc-color-border); }
+.wc-row--phone { padding-left: 6px; }
+.wc-row > svg { width: 16px; height: 16px; color: var(--wc-color-icon-secondary); }
+
+.wc-row__alert { display: none; color: var(--wc-color-critical); }
+.wc-row--invalid .wc-row__alert { display: block; }
+.wc-row__alert svg { width: 16px; height: 16px; }
+
+.wc-input {
+	flex: 1;
+	min-width: 0;
+	height: 42px;
+	border: none;
+	background: transparent;
 	font-size: var(--wc-font-size-base);
 	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-text);
+	color: var(--wc-color-heading);
 }
 
 .wc-input::placeholder,
-.wc-textarea::placeholder { color: var(--wc-color-placeholder); }
+.wc-textarea::placeholder,
+.wc-composer__input::placeholder { color: var(--wc-color-placeholder); opacity: 1; }
 
 .wc-input:focus-visible,
-.wc-textarea:focus-visible {
-	outline: transparent;
-	border-color: var(--wc-color-brand);
-	box-shadow: 0 0 0 1px var(--wc-color-brand);
-}
+.wc-textarea:focus-visible { outline: transparent; }
 
-.wc-textarea { min-height: 64px; resize: vertical; }
+.wc-errors { display: flex; flex-direction: column; gap: 2px; }
 
-.wc-field--invalid .wc-input,
-.wc-field--invalid .wc-textarea,
-.wc-field--invalid .wc-phone { border-color: var(--wc-color-critical); }
-
-.wc-field__error {
-	font-size: 12px;
-	line-height: var(--wc-line-height-base);
+.wc-error {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-text);
 	color: var(--wc-color-critical);
 }
 
-/* -- Phone control -- */
+.wc-error svg { width: 12px; height: 12px; }
 
-.wc-phone {
-	display: flex;
-	align-items: stretch;
-	position: relative;
-	border: 1px solid var(--wc-color-border);
-	border-radius: var(--wc-radius-small);
-	background: var(--wc-color-surface);
-}
+/* -- Phone country -- */
 
-.wc-phone:focus-within {
-	border-color: var(--wc-color-brand);
-	box-shadow: 0 0 0 1px var(--wc-color-brand);
-}
-
-.wc-phone .wc-input { border: none; box-shadow: none; padding-left: 4px; }
-.wc-phone .wc-input:focus-visible { box-shadow: none; }
-
-/* Declared after the focus rules on purpose: a field that is both focused and invalid must stay red.
-   Focus tells the visitor where they are; the error tells them something is wrong, and that is the
-   more important of the two to keep visible. */
-.wc-field--invalid .wc-input:focus-visible,
-.wc-field--invalid .wc-textarea:focus-visible,
-.wc-field--invalid .wc-phone:focus-within {
-	border-color: var(--wc-color-critical);
-	box-shadow: 0 0 0 1px var(--wc-color-critical);
-}
-
-.wc-field--invalid .wc-phone .wc-input:focus-visible { box-shadow: none; }
-
-.wc-phone__country {
-	display: flex;
+.wc-country-button {
+	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 	flex: 0 0 auto;
-	padding: 0 4px 0 10px;
+	height: 32px;
+	padding: 0 6px 0 8px;
 	border: none;
-	background: none;
+	border-radius: 8px;
+	background: var(--wc-color-surface-subtle);
 	font-size: var(--wc-font-size-base);
-	color: var(--wc-color-text);
+	font-weight: 600;
+	color: var(--wc-color-heading);
 }
 
-.wc-phone__country:focus-visible {
+.wc-country-button:hover { filter: brightness(0.97); }
+
+.wc-country-button[aria-expanded='true'] {
+	box-shadow: inset 0 0 0 1.5px var(--wc-color-brand);
+}
+
+.wc-country-button:focus-visible {
 	outline: transparent;
-	border-radius: var(--wc-radius-small);
 	box-shadow: var(--wc-shadow-focus);
 }
 
+.wc-country-button svg { width: 14px; height: 14px; color: var(--wc-color-icon-secondary); }
+
 /* Emoji flags render as flags on macOS, iOS and Android and fall back to the country's two
    letters on Windows, which still reads correctly beside the dial code. */
-.wc-phone__flag { font-size: var(--wc-font-size-large); line-height: 1; letter-spacing: -1px; }
-.wc-phone__caret { width: 12px; height: 12px; color: var(--wc-color-icon-secondary); }
+.wc-flag { font-size: var(--wc-font-size-large); line-height: 1; letter-spacing: -1px; font-weight: 400; }
 
 .wc-country {
 	position: absolute;
 	z-index: 2;
-	top: calc(100% + 4px);
-	left: 0;
-	width: min(280px, 100%);
-	border: 1px solid var(--wc-color-border);
-	border-radius: var(--wc-radius-base);
+	top: 92px;
+	left: -1px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: min(260px, 100%);
+	padding: 6px;
+	border-radius: 12px;
 	background: var(--wc-color-surface);
-	box-shadow: var(--wc-shadow-base);
-	overflow: hidden;
+	box-shadow: var(--wc-shadow-pop), 0 0 0 1px var(--wc-color-border);
 }
 
 .wc-country__search {
-	width: 100%;
-	padding: 8px 12px;
-	border: none;
-	border-bottom: 1px solid var(--wc-color-border);
-	font-size: var(--wc-font-size-base);
-	color: var(--wc-color-text);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid var(--wc-color-border-interactive);
+	border-radius: 8px;
 }
 
-.wc-country__search:focus-visible { outline: transparent; }
+.wc-country__search:focus-within { border-color: var(--wc-color-brand); }
+.wc-country__search svg { width: 14px; height: 14px; color: var(--wc-color-icon-secondary); }
+
+.wc-country__search input {
+	flex: 1;
+	min-width: 0;
+	border: none;
+	background: transparent;
+	font-size: var(--wc-font-size-base);
+	color: var(--wc-color-heading);
+}
+
+.wc-country__search input:focus-visible { outline: transparent; }
+.wc-country__search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .wc-country__list {
-	max-height: 220px;
+	max-height: 216px;
 	overflow-y: auto;
 	list-style: none;
 }
@@ -563,99 +699,147 @@ svg { display: block; }
 .wc-country__option {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 	width: 100%;
-	padding: 8px 12px;
+	height: 36px;
+	padding: 0 10px;
 	border: none;
+	border-radius: 8px;
 	background: none;
 	text-align: left;
 	font-size: var(--wc-font-size-base);
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-text);
+	font-weight: 500;
+	color: var(--wc-color-heading);
 }
 
 .wc-country__option:hover,
-.wc-country__option:focus-visible { outline: transparent; background: var(--wc-color-surface-hover); }
+.wc-country__option:focus-visible,
+.wc-country__option--chosen { outline: transparent; background: var(--wc-color-surface-hover); }
 
+.wc-country__option--chosen .wc-country__name { font-weight: 600; }
 .wc-country__name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.wc-country__dial { flex: 0 0 auto; color: var(--wc-color-icon-secondary); }
-.wc-country__empty { padding: 12px; font-size: var(--wc-font-size-base); color: var(--wc-color-icon-secondary); }
 
-/* -- Consent, privacy, send -- */
+.wc-country__dial {
+	flex: 0 0 auto;
+	font-size: var(--wc-font-size-smaller);
+	font-weight: 600;
+	color: var(--wc-color-text-secondary);
+}
+
+.wc-country__option svg { width: 14px; height: 14px; color: var(--wc-color-brand); }
+
+.wc-country__empty {
+	padding: 10px;
+	font-size: var(--wc-font-size-base);
+	color: var(--wc-color-text-secondary);
+}
+
+/* -- The "Text me" agreement -- */
 
 .wc-consent {
 	display: flex;
 	align-items: flex-start;
-	gap: 8px;
-	padding: 8px;
-	border-radius: var(--wc-radius-small);
+	gap: 10px;
+	padding: 12px;
+	border-radius: 12px;
 	background: var(--wc-color-surface-subtle);
-}
-
-.wc-consent[hidden] { display: none; }
-
-.wc-consent__label {
-	display: block;
-	font-weight: 600;
-	color: var(--wc-color-text);
+	cursor: pointer;
 }
 
 .wc-consent input {
 	flex: 0 0 auto;
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 	margin-top: 1px;
 	accent-color: var(--wc-color-brand);
+	cursor: pointer;
+}
+
+.wc-consent__words { display: flex; flex-direction: column; gap: 2px; }
+
+.wc-consent__label {
+	font-size: var(--wc-font-size-base);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-heading);
 }
 
 .wc-consent__text {
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-icon-secondary);
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-text-secondary);
 }
 
-.wc-privacy {
-	font-size: 12px;
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-icon-secondary);
-	text-decoration: underline;
+/* -- Couldn't send -- */
+
+.wc-banner {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 10px 12px;
+	border: 1px solid color-mix(in srgb, var(--wc-color-critical) 30%, transparent);
+	border-radius: 10px;
+	background: var(--wc-color-critical-surface);
+	font-size: var(--wc-font-size-base);
+	font-weight: 500;
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-critical-on-surface);
 }
 
-.wc-privacy:hover { color: var(--wc-color-text); }
+.wc-banner svg { width: 16px; height: 16px; margin-top: 2px; color: var(--wc-color-critical); }
+
+/* -- Send -- */
 
 .wc-send {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
 	gap: 8px;
-	padding: 10px 16px;
+	height: 48px;
+	padding: 0 8px 0 20px;
 	border: none;
-	border-radius: var(--wc-radius-small);
+	border-radius: 14px;
 	background: var(--wc-color-brand);
 	color: var(--wc-color-on-brand);
-	font-size: var(--wc-font-size-base);
+	font-size: var(--wc-font-size-large);
 	font-weight: 600;
 	line-height: var(--wc-line-height-base);
+	transition: filter var(--wc-timing-base) ease-out, opacity var(--wc-timing-base) ease-out;
 }
 
-.wc-send:disabled { opacity: 0.55; cursor: not-allowed; }
-.wc-send:not(:disabled):hover { filter: brightness(0.94); }
+.wc-send:not(:disabled):hover { filter: brightness(1.06); }
+.wc-send:not(:disabled):active { filter: brightness(0.94); }
+.wc-send:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .wc-send:focus-visible {
 	outline: transparent;
 	box-shadow: var(--wc-shadow-focus);
 }
 
-.wc-send svg { width: 16px; height: 16px; }
-
-.wc-form__banner {
-	padding: 10px;
-	border-radius: var(--wc-radius-small);
-	background: var(--wc-color-surface-subtle);
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-critical);
+.wc-send__well {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--wc-color-on-brand--well);
 }
+
+.wc-send__well svg { width: 18px; height: 18px; }
+
+.wc-send--sending,
+.wc-send--sending:disabled { justify-content: center; gap: 10px; opacity: 0.85; cursor: progress; }
+
+.wc-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(255, 255, 255, 0.35);
+	border-top-color: var(--wc-color-on-brand);
+	border-radius: 999px;
+	animation: wc-spin 0.8s linear infinite;
+}
+
+@keyframes wc-spin { to { transform: rotate(360deg); } }
 
 .wc-hp {
 	position: absolute;
@@ -667,25 +851,144 @@ svg { display: block; }
 	pointer-events: none;
 }
 
+/* -- Footer -- */
+
+.wc-footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	flex: 0 0 auto;
+	padding: 14px 16px;
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-text-secondary);
+}
+
+.wc-panel--chat .wc-footer { padding-top: 10px; }
+.wc-footer svg { width: 12px; height: 12px; color: var(--wc-color-icon-secondary); }
+
+/* The widget credits the contractor, never UCRM -- a contractor's customers see only the
+   contractor (website-chat-behavior-contract.md). */
+.wc-privacy {
+	font-weight: 600;
+	color: var(--wc-color-text);
+	text-decoration: underline;
+}
+
+.wc-privacy:hover { color: var(--wc-color-heading); }
+
+.wc-privacy:focus-visible {
+	outline: transparent;
+	border-radius: 4px;
+	box-shadow: var(--wc-shadow-focus);
+}
+
+/* -- Loading and unavailable -- */
+
+.wc-skeleton { display: flex; flex-direction: column; gap: 10px; }
+
+.wc-skeleton__bar {
+	border-radius: 10px;
+	background: linear-gradient(90deg, var(--wc-color-skeleton) 25%, var(--wc-color-surface-subtle) 50%, var(--wc-color-skeleton) 75%);
+	background-size: 200% 100%;
+	animation: wc-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes wc-shimmer {
+	from { background-position: 100% 0; }
+	to { background-position: -100% 0; }
+}
+
+.wc-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 22px 0;
+	text-align: center;
+}
+
+.wc-tile {
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--wc-color-border);
+	border-radius: 12px;
+	background: var(--wc-color-inactive-surface);
+	color: var(--wc-color-inactive);
+}
+
+.wc-tile--48 { width: 48px; height: 48px; }
+.wc-tile--48 svg { width: 24px; height: 24px; }
+.wc-tile--40 { width: 40px; height: 40px; border-radius: 10px; }
+.wc-tile--40 svg { width: 20px; height: 20px; }
+
+.wc-empty__title {
+	font-size: var(--wc-font-size-base);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-heading);
+}
+
+/* -- Conversation top -- */
+
+.wc-chat-top {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 0 0 auto;
+	padding: 14px 14px 14px 16px;
+	border-bottom: 1px solid var(--wc-color-border);
+	background: var(--wc-color-surface);
+}
+
+.wc-chat-top__who { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+
+.wc-chat-top__name {
+	font-size: var(--wc-font-size-large);
+	font-weight: 700;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-heading);
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.wc-chat-top__promise {
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-text-secondary);
+}
+
+.wc-chat-top .wc-close { background: var(--wc-color-surface-subtle); color: var(--wc-color-icon); }
+.wc-chat-top .wc-close:hover { background: var(--wc-color-skeleton); }
+.wc-chat-top .wc-close:focus-visible { box-shadow: var(--wc-shadow-focus); }
+
 /* -- Conversation -- */
 
-.wc-thread { display: flex; flex-direction: column; gap: 12px; }
-
-.wc-thread__list { display: flex; flex-direction: column; gap: 10px; }
+.wc-thread { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
+.wc-thread__list { display: flex; flex-direction: column; gap: 6px; }
 
 .wc-earlier {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	align-self: center;
-	padding: 6px 12px;
-	border: 1px solid var(--wc-color-border);
-	border-radius: 100px;
-	background: var(--wc-color-surface);
-	font-size: 12px;
+	margin: 4px 0;
+	padding: 2px 6px;
+	border: none;
+	border-radius: 6px;
+	background: none;
+	font-size: var(--wc-font-size-smaller);
+	font-weight: 600;
 	line-height: var(--wc-line-height-base);
 	color: var(--wc-color-text);
 }
 
 .wc-earlier:hover { background: var(--wc-color-surface-hover); }
-.wc-earlier:disabled { opacity: 0.55; cursor: not-allowed; }
+.wc-earlier:disabled { opacity: 0.55; cursor: progress; }
+.wc-earlier svg { width: 14px; height: 14px; color: var(--wc-color-icon); }
 
 .wc-earlier:focus-visible {
 	outline: transparent;
@@ -694,13 +997,11 @@ svg { display: block; }
 
 .wc-day {
 	align-self: center;
-	padding: 2px 10px;
-	border-radius: 100px;
-	background: var(--wc-color-surface-subtle);
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1.6;
-	color: var(--wc-color-icon-secondary);
+	padding: 4px 0;
+	font-size: var(--wc-font-size-smaller);
+	font-weight: 500;
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-text-secondary);
 }
 
 /* A system line -- a session ending, for instance -- is narration, not a party in the conversation,
@@ -708,125 +1009,133 @@ svg { display: block; }
 .wc-note {
 	align-self: center;
 	max-width: 90%;
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-icon-secondary);
+	padding: 4px 0;
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-text-secondary);
 	text-align: center;
 }
 
-.wc-msg { display: flex; flex-direction: column; gap: 2px; max-width: 85%; }
+.wc-run { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.wc-run--in { align-items: flex-start; }
+.wc-run--out { align-items: flex-end; }
 
-/* The visitor's own words sit on the right in the contractor's brand colour; the contractor answers
-   on the left, with their avatar, exactly as every messenger a visitor has ever used. */
-.wc-msg--out { align-self: flex-end; align-items: flex-end; }
-.wc-msg--in { align-self: flex-start; align-items: flex-start; }
-
-.wc-msg__row { display: flex; align-items: flex-end; gap: 8px; }
+.wc-msg { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; }
+.wc-msg__space { width: 24px; flex: 0 0 auto; }
 
 .wc-msg__bubble {
-	padding: 10px 12px;
-	border-radius: var(--wc-radius-base);
+	max-width: 272px;
+	padding: 10px 14px;
 	font-size: var(--wc-font-size-base);
-	line-height: 1.45;
+	line-height: var(--wc-line-height-text);
 	white-space: pre-wrap;
-	word-break: break-word;
+	overflow-wrap: anywhere;
 }
 
-.wc-msg--out .wc-msg__bubble {
+/* The visitor's own words sit on the right in the contractor's brand colour; the contractor answers
+   on the left, beside its logo, exactly as every messenger a visitor has ever used. */
+.wc-run--in .wc-msg__bubble {
+	border-radius: 18px 18px 18px 6px;
+	background: var(--wc-color-surface-subtle);
+	color: var(--wc-color-heading);
+}
+
+.wc-run--out .wc-msg__bubble {
+	border-radius: 18px 18px 6px 18px;
 	background: var(--wc-color-brand);
 	color: var(--wc-color-on-brand);
 }
 
-.wc-msg--in .wc-msg__bubble {
-	background: var(--wc-color-surface-subtle);
-	color: var(--wc-color-text);
-}
-
 .wc-msg--sending .wc-msg__bubble { opacity: 0.65; }
+.wc-msg > svg { width: 18px; height: 18px; color: var(--wc-color-critical); align-self: center; }
 
-.wc-msg__meta {
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-icon-secondary);
+.wc-meta {
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-base);
+	color: var(--wc-color-text-secondary);
 }
 
-.wc-msg--in .wc-msg__meta { padding-left: 40px; }
+.wc-run--in .wc-meta { padding-left: 32px; }
 
-.wc-msg__retry {
+.wc-retry {
 	padding: 0;
 	border: none;
 	background: none;
-	font-size: 12px;
-	line-height: 1.45;
+	font-size: var(--wc-font-size-smaller);
+	font-weight: 600;
+	line-height: var(--wc-line-height-base);
 	color: var(--wc-color-critical);
-	text-decoration: underline;
 }
 
-.wc-msg__retry:focus-visible {
+.wc-retry span { text-decoration: underline; }
+
+.wc-retry:focus-visible {
 	outline: transparent;
-	border-radius: var(--wc-radius-small);
+	border-radius: 4px;
 	box-shadow: var(--wc-shadow-focus);
 }
 
 .wc-thread__banner {
 	align-self: center;
-	padding: 8px 10px;
-	border-radius: var(--wc-radius-small);
-	background: var(--wc-color-surface-subtle);
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-critical);
+	padding: 8px 12px;
+	border-radius: 10px;
+	background: var(--wc-color-critical-surface);
+	font-size: var(--wc-font-size-smaller);
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-critical-on-surface);
 	text-align: center;
 }
 
-/* -- Composer -- */
+/* -- Message box -- */
 
-.wc-composer {
+.wc-composer { flex: 0 0 auto; padding: 4px 12px; background: var(--wc-color-surface); }
+
+.wc-composer__pill {
 	display: flex;
-	align-items: flex-end;
+	align-items: center;
 	gap: 8px;
-	flex: 0 0 auto;
-	padding: 10px var(--wc-space-base);
-	border-top: 1px solid var(--wc-color-border);
+	min-height: 48px;
+	padding: 6px 6px 6px 18px;
+	border: 1px solid var(--wc-color-border-interactive);
+	border-radius: 24px;
 	background: var(--wc-color-surface);
+}
+
+.wc-composer__pill:focus-within {
+	border-color: var(--wc-color-brand);
+	box-shadow: 0 0 0 1px var(--wc-color-brand);
 }
 
 .wc-composer__input {
 	flex: 1;
 	max-height: 120px;
-	padding: 10px 12px;
-	border: 1px solid var(--wc-color-border);
-	border-radius: var(--wc-radius-large);
-	background: var(--wc-color-surface);
+	padding: 2px 0;
+	border: none;
+	background: transparent;
 	font-size: var(--wc-font-size-base);
-	line-height: 1.45;
-	color: var(--wc-color-text);
+	line-height: var(--wc-line-height-text);
+	color: var(--wc-color-heading);
 	resize: none;
 	overflow-y: auto;
 }
 
-.wc-composer__input::placeholder { color: var(--wc-color-placeholder); }
-
-.wc-composer__input:focus-visible {
-	outline: transparent;
-	border-color: var(--wc-color-brand);
-	box-shadow: 0 0 0 1px var(--wc-color-brand);
-}
+.wc-composer__input:focus-visible { outline: transparent; }
 
 .wc-composer__send {
 	display: grid;
 	place-items: center;
 	flex: 0 0 auto;
-	width: 40px;
-	height: 40px;
+	align-self: flex-end;
+	width: 36px;
+	height: 36px;
 	border: none;
-	border-radius: 100%;
+	border-radius: 999px;
 	background: var(--wc-color-brand);
 	color: var(--wc-color-on-brand);
 }
 
-.wc-composer__send:disabled { opacity: 0.55; cursor: not-allowed; }
-.wc-composer__send:not(:disabled):hover { filter: brightness(0.94); }
+.wc-composer__send:disabled { opacity: 0.45; cursor: not-allowed; }
+.wc-composer__send:not(:disabled):hover { filter: brightness(1.06); }
 
 .wc-composer__send:focus-visible {
 	outline: transparent;
@@ -835,79 +1144,71 @@ svg { display: block; }
 
 .wc-composer__send svg { width: 18px; height: 18px; }
 
-/* -- Ended session -- */
+/* -- Ended -- */
 
 .wc-ended {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
 	flex: 0 0 auto;
-	padding: 12px var(--wc-space-base);
-	border-top: 1px solid var(--wc-color-border);
+	margin: 4px 12px 0;
+	padding: 18px;
+	border-radius: 16px;
 	background: var(--wc-color-surface-subtle);
 	text-align: center;
 }
 
 .wc-ended__text {
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--wc-color-icon-secondary);
-}
-
-.wc-ended__restart {
-	padding: 8px 14px;
-	border: 1px solid var(--wc-color-border);
-	border-radius: var(--wc-radius-small);
-	background: var(--wc-color-surface);
 	font-size: var(--wc-font-size-base);
 	font-weight: 600;
 	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-text);
+	color: var(--wc-color-heading);
 }
 
-.wc-ended__restart:hover { background: var(--wc-color-surface-hover); }
+.wc-ended__restart {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 44px;
+	border: none;
+	border-radius: 12px;
+	background: var(--wc-color-brand);
+	color: var(--wc-color-on-brand);
+	font-size: var(--wc-font-size-large);
+	font-weight: 600;
+	box-shadow: var(--wc-shadow-card);
+}
+
+.wc-ended__restart:hover { filter: brightness(1.06); }
+.wc-ended__restart svg { width: 18px; height: 18px; }
 
 .wc-ended__restart:focus-visible {
 	outline: transparent;
 	box-shadow: var(--wc-shadow-focus);
 }
 
-.wc-skeleton { display: flex; flex-direction: column; gap: 10px; }
-
-.wc-skeleton__bar {
-	border-radius: var(--wc-radius-base);
-	background: var(--wc-color-surface-subtle);
-}
-
-.wc-empty { text-align: center; }
-
-.wc-empty__title {
-	font-size: var(--wc-font-size-large);
-	font-weight: 600;
-	line-height: var(--wc-line-height-base);
-	color: var(--wc-color-heading);
-}
-
-.wc-empty__description {
-	margin-top: 8px;
-	font-size: var(--wc-font-size-base);
-	line-height: 1.5;
-	color: var(--wc-color-text);
-}
-
 @media (max-width: 480px) {
-	.wc-panel {
+	.wc-panel,
+	.wc-panel--chat {
 		inset: 0;
 		width: 100%;
 		height: 100%;
+		max-height: none;
+		border: none;
 		border-radius: 0;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.wc-launcher { transition: none; }
-	.wc-teaser { animation: none; }
+	.wc-launcher,
+	.wc-teaser__bubble { transition: none; }
+	.wc-teaser,
+	.wc-panel { animation: none; }
+	.wc-skeleton__bar,
+	.wc-spinner { animation-duration: 3s; }
 }
 `;
 	}
@@ -915,10 +1216,42 @@ svg { display: block; }
 	// -- Icons ----------------------------------------------------------------------------------
 	// Tabler outline, inlined: the widget cannot reach the app's icon pipeline from a host page.
 
-	const messageIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1" /></svg>`;
-	const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>`;
-	const caretIcon = `<svg class="wc-phone__caret" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6l6 -6" /></svg>`;
-	const sendIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14l11 -11" /><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" /></svg>`;
+	function icon(paths: string) {
+		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+	}
+
+	const messageIcon = icon(
+		'<path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1"/>'
+	);
+	const chevronDownIcon = icon('<path d="M6 9l6 6l6 -6"/>');
+	const closeIcon = icon('<path d="M18 6l-12 12"/><path d="M6 6l12 12"/>');
+	const userIcon = icon(
+		'<path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>'
+	);
+	const mailIcon = icon(
+		'<path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"/><path d="M3 7l9 6l9 -6"/>'
+	);
+	const checkIcon = icon('<path d="M5 12l5 5l10 -10"/>');
+	const searchIcon = icon(
+		'<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/>'
+	);
+	const alertIcon = icon(
+		'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 8v4"/><path d="M12 16h.01"/>'
+	);
+	const arrowRightIcon = icon('<path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/>');
+	const arrowUpIcon = icon('<path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/>');
+	const lockIcon = icon(
+		'<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/>'
+	);
+	const endedIcon = icon(
+		'<path d="M13.593 19.855a9.96 9.96 0 0 1 -5.893 -.855l-4.7 1l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c2.128 1.816 3.053 4.363 2.693 6.813"/><path d="M22 22l-5 -5"/><path d="M17 22l5 -5"/>'
+	);
+	const newChatIcon = icon(
+		'<path d="M12.007 19.98a9.869 9.869 0 0 1 -4.307 -.98l-4.7 1l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c1.992 1.7 2.93 4.04 2.747 6.34"/><path d="M16 19h6"/><path d="M19 16v6"/>'
+	);
+	const unavailableIcon = icon(
+		'<path d="M8.595 4.577c3.223 -1.176 7.025 -.61 9.65 1.63c2.982 2.543 3.601 6.523 1.636 9.66m-1.908 2.109c-2.787 2.19 -6.89 2.666 -10.273 1.024l-4.7 1l1.3 -3.9c-2.229 -3.296 -1.494 -7.511 1.68 -10.057"/><path d="M3 3l18 18"/>'
+	);
 
 	// -- Helpers --------------------------------------------------------------------------------
 
@@ -940,10 +1273,22 @@ svg { display: block; }
 		return el;
 	}
 
-	function avatar(size: 'base' | 'medium', businessName: string) {
-		const el = element('span', `wc-avatar wc-avatar--${size}`);
+	// The business's logo from Branding when it has one, its initials on its brand colour when it does not
+	// -- or when the host page's own rules (a strict CSP, say) stop the picture from loading.
+	function logoMark(size: 24 | 32 | 40, widget: WidgetPublicConfig) {
+		const el = element('span', `wc-logo wc-logo--${size}`);
 		el.setAttribute('aria-hidden', 'true');
-		el.textContent = initials(businessName);
+		el.textContent = initials(widget.businessName);
+		if (widget.logoPath) {
+			const image = document.createElement('img');
+			image.alt = '';
+			image.decoding = 'async';
+			image.src = `${appOrigin}${widget.logoPath}`;
+			image.addEventListener('load', () => {
+				el.classList.add('wc-logo--image');
+				el.replaceChildren(image);
+			});
+		}
 		return el;
 	}
 
@@ -1116,76 +1461,102 @@ svg { display: block; }
 		return { phone: !current.email.trim(), email: !current.phone.trim() };
 	}
 
-	// "Invalid value" is HighLevel's literal wording, kept deliberately: the visitor is on a
-	// contractor's marketing site, and a public form must not explain what shapes it accepts.
+	// Each mistake says how to fix it, in plain words (approved with Batch 66). It still never explains
+	// which shapes the server accepts beyond what any visitor needs to know to get it right.
 	function validate(current: IdentityDraft) {
 		const needed = requiredIdentifiers(current);
 		const errors: Partial<Record<keyof IdentityDraft, string>> = {};
 
 		// Two characters, not one: `clients.display_name` refuses a single character, so a one-letter
 		// name would be accepted here and then fail on the server.
-		if (current.name.trim().length < 2) errors.name = 'Invalid value';
-		if (!current.message.trim()) errors.message = 'Invalid value';
-		if (current.phone.trim() ? !phoneE164(current) : needed.phone) errors.phone = 'Invalid value';
-		if (current.email.trim() ? !emailPattern.test(current.email.trim()) : needed.email)
-			errors.email = 'Invalid value';
+		if (current.name.trim().length < 2) errors.name = 'Enter your full name.';
+		if (!current.message.trim()) errors.message = 'Tell us what you need help with.';
+		if (current.phone.trim()) {
+			if (!phoneE164(current)) errors.phone = 'Enter the whole phone number, including the area code.';
+		} else if (needed.phone) {
+			errors.phone =
+				config?.contactRequirement === 'either'
+					? 'Add a phone number or an email so we can reply.'
+					: 'Add a phone number so we can reply.';
+		}
+		if (current.email.trim()) {
+			if (!emailPattern.test(current.email.trim())) errors.email = 'Enter an email like name@example.com.';
+		} else if (needed.email && config?.contactRequirement !== 'either') {
+			errors.email = 'Add an email so we can reply.';
+		}
 
 		return errors;
 	}
 
 	// -- Rendering ------------------------------------------------------------------------------
 
+	function openPanel() {
+		panelOpen = true;
+		render();
+	}
+
+	function closePanel() {
+		panelOpen = false;
+		closeCountryPopup();
+		// A closed panel keeps its session but holds no socket: the connection exists to feed a
+		// thread somebody is looking at, and reopening reads the conversation back anyway.
+		stopTransport();
+		render();
+	}
+
+	// A "Message us" pill while closed; a round chevron that folds the panel away while open.
 	function renderLauncher(widget: WidgetPublicConfig) {
-		const button = element('button', `wc-launcher wc-launcher--${widget.launcherPosition}`);
+		const button = element(
+			'button',
+			`wc-launcher wc-launcher--${widget.launcherPosition}${panelOpen ? ' wc-launcher--open' : ''}`
+		);
 		button.type = 'button';
-		button.setAttribute('aria-label', `Open chat with ${widget.businessName}`);
-		button.innerHTML = messageIcon;
+		if (panelOpen) {
+			button.setAttribute('aria-label', 'Close chat');
+			button.innerHTML = chevronDownIcon;
+			button.addEventListener('click', closePanel);
+			return button;
+		}
+		button.setAttribute('aria-label', `Message ${widget.businessName}`);
+		button.innerHTML = `${messageIcon}<span>Message us</span>`;
 		// The form's phone field needs a module we deliberately did not ship up front. Hovering the
 		// launcher is the earliest honest signal that someone means to open it, so the download starts
 		// there and is usually finished before the click lands.
 		button.addEventListener('pointerenter', prefetchPhone, { once: true });
 		button.addEventListener('focus', prefetchPhone, { once: true });
-		button.addEventListener('click', () => {
-			panelOpen = true;
-			render();
-		});
+		button.addEventListener('click', openPanel);
 		return button;
 	}
 
 	function renderTeaser(widget: WidgetPublicConfig, text: string) {
-		// A button, not a div with a click handler: the whole teaser is one activatable thing, so
-		// the browser gives us Enter/Space and the right role for free.
-		const teaser = element('button', `wc-teaser wc-teaser--${widget.launcherPosition}`);
-		teaser.type = 'button';
-		teaser.addEventListener('pointerenter', prefetchPhone, { once: true });
-		teaser.addEventListener('focus', prefetchPhone, { once: true });
-		teaser.addEventListener('click', () => {
-			panelOpen = true;
-			render();
-		});
+		const teaser = element('div', `wc-teaser wc-teaser--${widget.launcherPosition}`);
+
+		// Its own round key above the bubble, so it is a real button beside the bubble rather than one
+		// nested inside it.
+		const dismiss = element('button', 'wc-teaser__dismiss');
+		dismiss.type = 'button';
+		dismiss.setAttribute('aria-label', 'Dismiss');
+		dismiss.innerHTML = closeIcon;
+		dismiss.addEventListener('click', dismissTeaser);
+
+		// A button, not a div with a click handler: the whole bubble is one activatable thing, so the
+		// browser gives us Enter/Space and the right role for free.
+		const bubble = element('button', 'wc-teaser__bubble');
+		bubble.type = 'button';
+		bubble.addEventListener('pointerenter', prefetchPhone, { once: true });
+		bubble.addEventListener('focus', prefetchPhone, { once: true });
+		bubble.addEventListener('click', openPanel);
+
+		const who = element('span', 'wc-teaser__who');
+		const name = document.createElement('span');
+		name.textContent = widget.businessName;
+		who.append(logoMark(24, widget), name);
 
 		const message = element('span', 'wc-teaser__text');
 		message.textContent = text;
+		bubble.append(who, message);
 
-		const dismiss = element('span', 'wc-teaser__dismiss');
-		dismiss.setAttribute('role', 'button');
-		dismiss.setAttribute('tabindex', '0');
-		dismiss.setAttribute('aria-label', 'Dismiss');
-		dismiss.innerHTML = closeIcon;
-		// Nested inside the teaser button, so a real <button> would be invalid HTML -- this stays a
-		// span carrying the button role, and stops the click from opening the panel it sits on.
-		dismiss.addEventListener('click', (event) => {
-			event.stopPropagation();
-			dismissTeaser();
-		});
-		dismiss.addEventListener('keydown', (event) => {
-			if (event.key !== 'Enter' && event.key !== ' ') return;
-			event.preventDefault();
-			event.stopPropagation();
-			dismissTeaser();
-		});
-
-		teaser.append(avatar('medium', widget.businessName), message, dismiss);
+		teaser.append(dismiss, bubble);
 		return teaser;
 	}
 
@@ -1193,29 +1564,82 @@ svg { display: block; }
 		void loadPhone();
 	}
 
+	function closeButton() {
+		const close = element('button', 'wc-close');
+		close.type = 'button';
+		close.setAttribute('aria-label', 'Close chat');
+		close.innerHTML = closeIcon;
+		close.addEventListener('click', closePanel);
+		return close;
+	}
+
+	// The brand-coloured welcome top: logo on a white tile, the close key, the business name and its
+	// greeting as the big question. The card below overlaps its lower edge.
+	function renderHero(widget: WidgetPublicConfig) {
+		const hero = element('div', 'wc-hero');
+		const top = element('div', 'wc-hero__top');
+		const tile = element('span', 'wc-hero__tile');
+		tile.appendChild(logoMark(32, widget));
+		top.append(tile, closeButton());
+
+		const words = element('div', 'wc-hero__words');
+		const business = element('p', 'wc-hero__business');
+		business.textContent = widget.businessName;
+		const greeting = element('h2', 'wc-hero__greeting');
+		greeting.textContent = widget.greetingText || 'Hi there! How can we help?';
+		words.append(business, greeting);
+
+		hero.append(top, words);
+		return hero;
+	}
+
+	function renderFooter(widget: WidgetPublicConfig) {
+		const footer = element('footer', 'wc-footer');
+		if (widget.privacyPolicyUrl) {
+			footer.insertAdjacentHTML('beforeend', lockIcon);
+			const privacy = element('a', 'wc-privacy');
+			privacy.href = widget.privacyPolicyUrl;
+			privacy.target = '_blank';
+			privacy.rel = 'noopener noreferrer';
+			privacy.textContent = 'Privacy policy';
+			const dot = document.createElement('span');
+			dot.textContent = '·';
+			dot.setAttribute('aria-hidden', 'true');
+			footer.append(privacy, dot);
+		}
+		const credit = document.createElement('span');
+		credit.textContent = `Powered by ${widget.businessName}`;
+		footer.appendChild(credit);
+		return footer;
+	}
+
 	// Shown only when a click beat the download -- the panel opens immediately either way, and swaps
-	// this for the real form as soon as the module lands.
+	// this for the real form as soon as the module lands. Shaped like the card it stands in for.
 	function renderFormSkeleton() {
 		const skeleton = element('div', 'wc-skeleton');
 		skeleton.setAttribute('aria-hidden', 'true');
-		for (const height of [40, 40, 40, 64, 44]) {
+		for (const [height, width] of [
+			[14, '40%'],
+			[84, '100%'],
+			[14, '50%'],
+			[132, '100%'],
+			[48, '100%']
+		] as const) {
 			const bar = element('div', 'wc-skeleton__bar');
 			bar.style.height = `${height}px`;
+			bar.style.width = width;
 			skeleton.appendChild(bar);
 		}
 		return skeleton;
 	}
 
-	function renderEmptyState(title: string, description?: string) {
+	function renderEmptyState(title: string) {
 		const empty = element('div', 'wc-empty');
+		const tile = element('span', 'wc-tile wc-tile--48');
+		tile.innerHTML = unavailableIcon;
 		const heading = element('p', 'wc-empty__title');
 		heading.textContent = title;
-		empty.appendChild(heading);
-		if (description) {
-			const text = element('p', 'wc-empty__description');
-			text.textContent = description;
-			empty.appendChild(text);
-		}
+		empty.append(tile, heading);
 		return empty;
 	}
 
@@ -1225,65 +1649,107 @@ svg { display: block; }
 	// shell re-renders the launcher, would throw away the caret position and the open country list on
 	// every character typed.
 
-	type FieldRefs = {
-		wrapper: HTMLDivElement;
-		error: HTMLParagraphElement;
-	};
-
-	const fieldRefs = new Map<keyof IdentityDraft, FieldRefs>();
+	let messageBox: HTMLDivElement | null = null;
+	let messageErrors: HTMLDivElement | null = null;
+	let contactBox: HTMLDivElement | null = null;
+	let contactErrors: HTMLDivElement | null = null;
+	const contactRows = new Map<keyof IdentityDraft, HTMLDivElement>();
 	let sendButton: HTMLButtonElement | null = null;
-	let bannerNode: HTMLParagraphElement | null = null;
+	let sendShowsSending = false;
+	let bannerNode: HTMLDivElement | null = null;
+	let bannerText: HTMLSpanElement | null = null;
 	let phoneInput: HTMLInputElement | null = null;
 	let countryButton: HTMLButtonElement | null = null;
 	let countryPopup: HTMLDivElement | null = null;
 	let consentNode: HTMLLabelElement | null = null;
 
-	function field(name: keyof IdentityDraft, control: HTMLElement, extraClass = '') {
-		const wrapper = element('div', `wc-field ${extraClass}`.trim());
-		const error = element('p', 'wc-field__error');
-		error.hidden = true;
-		wrapper.append(control, error);
-		fieldRefs.set(name, { wrapper, error });
-		return wrapper;
-	}
-
-	function textInput(placeholder: string, type = 'text') {
+	function textInput(placeholder: string, label: string, type = 'text') {
 		const input = element('input', 'wc-input');
 		input.type = type;
 		input.placeholder = placeholder;
-		input.setAttribute('aria-label', placeholder);
+		input.setAttribute('aria-label', label);
 		input.autocomplete = 'off';
 		return input;
+	}
+
+	// One row of the joined contact box: its icon, its input, and the alert mark a mistake shows.
+	function contactRow(name: keyof IdentityDraft, lead: HTMLElement | string, input: HTMLInputElement) {
+		const row = element('div', `wc-row${name === 'phone' ? ' wc-row--phone' : ''}`);
+		if (typeof lead === 'string') row.insertAdjacentHTML('beforeend', lead);
+		else row.appendChild(lead);
+		const alert = element('span', 'wc-row__alert');
+		alert.innerHTML = alertIcon;
+		row.append(input, alert);
+		contactRows.set(name, row);
+		return row;
+	}
+
+	function paintErrors(container: HTMLDivElement | null, lines: (string | undefined)[]) {
+		if (!container) return;
+		const shown = lines.filter((line): line is string => Boolean(line));
+		container.replaceChildren(
+			...shown.map((line) => {
+				const error = element('p', 'wc-error');
+				error.innerHTML = alertIcon;
+				error.append(line);
+				return error;
+			})
+		);
+		container.hidden = shown.length === 0;
+	}
+
+	function paintSendButton() {
+		if (!sendButton) return;
+		if (submitting === sendShowsSending && sendButton.childElementCount > 0) return;
+		sendShowsSending = submitting;
+		sendButton.classList.toggle('wc-send--sending', submitting);
+		sendButton.setAttribute('aria-busy', String(submitting));
+		sendButton.innerHTML = submitting
+			? '<span class="wc-spinner" aria-hidden="true"></span><span>Sending…</span>'
+			: `<span>Send message</span><span class="wc-send__well">${arrowRightIcon}</span>`;
 	}
 
 	function syncForm() {
 		if (!draft) return;
 		const errors = validate(draft);
+		const shown = (name: keyof IdentityDraft) => (touched.has(name) ? errors[name] : undefined);
 
-		for (const [name, refs] of fieldRefs) {
-			const message = touched.has(name) ? errors[name] : undefined;
-			refs.error.textContent = message ?? '';
-			refs.error.hidden = !message;
-			refs.wrapper.classList.toggle('wc-field--invalid', Boolean(message));
-		}
+		messageBox?.classList.toggle('wc-box--invalid', Boolean(shown('message')));
+		paintErrors(messageErrors, [shown('message')]);
+
+		const contact = (['name', 'phone', 'email'] as const).map((name) => {
+			const message = shown(name);
+			contactRows.get(name)?.classList.toggle('wc-row--invalid', Boolean(message));
+			return message;
+		});
+		contactBox?.classList.toggle('wc-box--invalid', contact.some(Boolean));
+		paintErrors(contactErrors, contact);
 
 		// The service-SMS box only means something once there is a number to text.
 		if (consentNode) consentNode.hidden = !draft.phone.trim();
+		paintSendButton();
 		if (sendButton) sendButton.disabled = submitting || Object.keys(errors).length > 0;
-		if (bannerNode) {
-			bannerNode.textContent = formBanner;
+		if (bannerNode && bannerText) {
+			bannerText.textContent = formBanner;
 			bannerNode.hidden = !formBanner;
 		}
+	}
+
+	function paintCountryButton(code: CountryCode) {
+		if (!countryButton || !phone) return;
+		const flag = element('span', 'wc-flag');
+		flag.textContent = countryFlag(code);
+		const dial = document.createElement('span');
+		dial.textContent = `+${phone.getCountryCallingCode(code)}`;
+		countryButton.replaceChildren(flag, dial);
+		countryButton.insertAdjacentHTML('beforeend', chevronDownIcon);
+		countryButton.setAttribute('aria-label', `Country: ${countryName(code)}`);
 	}
 
 	function setCountry(code: CountryCode) {
 		if (!draft || !phone) return;
 		draft.country = code;
-		if (countryButton) {
-			const flag = countryButton.querySelector('.wc-phone__flag');
-			if (flag) flag.textContent = countryFlag(code);
-			countryButton.setAttribute('aria-label', `Country: ${countryName(code)}`);
-		}
+		paintCountryButton(code);
 		// Re-run the formatter so an already-typed number regroups for the new country.
 		if (phoneInput) {
 			phoneInput.value = new phone.AsYouType(code).input(draft.phone);
@@ -1305,10 +1771,13 @@ svg { display: block; }
 			return;
 		}
 		const popup = element('div', 'wc-country');
-		const search = element('input', 'wc-country__search');
+		const searchBox = element('label', 'wc-country__search');
+		searchBox.innerHTML = searchIcon;
+		const search = document.createElement('input');
 		search.type = 'search';
 		search.placeholder = 'Search countries';
 		search.setAttribute('aria-label', 'Search countries');
+		searchBox.appendChild(search);
 
 		const list = element('ul', 'wc-country__list');
 
@@ -1329,16 +1798,21 @@ svg { display: block; }
 				return;
 			}
 			for (const entry of matches) {
+				const chosen = entry.code === draft?.country;
 				const item = document.createElement('li');
-				const option = element('button', 'wc-country__option');
+				const option = element(
+					'button',
+					`wc-country__option${chosen ? ' wc-country__option--chosen' : ''}`
+				);
 				option.type = 'button';
-				const flag = element('span', 'wc-phone__flag');
+				const flag = element('span', 'wc-flag');
 				flag.textContent = countryFlag(entry.code);
 				const name = element('span', 'wc-country__name');
 				name.textContent = entry.name;
 				const dial = element('span', 'wc-country__dial');
 				dial.textContent = entry.dial;
 				option.append(flag, name, dial);
+				if (chosen) option.insertAdjacentHTML('beforeend', checkIcon);
 				option.addEventListener('click', () => {
 					setCountry(entry.code as CountryCode);
 					closeCountryPopup();
@@ -1358,38 +1832,38 @@ svg { display: block; }
 		});
 
 		paint('');
-		popup.append(search, list);
+		popup.append(searchBox, list);
 		anchor.appendChild(popup);
 		countryPopup = popup;
 		countryButton?.setAttribute('aria-expanded', 'true');
+		list.querySelector('.wc-country__option--chosen')?.scrollIntoView({ block: 'nearest' });
 		search.focus();
 
 		// Listening on the shadow root, not the document: a click inside a shadow tree is retargeted to
 		// the host element by the time it reaches the page, so a document-level listener could not tell
 		// "inside the picker" from "outside" it.
 		const onOutside = (event: Event) => {
-			if (event.composedPath().includes(anchor)) return;
+			if (event.composedPath().includes(popup) || event.composedPath().includes(countryButton!)) {
+				return;
+			}
 			closeCountryPopup();
 			shadow?.removeEventListener('mousedown', onOutside);
 		};
 		shadow?.addEventListener('mousedown', onOutside);
 	}
 
-	function buildPhoneField() {
-		const shell = element('div', 'wc-phone');
-
-		countryButton = element('button', 'wc-phone__country');
+	function buildPhoneRow(widget: WidgetPublicConfig) {
+		countryButton = element('button', 'wc-country-button');
 		countryButton.type = 'button';
 		countryButton.setAttribute('aria-haspopup', 'listbox');
 		countryButton.setAttribute('aria-expanded', 'false');
-		const flag = element('span', 'wc-phone__flag');
-		flag.textContent = countryFlag(draft!.country);
-		countryButton.append(flag);
-		countryButton.insertAdjacentHTML('beforeend', caretIcon);
-		countryButton.setAttribute('aria-label', `Country: ${countryName(draft!.country)}`);
-		countryButton.addEventListener('click', () => openCountryPopup(shell));
+		paintCountryButton(draft!.country);
+		countryButton.addEventListener('click', () => {
+			if (contactBox) openCountryPopup(contactBox);
+		});
 
-		phoneInput = textInput('Phone', 'tel');
+		const optional = widget.contactRequirement === 'email';
+		phoneInput = textInput(optional ? 'Phone (optional)' : 'Phone number', 'Phone', 'tel');
 		phoneInput.autocomplete = 'tel';
 		phoneInput.value = new phone!.AsYouType(draft!.country).input(draft!.phone);
 		phoneInput.addEventListener('input', () => {
@@ -1403,9 +1877,7 @@ svg { display: block; }
 				phoneInput.value = detected;
 				if (parsed?.country && parsed.country !== draft.country) {
 					draft.country = parsed.country;
-					const currentFlag = countryButton?.querySelector('.wc-phone__flag');
-					if (currentFlag) currentFlag.textContent = countryFlag(parsed.country);
-					countryButton?.setAttribute('aria-label', `Country: ${countryName(parsed.country)}`);
+					paintCountryButton(parsed.country);
 				}
 			} else {
 				phoneInput.value = new phone.AsYouType(draft.country).input(typed);
@@ -1419,16 +1891,58 @@ svg { display: block; }
 			syncForm();
 		});
 
-		shell.append(countryButton, phoneInput);
-		return field('phone', shell);
+		return contactRow('phone', countryButton, phoneInput);
+	}
+
+	function replyHint(requirement: ContactRequirement) {
+		if (requirement === 'phone') return 'Phone needed';
+		if (requirement === 'email') return 'Email needed';
+		return 'Phone or email';
+	}
+
+	function group(label: string, hint?: string) {
+		const wrapper = element('div', 'wc-group');
+		const head = element('div', 'wc-group__head');
+		const title = element('span', 'wc-group__label');
+		title.textContent = label;
+		head.appendChild(title);
+		if (hint) {
+			const quiet = element('span', 'wc-group__hint');
+			quiet.textContent = hint;
+			head.appendChild(quiet);
+		}
+		wrapper.appendChild(head);
+		return wrapper;
 	}
 
 	function buildForm(widget: WidgetPublicConfig) {
 		const form = document.createElement('form');
-		form.className = 'wc-form';
+		form.className = 'wc-card';
 		form.noValidate = true;
 
-		const name = textInput('Name');
+		// Message first: what the visitor came to say, before who they are.
+		const messageGroup = group('Your message');
+		const message = element('textarea', 'wc-textarea');
+		message.placeholder = 'What can we help you with?';
+		message.setAttribute('aria-label', 'Your message');
+		message.maxLength = 5000;
+		message.value = draft!.message;
+		message.addEventListener('input', () => {
+			draft!.message = message.value;
+			saveDraft();
+			syncForm();
+		});
+		message.addEventListener('blur', () => {
+			touched.add('message');
+			syncForm();
+		});
+		messageBox = element('div', 'wc-box');
+		messageBox.appendChild(message);
+		messageErrors = element('div', 'wc-errors');
+		messageErrors.hidden = true;
+		messageGroup.append(messageBox, messageErrors);
+
+		const name = textInput('Your name', 'Your name');
 		// `name`, not `given-name`: one field holding the whole name is what the browser autofills here.
 		name.autocomplete = 'name';
 		name.value = draft!.name;
@@ -1442,7 +1956,8 @@ svg { display: block; }
 			syncForm();
 		});
 
-		const email = textInput('E-mail', 'email');
+		const emailRequired = widget.contactRequirement === 'email';
+		const email = textInput(emailRequired ? 'Email' : 'Email (optional)', 'Email', 'email');
 		email.autocomplete = 'email';
 		email.value = draft!.email;
 		email.addEventListener('input', () => {
@@ -1455,20 +1970,16 @@ svg { display: block; }
 			syncForm();
 		});
 
-		const message = element('textarea', 'wc-textarea');
-		message.placeholder = 'I want to know more';
-		message.setAttribute('aria-label', 'Message');
-		message.maxLength = 5000;
-		message.value = draft!.message;
-		message.addEventListener('input', () => {
-			draft!.message = message.value;
-			saveDraft();
-			syncForm();
-		});
-		message.addEventListener('blur', () => {
-			touched.add('message');
-			syncForm();
-		});
+		const replyGroup = group('How should we reply?', replyHint(widget.contactRequirement));
+		contactBox = element('div', 'wc-box');
+		contactBox.append(
+			contactRow('name', userIcon, name),
+			buildPhoneRow(widget),
+			contactRow('email', mailIcon, email)
+		);
+		contactErrors = element('div', 'wc-errors');
+		contactErrors.hidden = true;
+		replyGroup.append(contactBox, contactErrors);
 
 		// Honeypot: off-screen, unlabelled and never focusable, so only a script fills it in. The route
 		// answers a filled one with the same silent refusal a bad token gets.
@@ -1489,40 +2000,26 @@ svg { display: block; }
 			draft!.consent = consentBox.checked;
 			saveDraft();
 		});
-		const consentText = element('span', 'wc-consent__text');
+		const consentWords = element('span', 'wc-consent__words');
 		const consentLabel = element('strong', 'wc-consent__label');
 		consentLabel.textContent = SERVICE_SMS_CONSENT_LABEL;
-		consentText.append(consentLabel, ` ${serviceSmsConsentDescription(widget.businessName)}`);
-		consent.append(consentBox, consentText);
+		const consentText = element('span', 'wc-consent__text');
+		consentText.textContent = serviceSmsConsentDescription(widget.businessName);
+		consentWords.append(consentLabel, consentText);
+		consent.append(consentBox, consentWords);
 		consentNode = consent;
 
-		bannerNode = element('p', 'wc-form__banner');
+		bannerNode = element('div', 'wc-banner');
 		bannerNode.hidden = true;
 		bannerNode.setAttribute('role', 'alert');
+		bannerNode.innerHTML = alertIcon;
+		bannerText = document.createElement('span');
+		bannerNode.appendChild(bannerText);
 
 		sendButton = element('button', 'wc-send');
 		sendButton.type = 'submit';
-		sendButton.innerHTML = `<span>Send</span>${sendIcon}`;
 
-		form.append(
-			field('name', name),
-			buildPhoneField(),
-			field('email', email),
-			field('message', message),
-			honeypot,
-			consent
-		);
-
-		if (widget.privacyPolicyUrl) {
-			const privacy = element('a', 'wc-privacy');
-			privacy.href = widget.privacyPolicyUrl;
-			privacy.target = '_blank';
-			privacy.rel = 'noopener noreferrer';
-			privacy.textContent = 'Privacy policy';
-			form.appendChild(privacy);
-		}
-
-		form.append(bannerNode, sendButton);
+		form.append(messageGroup, replyGroup, honeypot, consent, bannerNode, sendButton);
 
 		form.addEventListener('submit', (event) => {
 			event.preventDefault();
@@ -1630,59 +2127,81 @@ svg { display: block; }
 		return new Date(value).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 	}
 
-	function renderMessage(message: ChatMessage, businessName: string) {
-		// A system line narrates the conversation rather than speaking in it.
-		if (message.sender_type === 'system') {
-			const note = element('p', 'wc-note');
-			note.textContent = message.body;
-			return note;
+	// Who is speaking is never left ambiguous: a reply carries the contractor's name, and an automated
+	// one says so rather than passing as a person.
+	function speakerOf(message: ChatMessage, businessName: string) {
+		return message.sender_type === 'automation' ? `${businessName} · Automated` : businessName;
+	}
+
+	// One bubble. A business bubble keeps a logo-wide space on its left so a run lines up, and only the
+	// last bubble of the run shows the logo itself.
+	function bubbleRow(body: string, side: 'in' | 'out', showLogo: boolean, widget: WidgetPublicConfig) {
+		const row = element('div', 'wc-msg');
+		if (side === 'in') {
+			row.appendChild(showLogo ? logoMark(24, widget) : element('span', 'wc-msg__space'));
 		}
-
-		const outbound = message.direction === 'outbound';
-		const row = element('div', `wc-msg wc-msg--${outbound ? 'in' : 'out'}`);
-
-		const line = element('div', 'wc-msg__row');
-		if (outbound) line.appendChild(avatar('base', businessName));
 		const bubble = element('div', 'wc-msg__bubble');
-		bubble.textContent = message.body;
-		line.appendChild(bubble);
-
-		const meta = element('p', 'wc-msg__meta');
-		// Who is speaking is never left ambiguous: a reply carries the contractor's name, and an
-		// automated one says so rather than passing as a person.
-		const speaker =
-			message.sender_type === 'automation' ? `${businessName} · Automated` : businessName;
-		meta.textContent = outbound
-			? `${speaker} · ${timeLabel(message.created_at)}`
-			: timeLabel(message.created_at);
-
-		row.append(line, meta);
+		bubble.textContent = body;
+		row.appendChild(bubble);
 		return row;
 	}
 
-	function renderPending(item: PendingMessage) {
-		const row = element(
-			'div',
-			`wc-msg wc-msg--out ${item.status === 'sending' ? 'wc-msg--sending' : ''}`.trim()
-		);
-		const line = element('div', 'wc-msg__row');
-		const bubble = element('div', 'wc-msg__bubble');
-		bubble.textContent = item.body;
-		line.appendChild(bubble);
-		row.appendChild(line);
+	function metaLine(text: string) {
+		const meta = element('p', 'wc-meta');
+		meta.textContent = text;
+		return meta;
+	}
 
+	// Consecutive messages from the same speaker on the same day sit together as one run, the way every
+	// messenger groups them: one logo, one name-and-time line under the last bubble.
+	function renderRun(run: ChatMessage[], widget: WidgetPublicConfig) {
+		const side = run[0].direction === 'outbound' ? 'in' : 'out';
+		const node = element('div', `wc-run wc-run--${side}`);
+		run.forEach((message, index) => {
+			node.appendChild(bubbleRow(message.body, side, index === run.length - 1, widget));
+		});
+		const last = run[run.length - 1];
+		node.appendChild(
+			metaLine(
+				side === 'in'
+					? `${speakerOf(last, widget.businessName)} · ${timeLabel(last.created_at)}`
+					: timeLabel(last.created_at)
+			)
+		);
+		return node;
+	}
+
+	// The business's greeting opens the conversation as its first bubble, the way a messenger keeps its
+	// opening line rather than dropping it once the conversation starts.
+	function renderGreeting(widget: WidgetPublicConfig) {
+		const node = element('div', 'wc-run wc-run--in');
+		node.append(
+			bubbleRow(
+				widget.greetingText || 'Hi there! Tell us what you need and we will get right back to you.',
+				'in',
+				true,
+				widget
+			),
+			metaLine(widget.businessName)
+		);
+		return node;
+	}
+
+	function renderPending(item: PendingMessage, widget: WidgetPublicConfig) {
+		const node = element('div', 'wc-run wc-run--out');
+		const row = bubbleRow(item.body, 'out', false, widget);
 		if (item.status === 'failed') {
-			const retry = element('button', 'wc-msg__retry');
+			row.insertAdjacentHTML('afterbegin', alertIcon);
+			const retry = element('button', 'wc-retry');
 			retry.type = 'button';
-			retry.textContent = 'Not sent — tap to retry';
+			retry.innerHTML = 'Not sent · <span>Tap to retry</span>';
 			retry.addEventListener('click', () => void deliver(item));
-			row.appendChild(retry);
+			node.append(row, retry);
 		} else {
-			const meta = element('p', 'wc-msg__meta');
-			meta.textContent = 'Sending…';
-			row.appendChild(meta);
+			row.classList.add('wc-msg--sending');
+			node.append(row, metaLine('Sending…'));
 		}
-		return row;
+		return node;
 	}
 
 	function nearBottom() {
@@ -1698,28 +2217,60 @@ svg { display: block; }
 	// no inputs inside, so there is nothing to lose to a rebuild and nothing to get wrong in a diff.
 	function paintThread(stick: boolean) {
 		if (!listNode || !config) return;
+		const widget = config;
 		const wasAtBottom = stick || nearBottom();
 
 		const nodes: Node[] = [];
 		let lastDay = '';
+		let run: ChatMessage[] = [];
+		const flush = () => {
+			if (run.length) nodes.push(renderRun(run, widget));
+			run = [];
+		};
+
+		// The greeting belongs at the very start, so it waits until there is nothing older left to load.
+		let greeted = hasMoreHistory;
 		for (const message of messages) {
 			const day = dayLabel(message.created_at);
 			if (day !== lastDay) {
-				const separator = element('span', 'wc-day');
-				separator.textContent = day;
-				nodes.push(separator);
+				flush();
+				const line = element('p', 'wc-day');
+				line.textContent = `${day} · ${timeLabel(message.created_at)}`;
+				nodes.push(line);
 				lastDay = day;
 			}
-			nodes.push(renderMessage(message, config.businessName));
+			if (!greeted) {
+				nodes.push(renderGreeting(widget));
+				greeted = true;
+			}
+			// A system line narrates the conversation rather than speaking in it.
+			if (message.sender_type === 'system') {
+				flush();
+				const note = element('p', 'wc-note');
+				note.textContent = message.body;
+				nodes.push(note);
+				continue;
+			}
+			const previous = run[run.length - 1];
+			if (
+				previous &&
+				(previous.direction !== message.direction ||
+					speakerOf(previous, widget.businessName) !== speakerOf(message, widget.businessName))
+			) {
+				flush();
+			}
+			run.push(message);
 		}
-		for (const item of pending) nodes.push(renderPending(item));
+		flush();
+		if (!greeted) nodes.push(renderGreeting(widget));
+		for (const item of pending) nodes.push(renderPending(item, widget));
 
 		listNode.replaceChildren(...nodes);
 
 		if (earlierButton) {
 			earlierButton.hidden = !hasMoreHistory;
 			earlierButton.disabled = historyLoading;
-			earlierButton.textContent = historyLoading ? 'Loading…' : 'Load earlier messages';
+			earlierButton.innerHTML = `${arrowUpIcon}<span>${historyLoading ? 'Loading…' : 'Load earlier messages'}</span>`;
 		}
 		if (bannerLine) {
 			bannerLine.textContent = threadBanner;
@@ -1947,10 +2498,12 @@ svg { display: block; }
 		composerSend = element('button', 'wc-composer__send');
 		composerSend.type = 'button';
 		composerSend.setAttribute('aria-label', 'Send message');
-		composerSend.innerHTML = sendIcon;
+		composerSend.innerHTML = arrowUpIcon;
 		composerSend.addEventListener('click', () => sendComposerMessage());
 
-		composer.append(composerInput, composerSend);
+		const pill = element('div', 'wc-composer__pill');
+		pill.append(composerInput, composerSend);
+		composer.appendChild(pill);
 		queueMicrotask(grow);
 		syncComposer();
 		return composer;
@@ -1958,11 +2511,13 @@ svg { display: block; }
 
 	function buildEnded(widget: WidgetPublicConfig) {
 		const ended = element('div', 'wc-ended');
+		const tile = element('span', 'wc-tile wc-tile--40');
+		tile.innerHTML = endedIcon;
 		const text = element('p', 'wc-ended__text');
 		text.textContent = 'This conversation has ended.';
 		const restart = element('button', 'wc-ended__restart');
 		restart.type = 'button';
-		restart.textContent = 'Start a new conversation';
+		restart.innerHTML = `${newChatIcon}<span>Start a new conversation</span>`;
 		restart.addEventListener('click', () => {
 			// A new session, not a reopened one: the contract is explicit that a later inquiry creates a
 			// fresh session linked to the same Client. The transcript stays on the server either way.
@@ -1987,26 +2542,18 @@ svg { display: block; }
 			accepted = false;
 			render();
 		});
-		ended.append(text, restart);
+		ended.append(tile, text, restart);
 		return ended;
 	}
 
-	function buildThread(widget: WidgetPublicConfig) {
+	function buildThread() {
 		const thread = element('div', 'wc-thread');
 
 		earlierButton = element('button', 'wc-earlier');
 		earlierButton.type = 'button';
-		earlierButton.textContent = 'Load earlier messages';
+		earlierButton.innerHTML = `${arrowUpIcon}<span>Load earlier messages</span>`;
 		earlierButton.hidden = true;
 		earlierButton.addEventListener('click', () => void loadEarlier());
-
-		// The contractor's own greeting stays at the top of the thread, the way a messenger keeps its
-		// opening line rather than dropping it once the conversation starts.
-		const intro = element('div', 'wc-intro');
-		const introBubble = element('div', 'wc-intro__bubble');
-		introBubble.textContent =
-			widget.greetingText || 'Enter your question below and we will get right back to you.';
-		intro.append(avatar('base', widget.businessName), introBubble);
 
 		listNode = element('div', 'wc-thread__list');
 		// Polite, not assertive: a reply arriving should be announced after whatever the visitor is
@@ -2019,7 +2566,7 @@ svg { display: block; }
 		bannerLine.hidden = true;
 		bannerLine.setAttribute('role', 'status');
 
-		thread.append(earlierButton, intro, listNode, bannerLine);
+		thread.append(earlierButton, listNode, bannerLine);
 		return thread;
 	}
 
@@ -2273,53 +2820,26 @@ svg { display: block; }
 		panel.setAttribute('role', 'dialog');
 		panel.setAttribute('aria-label', `${widget.businessName} chat`);
 
-		const header = element('header', 'wc-panel__header');
-		const title = element('h2', 'wc-panel__title');
-		title.textContent = widget.businessName;
+		// An accepted conversation replaces the welcome card entirely: a slim white top, the thread in the
+		// scrolling middle, the message box pinned beneath it, and the footer below both.
+		if (widget.status === 'live' && session) {
+			panel.classList.add('wc-panel--chat');
+			const top = element('header', 'wc-chat-top');
+			const who = element('div', 'wc-chat-top__who');
+			const name = element('h2', 'wc-chat-top__name');
+			name.textContent = widget.businessName;
+			const promise = element('p', 'wc-chat-top__promise');
+			promise.textContent = "We'll reply right here";
+			who.append(name, promise);
+			top.append(logoMark(40, widget), who, closeButton());
 
-		const close = element('button', 'wc-panel__close');
-		close.type = 'button';
-		close.setAttribute('aria-label', 'Close chat');
-		close.innerHTML = closeIcon;
-		close.addEventListener('click', () => {
-			panelOpen = false;
-			closeCountryPopup();
-			// A closed panel keeps its session but holds no socket: the connection exists to feed a
-			// thread somebody is looking at, and reopening reads the conversation back anyway.
-			stopTransport();
-			render();
-		});
-
-		header.append(avatar('base', widget.businessName), title, close);
-
-		const body = element('div', 'wc-panel__body');
-
-		const footer = element('footer', 'wc-panel__footer');
-		const credit = document.createElement('em');
-		credit.textContent = widget.businessName;
-		footer.append(document.createTextNode('Powered by '), credit);
-
-		if (widget.status !== 'live') {
-			body.appendChild(
-				renderEmptyState(
-					widget.status === 'draft'
-						? "This chat isn't set up yet."
-						: "This chat isn't available right now."
-				)
-			);
-			panel.append(header, body);
-			return panel;
-		}
-
-		// An accepted conversation replaces the form entirely: thread in the scrolling body, composer
-		// pinned beneath it, and the footer below both.
-		if (session) {
-			threadNode ??= buildThread(widget);
+			const body = element('div', 'wc-panel__scroll');
+			threadNode ??= buildThread();
 			body.appendChild(threadNode);
 			scrollNode = body;
-			panel.append(header, body);
+			panel.append(top, body);
 			panel.appendChild(sessionClosed ? buildEnded(widget) : buildComposer(widget));
-			panel.appendChild(footer);
+			panel.appendChild(renderFooter(widget));
 
 			paintThread(true);
 			if (!historyLoaded) void refreshLatest();
@@ -2327,16 +2847,30 @@ svg { display: block; }
 			return panel;
 		}
 
-		// One intro line above the fields, as HighLevel's form has, using the contractor's own greeting.
-		const intro = element('div', 'wc-intro');
-		const introBubble = element('div', 'wc-intro__bubble');
-		introBubble.textContent =
-			widget.greetingText || 'Enter your question below and we will get right back to you.';
-		intro.append(avatar('base', widget.businessName), introBubble);
-		body.append(intro);
+		// Everything else is the welcome top with one white card overlapping it.
+		const body = element('div', 'wc-panel__scroll');
+		const space = element('div', 'wc-card-space');
+		body.append(renderHero(widget), space);
+		panel.appendChild(body);
+
+		if (widget.status !== 'live') {
+			const card = element('div', 'wc-card');
+			card.appendChild(
+				renderEmptyState(
+					widget.status === 'draft'
+						? "This chat isn't set up yet."
+						: "This chat isn't available right now."
+				)
+			);
+			space.style.paddingBottom = '12px';
+			space.appendChild(card);
+			return panel;
+		}
 
 		if (!phone) {
-			body.appendChild(renderFormSkeleton());
+			const card = element('div', 'wc-card');
+			card.appendChild(renderFormSkeleton());
+			space.appendChild(card);
 			void loadPhone().then(() => {
 				// A visitor who closed the panel while it loaded gets the form on their next open, not a
 				// panel that reopens itself under them.
@@ -2347,10 +2881,10 @@ svg { display: block; }
 			// module that only exists once the panel has been opened.
 			draft ??= readDraft(widget.widgetId);
 			formNode ??= buildForm(widget);
-			body.appendChild(formNode);
+			space.appendChild(formNode);
 		}
 
-		panel.append(header, body, footer);
+		body.appendChild(renderFooter(widget));
 		return panel;
 	}
 
@@ -2362,7 +2896,8 @@ svg { display: block; }
 			!panelOpen && !teaserDismissed && config.status === 'live' && !!config.teaserText;
 
 		if (showTeaser) stage.appendChild(renderTeaser(config, config.teaserText as string));
-		stage.appendChild(panelOpen ? renderPanel(config) : renderLauncher(config));
+		if (panelOpen) stage.appendChild(renderPanel(config));
+		stage.appendChild(renderLauncher(config));
 	}
 
 	function mount(widget: WidgetPublicConfig) {

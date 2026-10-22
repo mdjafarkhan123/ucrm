@@ -35,6 +35,9 @@ export type WebsiteChatWidgetPublicConfig = {
 	contactRequirement: 'phone' | 'email' | 'either';
 	privacyPolicyUrl: string | null;
 	status: 'live' | 'draft' | 'disabled' | 'suspended' | 'not_entitled';
+	// Where the widget fetches the business logo from Branding, relative to the app; null when there is
+	// none, and the widget shows initials. The revision on the end makes a replaced logo show at once.
+	logoPath: string | null;
 };
 
 const TOKEN_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -111,8 +114,21 @@ export async function resolveWebsiteChatWidgetPublicConfig(
 		contactRequirement:
 			row.contact_requirement as WebsiteChatWidgetPublicConfig['contactRequirement'],
 		privacyPolicyUrl: row.privacy_policy_url,
-		status: row.status as WebsiteChatWidgetPublicConfig['status']
+		status: row.status as WebsiteChatWidgetPublicConfig['status'],
+		logoPath: null
 	};
+
+	// Read here rather than in the resolver function so the object key never leaves the server: the
+	// widget only learns that a logo exists and which revision it is.
+	const { data: branding, error: brandingError } = await client
+		.from('organization_settings')
+		.select('logo_object_key, branding_revision')
+		.eq('organization_id', row.organization_id)
+		.maybeSingle();
+	if (brandingError) throw brandingError;
+	if (branding?.logo_object_key) {
+		config.logoPath = `/api/webchat/logo?token=${encodeURIComponent(publicToken)}&v=${branding.branding_revision}`;
+	}
 
 	const now = Date.now();
 	if (configCache.size > 500) sweepConfigCache(now);
@@ -122,6 +138,28 @@ export async function resolveWebsiteChatWidgetPublicConfig(
 	});
 
 	return config;
+}
+
+// The logo behind `logoPath`. An `<img>` sends no `Origin`, so this cannot run the allowlist the config
+// read does; it needs nothing more than the widget token, which is identity rather than a secret, and it
+// only ever hands out the picture the business already shows on its own website.
+export async function resolveWebsiteChatLogoObjectKey(publicToken: string): Promise<string | null> {
+	const client = getWebsiteChatPublicResolverClient();
+	const { data: widget, error } = await client
+		.from('website_chat_widgets')
+		.select('organization_id')
+		.eq('public_token', publicToken)
+		.maybeSingle();
+	if (error) throw error;
+	if (!widget) return null;
+
+	const { data: branding, error: brandingError } = await client
+		.from('organization_settings')
+		.select('logo_object_key')
+		.eq('organization_id', widget.organization_id)
+		.maybeSingle();
+	if (brandingError) throw brandingError;
+	return branding?.logo_object_key ?? null;
 }
 
 // --- WC4.2: session tokens, visitor hashing, and CORS -----------------------------------------------
