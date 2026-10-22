@@ -77,6 +77,8 @@ export type NumberCard = {
 	key: string;
 	sender_id: string | null;
 	name: string;
+	/** The name the business gave the number, if any; `name` falls back to the number itself. */
+	display_name: string | null;
 	/** "+44 7700 900412 · United Kingdom · Mobile", with no repeated number when it has no name. */
 	detail: string;
 	country_code: string;
@@ -377,6 +379,7 @@ export function numberCard(
 		key: number.sender_id ?? `order:${number.order_id ?? number.phone_number}`,
 		sender_id: number.sender_id,
 		name,
+		display_name: number.display_name?.trim() || null,
 		detail,
 		country_code: number.country_code,
 		is_default: number.is_default_sender,

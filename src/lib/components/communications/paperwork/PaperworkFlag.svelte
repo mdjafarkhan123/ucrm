@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { countryFlag } from '$lib/settings/country-names';
 
-	// A country's flag in a round frame: 32 in the paperwork list, 40 beside an opened set's title.
-	let { code, size = 32 }: { code: string; size?: 32 | 40 } = $props();
+	// A country's flag in a round frame: 24 in a country list, 32 in the paperwork list, 40 beside a title.
+	let { code, size = 32 }: { code: string; size?: 24 | 32 | 40 } = $props();
 </script>
 
 <span class="paperwork-flag" style:--flag-size={`${size}px`} aria-hidden="true"
