@@ -373,6 +373,42 @@ A settings page that reads like the business card; each section opens in place o
 - **Staff who can't change it:** every section closed, no Edit or Confirm; an `informative` notice strip with a lock
   under the page header says who can change it.
 
+## Branding
+
+A studio: the logo and colour at the left, a live picture of what customers see at the right (Pencil: "Batch 65 ·
+Branding · Approved A", `FjLSw`, Jafar 2026-10-22). Full-width page frame, blocks 24 apart.
+
+- **Top:** the breadcrumb trail (Settings › Branding, `palette`) and page header as on Business profile, with the
+  40 `--color-inactive` `palette` tile and the last change at the right.
+- **Columns:** a 520 controls column and the preview column filling the rest, 24 apart.
+- **Logo card:** Card header (`image`, inactive), body padding 20 gap 16. A 196 stage
+  (`--color-surface--background--subtle`, 1px border, radius 12) holding a 320×128 white paper sheet (radius 8, a
+  soft 0 1 2 and 0 6 16 shadow) with the logo centred; the paper stays white in dark mode. "Small sizes": white
+  pill chips (1px border, padding 4 12 4 4) with the logo at 32, 28 and 24 and the place 12/600. Actions under a
+  1px line: Replace logo (secondary, `upload`), Remove (danger), the file hint 12/500 quiet at the right.
+- **Logo states:** the stage carries the state. No logo yet: a 1.5px `--color-border--interactive` edge, a 32
+  inactive `image-plus` tile, one 12 quiet line, Upload logo. New logo: `warning` pill "Not saved yet". Saved: an
+  `informative` "Being checked" pill, the spinner and a 12 quiet line. Removed: the paper at 40% opacity, a
+  `critical` pill "Removed on Save", Undo (secondary, `rotate-ccw`).
+- **Brand colour card:** Card header (`palette`, inactive). A 76 swatch (radius 14, 1px border) with a 24 white
+  pipette badge at its bottom right, the Colour code field and Reset to default (secondary, `rotate-ccw`) in one
+  row aligned to the bottom. Quick picks: 32 rings (padding 3, 1px border; chosen 2px `--color-heading`) around
+  the colour. Then a `success` notice strip when white words read clearly on the colour, `warning` when they don't.
+- **Preview card:** Card header (`eye`, informative) with "Nothing is sent until you save". The 3-choice segmented
+  switch (Quote page, Shared files, Website chat), then a subtle stage (radius 12, padding 24 40) holding the
+  customer page: white, radius 10, a soft 0 2 4 and 0 12 28 shadow, a grey browser bar, the 4-high brand-colour
+  line, the logo top and the page with its main button in the brand colour. The customer page keeps its own light
+  colours in dark mode. Under it, 24 tiles with 12/600 labels name what uses the brand. A white team note card
+  (32 inactive `panel-left` tile) says the sidebar shows the logo too.
+- **Save bar:** floats centred at the bottom once something changes: 720 wide, white, 1px border, radius 12,
+  `--shadow-high`, padding 10 10 10 16: a 32 `warning` `pencil-line` tile, the change count 14/600 over what
+  changed 12/500 quiet, Cancel (secondary) and Save branding (main, `check`).
+- **Someone saved first:** a `critical` notice strip (`users`) under the page header says who saved and when; the
+  save bar's tile turns `critical` `git-compare`, the title says the changes weren't saved, and Cancel becomes See
+  their version (secondary, `git-compare`).
+- **Staff who can't change it:** an `informative` notice strip with a lock under the page header; no Replace,
+  Remove, Reset, quick picks or save bar; the colour code field shows the disabled look; the preview still works.
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,
