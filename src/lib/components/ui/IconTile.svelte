@@ -24,21 +24,29 @@
 	// The yellow families are too light for an icon on their own surface, so they use their text colour.
 	// `feature` is the dark green money card: a see-through white tile with its own edge.
 	const ink = $derived(
-		tone === 'feature'
-			? 'var(--color-feature--text--secondary)'
-			: tone === 'warning' || tone === 'event'
-				? `var(--color-${tone}--onSurface)`
-				: `var(--color-${tone})`
+		tone === 'interactive'
+			? 'var(--color-white)'
+			: tone === 'feature'
+				? 'var(--color-feature--text--secondary)'
+				: tone === 'warning' || tone === 'event'
+					? `var(--color-${tone}--onSurface)`
+					: `var(--color-${tone})`
 	);
 	const surface = $derived(
-		tone === 'feature'
-			? 'var(--color-feature--subtle)'
-			: white
-				? 'var(--color-surface)'
-				: `var(--color-${tone}--surface)`
+		tone === 'interactive'
+			? 'var(--color-interactive)'
+			: tone === 'feature'
+				? 'var(--color-feature--subtle)'
+				: white
+					? 'var(--color-surface)'
+					: `var(--color-${tone}--surface)`
 	);
 	const edge = $derived(
-		tone === 'feature' ? 'var(--color-feature--border)' : `var(--color-${tone}--surface-edge)`
+		tone === 'interactive'
+			? 'var(--color-interactive)'
+			: tone === 'feature'
+				? 'var(--color-feature--border)'
+				: `var(--color-${tone}--surface-edge)`
 	);
 </script>
 

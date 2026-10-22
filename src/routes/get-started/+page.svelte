@@ -14,6 +14,8 @@
 	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
 	import PackageCard from '$lib/components/packages/PackageCard.svelte';
 	import PackageDetails from '$lib/components/packages/PackageDetails.svelte';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import {
 		offerHeadline,
 		offerPriceSentence,
@@ -744,36 +746,37 @@
 	</div>
 </main>
 
+<!-- Trusted, bundled Tabler icons only. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
 {#if detailsPackage}
 	{@const pkg = detailsPackage}
 	{@const interval = offeredInterval(pkg, wanted)}
-	<Dialog open title={pkg.name} size="large" onClose={() => (detailsFor = null)}>
-		<div class="get-started__details">
-			<p class="get-started__details-lead">
-				{#if pkg.promise}{pkg.promise}<br />{/if}<strong
-					>{pkg.offers[interval]
-						? offerPriceSentence(pkg.offers[interval])
-						: priceSentence(pkg, interval)}</strong
+	<Dialog
+		open
+		title={pkg.name}
+		subtitle={pkg.promise ?? undefined}
+		icon={packageIcon}
+		iconTone="interactive"
+		size="large"
+		onClose={() => (detailsFor = null)}
+	>
+		<PackageDetails {pkg} {interval} />
+		{#snippet footer()}
+			<Button type="button" variant="secondary" onclick={() => (detailsFor = null)}>Close</Button>
+			{#if form.package_edition_id === pkg.edition_id}
+				<Button type="button" onclick={() => (detailsFor = null)}
+					><span aria-hidden="true">{@html checkIcon}</span>Keep this package</Button
 				>
-			</p>
-			<PackageDetails {pkg} {interval} />
-			<div class="get-started__details-actions">
-				<Button type="button" size="large" variant="secondary" onclick={() => (detailsFor = null)}
-					>Close</Button
+			{:else}
+				<Button type="button" onclick={() => chooseFromDetails(pkg)}
+					><span aria-hidden="true">{@html checkIcon}</span>Choose {pkg.name}</Button
 				>
-				{#if form.package_edition_id === pkg.edition_id}
-					<Button type="button" size="large" onclick={() => (detailsFor = null)}
-						>Keep this package</Button
-					>
-				{:else}
-					<Button type="button" size="large" onclick={() => chooseFromDetails(pkg)}
-						>Choose {pkg.name}</Button
-					>
-				{/if}
-			</div>
-		</div>
+			{/if}
+		{/snippet}
 	</Dialog>
 {/if}
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.get-started {
@@ -1085,27 +1088,6 @@
 			position: absolute;
 			top: var(--space-small);
 			right: var(--space-small);
-		}
-
-		&__details {
-			display: grid;
-			gap: var(--space-large);
-		}
-
-		&__details-lead {
-			margin: 0;
-			color: var(--color-text--secondary);
-			line-height: var(--typography--lineHeight-large);
-
-			strong {
-				color: var(--color-heading);
-			}
-		}
-
-		&__details-actions {
-			display: flex;
-			justify-content: flex-end;
-			gap: var(--space-small);
 		}
 
 		@media (max-width: 900px) {

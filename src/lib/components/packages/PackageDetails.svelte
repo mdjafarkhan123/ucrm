@@ -1,31 +1,36 @@
 <script lang="ts">
-	import { formatUsd } from '$lib/jafar/packages';
-	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import PackagePrice from './PackagePrice.svelte';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import appsIcon from '@tabler/icons/outline/apps.svg?raw';
 	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
-	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import minusIcon from '@tabler/icons/outline/circle-minus.svg?raw';
+	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
+	import globeIcon from '@tabler/icons/outline/world.svg?raw';
+	import pinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import pipelineIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
+	import marketingIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import {
 		allowanceSentence,
-		offerHeadline,
-		offerPriceSentence,
-		priceSentence,
-		yearlySaving,
 		type BillingInterval,
 		type PublicPackage
 	} from '$lib/packages/public-package';
 
-	// Package builder P9: the full terms of one published edition — outcomes first, then exactly what is
-	// included, its limits, what is not included, and how payment works. Shown in the /get-started dialog
-	// and on the package's own page, so both always say the same thing.
-	let { pkg, interval }: { pkg: PublicPackage; interval: BillingInterval } = $props();
-
+	let {
+		pkg,
+		interval,
+		showHero = true
+	}: { pkg: PublicPackage; interval: BillingInterval; showHero?: boolean } = $props();
+	const Heading = $derived(showHero ? 'h3' : 'h2');
+	const ItemHeading = $derived(showHero ? 'h4' : 'h3');
 	const core = $derived(pkg.capabilities.filter((capability) => capability.core));
 	const extras = $derived(pkg.capabilities.filter((capability) => !capability.core));
-	const saving = $derived(yearlySaving(pkg));
 	const hasMonthlyReset = $derived(pkg.allowances.some((allowance) => allowance.resets_monthly));
 	const prices = $derived(
 		(['month', 'year'] as const).filter((option) =>
@@ -34,233 +39,482 @@
 				: pkg.yearly_price_usd_cents !== null
 		)
 	);
+	const steps = [
+		{ title: 'You apply', description: 'Pick a package and send this form.' },
+		{ title: 'We send payment instructions', description: 'You pay us directly, outside the app.' },
+		{ title: 'Your account starts', description: 'Once the first payment arrives.' }
+	];
+	// Public services have editable names, rather than service keys. Unknown names retain the section icon.
+	function meaning(name: string) {
+		const value = name.toLowerCase();
+		if (/google|profile/.test(value)) return { icon: pinIcon, tone: 'review' };
+		if (/review/.test(value)) return { icon: starIcon, tone: 'review' };
+		if (/call|text|inbox|messag|chat/.test(value)) return { icon: phoneIcon, tone: 'conversation' };
+		if (/website/.test(value)) return { icon: globeIcon, tone: 'growth' };
+		if (/pipeline/.test(value)) return { icon: pipelineIcon, tone: 'growth' };
+		if (/marketing|campaign/.test(value)) return { icon: marketingIcon, tone: 'growth' };
+		return { icon: appsIcon, tone: 'inactive' };
+	}
+	function allowanceWords(allowance: PublicPackage['allowances'][number]) {
+		return allowanceSentence(allowance).replace(/^(?:Up to )?[\d,]+ |^Unlimited /, '');
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="package-details">
+{#snippet heading(title: string, icon: string, tone = 'inactive', hint?: string)}
+	<div class="package-details__heading">
+		<IconTile {icon} {tone} size={32} />
+		<div>
+			<svelte:element this={Heading}>{title}</svelte:element>
+			{#if hint}<p>{hint}</p>{/if}
+		</div>
+	</div>
+{/snippet}
+{#snippet highlights()}
 	{#if pkg.highlights.length}
-		<SectionBlock tone="inactive" title="What you get" icon={sparklesIcon} level={3}>
-			<ul class="package-details__checks">
-				{#each pkg.highlights as highlight (highlight)}
-					<li><span aria-hidden="true">{@html checkIcon}</span>{highlight}</li>
-				{/each}
-			</ul>
-		</SectionBlock>
+		<ul class="package-details__checks">
+			{#each pkg.highlights as highlight (highlight)}<li>
+					<span aria-hidden="true">{@html circleCheckIcon}</span>{highlight}
+				</li>{/each}
+		</ul>
 	{/if}
-
-	{#if pkg.included_services.length}
-		<SectionBlock tone="inactive" title="Services we deliver" icon={briefcaseIcon} level={3}>
-			<dl class="package-details__items">
-				{#each pkg.included_services as service (service.name)}
-					<div>
-						<dt>{service.name}</dt>
-						{#if service.description}<dd>{service.description}</dd>{/if}
-					</div>
-				{/each}
-			</dl>
-		</SectionBlock>
-	{/if}
-
-	<SectionBlock tone="inactive" title="In the app" icon={appsIcon} level={3}>
-		{#if extras.length}
-			<dl class="package-details__items">
-				{#each extras as capability (capability.key)}
-					<div>
-						<dt>{capability.label}</dt>
-						<dd>{capability.description}</dd>
-					</div>
-				{/each}
-			</dl>
-		{/if}
-		{#if core.length}
-			<div class="package-details__core" class:package-details__core--after={extras.length > 0}>
-				<p class="package-details__subhead">Included in every package</p>
-				<p class="package-details__core-list">
-					{core.map((capability) => capability.label).join(' · ')}
-				</p>
+{/snippet}
+<div class="package-details">
+	{#if showHero}
+		<section class="package-details__hero" aria-label="Plan summary">
+			<div class="package-details__outcomes">
+				{@render heading('What you get', sparklesIcon, 'feature')}{@render highlights()}
 			</div>
-		{/if}
-	</SectionBlock>
-
-	{#if pkg.allowances.length}
-		<SectionBlock
-			tone="inactive"
-			title="Limits"
-			icon={gaugeIcon}
-			level={3}
-			hint={hasMonthlyReset
-				? 'Monthly amounts start fresh every month, including on yearly billing.'
-				: undefined}
-		>
-			<ul class="package-details__checks">
-				{#each pkg.allowances as allowance (allowance.key)}
-					<li><span aria-hidden="true">{@html checkIcon}</span>{allowanceSentence(allowance)}</li>
+			<div class="package-details__chosen">
+				<p class="package-details__eyebrow">
+					{interval === 'month' ? 'Monthly' : 'Yearly'} · Selected
+				</p>
+				<PackagePrice {pkg} {interval} onFeature />
+			</div>
+		</section>
+	{:else if pkg.highlights.length}
+		<section>
+			{@render heading('What you get', sparklesIcon, 'growth')}{@render highlights()}
+		</section>
+	{/if}
+	{#if pkg.included_services.length}
+		<section>
+			{@render heading(
+				'Services we deliver',
+				briefcaseIcon,
+				'growth',
+				'Uplift does this work for you.'
+			)}
+			<div class="package-details__services">
+				{#each pkg.included_services as service (service.name)}
+					{@const style = meaning(service.name)}
+					<div class="package-details__service">
+						<IconTile icon={style.icon} tone={style.tone} />
+						<svelte:element this={ItemHeading}>{service.name}</svelte:element>
+						{#if service.description}<p>{service.description}</p>{/if}
+					</div>
 				{/each}
-			</ul>
-		</SectionBlock>
+			</div>
+		</section>
 	{/if}
-
-	{#if pkg.exclusions}
-		<SectionBlock tone="inactive" title="Not included" icon={alertIcon} level={3}>
-			<p class="package-details__text">{pkg.exclusions}</p>
-		</SectionBlock>
-	{/if}
-
-	<SectionBlock tone="inactive" title="Price and payment" icon={creditCardIcon} level={3}>
+	<div
+		class={[
+			'package-details__middle',
+			{ 'package-details__middle--no-limits': !pkg.allowances.length }
+		]}
+	>
+		<section class="package-details__panel">
+			{@render heading('In the app', appsIcon)}
+			{#if extras.length}<div class="package-details__features">
+					{#each extras as capability (capability.key)}
+						{@const style = meaning(capability.key + ' ' + capability.label)}
+						<div class="package-details__feature">
+							<IconTile icon={style.icon} tone={style.tone} size={32} />
+							<div>
+								<svelte:element this={ItemHeading}>{capability.label}</svelte:element>
+								<p>{capability.description}</p>
+							</div>
+						</div>
+					{/each}
+				</div>{/if}
+			{#if core.length}<p class="package-details__eyebrow">Included in every package</p>
+				<ul class="package-details__basics">
+					{#each core as capability (capability.key)}<li>{capability.label}</li>{/each}
+				</ul>{/if}
+		</section>
+		{#if pkg.allowances.length}
+			<section class="package-details__panel">
+				{@render heading('Limits', gaugeIcon)}
+				<dl class="package-details__limits">
+					{#each pkg.allowances as allowance (allowance.key)}<div>
+							<dt>{allowanceWords(allowance)}</dt>
+							<dd>
+								{allowance.state === 'unlimited'
+									? 'Unlimited'
+									: (allowance.value ?? 0).toLocaleString('en-US')}
+							</dd>
+						</div>{/each}
+				</dl>
+				{#if hasMonthlyReset}<p class="package-details__reset">
+						<span aria-hidden="true">{@html refreshIcon}</span>Monthly amounts start fresh every
+						month, including on yearly billing.
+					</p>{/if}
+			</section>
+		{/if}
+	</div>
+	<section>
+		{@render heading('Price and payment', creditCardIcon, 'invoice', 'Prices are in US dollars.')}
 		<ul class="package-details__prices">
 			{#each prices as option (option)}
-				{@const offer = pkg.offers[option]}
-				<li class:package-details__price--chosen={option === interval}>
-					<span>{option === 'month' ? 'Monthly' : 'Yearly'}</span>
-					<strong>{priceSentence(pkg, option)}</strong>
-					{#if option === 'year' && saving}
-						<em
-							>Save {formatUsd(saving.savedCents)} ({saving.percent}%) against twelve monthly
-							payments —
-							{formatUsd(saving.perMonthCents)} a month</em
-						>
-					{/if}
-					{#if offer}
-						<p class="package-details__offer">
-							<b>{offerHeadline(offer)}</b>
-							{offerPriceSentence(offer)}.{#if offer.claim_ends_at}
-								Join by {new Date(offer.claim_ends_at).toLocaleDateString('en-US', {
-									month: 'long',
-									day: 'numeric',
-									year: 'numeric'
-								})} to get it.{/if}
-						</p>
-					{/if}
+				<li class={{ 'package-details__price--chosen': option === interval }}>
+					<div class="package-details__billing">
+						<span class="package-details__eyebrow">{option === 'month' ? 'Monthly' : 'Yearly'}</span
+						>{#if option === interval}<span class="package-details__selected"
+								><span aria-hidden="true">{@html checkIcon}</span>Selected</span
+							>{/if}
+					</div>
+					<PackagePrice {pkg} interval={option} />
 				</li>
 			{/each}
 		</ul>
-		<p class="package-details__text">
-			Prices are in US dollars. You pay us directly, outside the app — we send payment instructions
-			after you apply, and your account starts once the first payment arrives. Text messages, and
-			any email beyond the amounts above, are paid separately from a prepaid balance.
-		</p>
-	</SectionBlock>
+		<div class="package-details__payment">
+			<p class="package-details__eyebrow">How paying works</p>
+			<ol>
+				{#each steps as step, i (step.title)}<li>
+						<span class="package-details__step">{i + 1}</span>
+						<div>
+							<svelte:element this={ItemHeading}>{step.title}</svelte:element>
+							<p>{step.description}</p>
+						</div>
+					</li>{/each}
+			</ol>
+			<p>
+				Text messages, and any email beyond the amounts above, are paid separately from a prepaid
+				balance.
+			</p>
+		</div>
+	</section>
+	{#if pkg.exclusions}<section class="package-details__exclusions">
+			<IconTile icon={minusIcon} white size={32} />
+			<div>
+				<svelte:element this={Heading}>Not included</svelte:element>
+				<p>{pkg.exclusions}</p>
+			</div>
+		</section>{/if}
 </div>
 
 <style lang="scss">
 	.package-details {
 		display: grid;
 		gap: var(--space-large);
-
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-base);
+		overflow-wrap: anywhere;
+		line-height: var(--typography--lineHeight-large);
+		section,
+		div {
+			min-width: 0;
+		}
+		h2,
+		h3,
+		h4,
+		p,
+		ul,
+		ol,
+		dl,
+		dd {
+			margin: 0;
+		}
+		h2,
+		h3,
+		h4 {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+		h2,
+		h3,
+		h4 {
+			font-size: var(--typography--fontSize-base);
+		}
+		h4 {
+			font-size: var(--typography--fontSize-base);
+		}
+		p {
+			color: var(--color-text--secondary);
+			overflow-wrap: anywhere;
+		}
+		&__heading {
+			:is(h2, h3) {
+				font-size: var(--typography--fontSize-large);
+			}
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			margin-bottom: var(--space-slim);
+			p {
+				font-size: var(--typography--fontSize-overline);
+			}
+		}
+		&__hero {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 300px;
+			align-items: start;
+			gap: var(--space-large);
+			padding: var(--space-large);
+			border-radius: var(--radius-large);
+			background:
+				radial-gradient(
+					ellipse at top right,
+					var(--color-feature--glow),
+					var(--color-feature--glow-end) 65%
+				),
+				linear-gradient(135deg, var(--color-feature--start), var(--color-feature--end));
+			color: var(--color-feature--text);
+		}
+		&__hero &__heading :is(h2, h3) {
+			color: var(--color-feature--text);
+			font-size: var(--typography--fontSize-larger);
+			font-weight: 700;
+		}
 		&__checks {
 			display: grid;
-			gap: var(--space-small);
-			margin: 0;
+			gap: var(--space-slim);
 			padding: 0;
 			list-style: none;
-
 			li {
 				display: flex;
 				align-items: flex-start;
 				gap: var(--space-small);
-				color: var(--color-text);
-				line-height: var(--typography--lineHeight-large);
+				font-weight: 500;
 			}
-
 			span {
-				display: inline-flex;
-				flex: 0 0 18px;
+				display: flex;
+				flex-shrink: 0;
+				padding-top: var(--space-smallest);
+			}
+			:global(svg) {
 				width: 18px;
 				height: 18px;
-				margin-top: 2px;
-				color: var(--color-success);
-
-				:global(svg) {
-					width: 18px;
-					height: 18px;
+			}
+		}
+		&__chosen {
+			display: grid;
+			gap: var(--space-slim);
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-large);
+			padding: var(--space-medium);
+			background: var(--color-feature--subtle);
+		}
+		&__eyebrow {
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: var(--typography--letterSpacing-loose);
+		}
+		&__chosen &__eyebrow {
+			color: var(--color-feature--text--secondary);
+		}
+		&__services {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+			gap: var(--space-slim);
+		}
+		&__service {
+			display: grid;
+			align-content: start;
+			gap: var(--space-small);
+			padding: var(--space-base);
+			border-radius: calc(var(--radius-base) + var(--radius-small));
+			background: var(--color-surface--background);
+		}
+		&__middle {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 280px;
+			gap: var(--space-base);
+		}
+		&__middle--no-limits {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: var(--space-base);
+			border-radius: calc(var(--radius-base) + var(--radius-small));
+			background: var(--color-surface--background);
+			> .package-details__heading {
+				margin-bottom: 0;
+			}
+		}
+		&__features {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-small);
+		}
+		&__feature {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+			padding: var(--space-slim);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+			p {
+				font-size: var(--typography--fontSize-overline);
+			}
+		}
+		&__basics {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
+			padding: 0;
+			list-style: none;
+			li {
+				padding: var(--space-smaller) var(--space-slim);
+				border: var(--border-base) solid var(--color-border);
+				border-radius: var(--radius-circle);
+				color: var(--color-heading);
+				background: var(--color-surface);
+				font-weight: 500;
+			}
+		}
+		&__limits {
+			display: grid;
+			gap: var(--space-small);
+			> div {
+				display: flex;
+				flex-direction: column-reverse;
+				padding: var(--space-small) var(--space-slim);
+				border-radius: var(--radius-base);
+				background: var(--color-surface);
+			}
+			dt {
+				color: var(--color-text--secondary);
+				font-weight: 500;
+			}
+			dd {
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-display);
+				font-weight: 700;
+				letter-spacing: -0.6px;
+			}
+		}
+		&__reset {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+			font-size: var(--typography--fontSize-overline);
+			span {
+				display: flex;
+				padding-top: var(--space-smallest);
+			}
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
+		&__prices {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+			gap: var(--space-slim);
+			padding: 0;
+			list-style: none;
+			> li {
+				display: grid;
+				align-content: start;
+				gap: var(--space-small);
+				padding: var(--space-base);
+				border: var(--border-base) solid var(--color-border);
+				border-radius: calc(var(--radius-base) + var(--radius-small));
+			}
+		}
+		&__price--chosen {
+			border-color: var(--color-interactive) !important;
+		}
+		&__billing {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
+		}
+		&__selected {
+			display: flex;
+			align-items: center;
+			gap: var(--space-smaller);
+			color: var(--color-interactive);
+			font-weight: 600;
+			span {
+				display: flex;
+			}
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
+		&__payment {
+			display: grid;
+			gap: var(--space-slim);
+			margin-top: var(--space-slim);
+			padding: var(--space-base);
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: calc(var(--radius-base) + var(--radius-small));
+			background: var(--color-invoice--surface);
+			> p {
+				color: var(--color-invoice--onSurface);
+				font-size: var(--typography--fontSize-overline);
+			}
+			ol {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: var(--space-small);
+				padding: 0;
+				list-style: none;
+			}
+			li {
+				display: flex;
+				align-items: flex-start;
+				gap: var(--space-small);
+				padding: var(--space-slim);
+				border-radius: var(--radius-base);
+				background: var(--color-surface);
+				p {
+					font-size: var(--typography--fontSize-overline);
 				}
 			}
 		}
-
-		&__items {
+		&__step {
 			display: grid;
-			gap: var(--space-base);
-			margin: 0;
-
-			dt {
-				color: var(--color-heading);
-				font-weight: 600;
-			}
-
-			dd {
-				margin: var(--space-smallest) 0 0;
-				color: var(--color-text--secondary);
-				line-height: var(--typography--lineHeight-large);
-			}
-		}
-
-		&__core--after {
-			padding-top: var(--space-base);
-			border-top: var(--border-base) solid var(--color-border);
-		}
-
-		&__subhead {
-			margin: 0 0 var(--space-smaller);
-			color: var(--color-heading);
+			flex: 0 0 28px;
+			height: 28px;
+			place-items: center;
+			border-radius: var(--radius-circle);
+			color: var(--color-white);
+			background: var(--color-invoice);
 			font-weight: 600;
 		}
-
-		&__core-list,
-		&__text {
-			margin: 0;
-			color: var(--color-text--secondary);
-			line-height: var(--typography--lineHeight-large);
-			white-space: pre-line;
-		}
-
-		&__prices {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-			gap: var(--space-small);
-			margin: 0;
-			padding: 0;
-			list-style: none;
-
-			li {
-				display: grid;
-				gap: var(--space-smallest);
-				padding: var(--space-base);
-				border: var(--border-base) solid var(--color-border);
-				border-radius: var(--radius-base);
+		&__exclusions {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-slim);
+			padding: var(--space-slim);
+			border-radius: var(--radius-large);
+			background: var(--color-inactive--surface);
+			p {
+				white-space: pre-line;
+				color: var(--color-inactive--onSurface);
 			}
-
-			span {
-				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
-			}
-
-			strong {
-				color: var(--color-heading);
-			}
-
-			em {
-				color: var(--color-success--onSurface, var(--color-success));
-				font-size: var(--typography--fontSize-small);
-				font-style: normal;
-				font-weight: 600;
+			:is(h2, h3) {
+				font-size: var(--typography--fontSize-base);
 			}
 		}
-
-		&__offer {
-			display: grid;
-			gap: var(--space-smallest);
-			margin: var(--space-smaller) 0 0;
-			padding: var(--space-small);
-			border-radius: var(--radius-small);
-			color: var(--color-success--onSurface, var(--color-success));
-			background: var(--color-success--surface);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-base);
-		}
-
-		&__price--chosen {
-			border-color: var(--color-interactive) !important;
-			box-shadow: var(--shadow-focus);
+		@media (max-width: 760px) {
+			&__hero,
+			&__middle {
+				grid-template-columns: minmax(0, 1fr);
+			}
+			&__features,
+			&__payment ol {
+				grid-template-columns: minmax(0, 1fr);
+			}
 		}
 	}
 </style>

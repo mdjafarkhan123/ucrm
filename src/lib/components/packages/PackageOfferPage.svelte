@@ -63,7 +63,7 @@
 				</div>
 			</section>
 
-			<PackageDetails {pkg} {interval} />
+			<PackageDetails {pkg} {interval} showHero={false} />
 
 			<footer class="package-page__footer">
 				<Button href={preview ? undefined : applyHref} disabled={preview}

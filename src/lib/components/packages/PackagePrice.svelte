@@ -1,4 +1,6 @@
 <script lang="ts">
+	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
+	import savingIcon from '@tabler/icons/outline/pig-money.svg?raw';
 	import { formatUsd } from '$lib/jafar/packages';
 	import {
 		offerHeadline,
@@ -15,17 +17,30 @@
 	let {
 		pkg,
 		interval,
-		size = 'card'
-	}: { pkg: PublicPackage; interval: BillingInterval; size?: 'card' | 'hero' } = $props();
+		size = 'card',
+		onFeature = false
+	}: {
+		pkg: PublicPackage;
+		interval: BillingInterval;
+		size?: 'card' | 'hero';
+		onFeature?: boolean;
+	} = $props();
 
 	const price = $derived(priceParts(pkg, interval));
 	const offer = $derived(pkg.offers[interval]);
 	const saving = $derived(interval === 'year' && !offer ? yearlySaving(pkg) : null);
 </script>
 
-<span class={`package-price package-price--${size}`}>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<span class={[`package-price package-price--${size}`, { 'package-price--feature': onFeature }]}>
 	{#if offer}
-		<span class="package-price__badge">{offerHeadline(offer)}</span>
+		<span class="package-price__badge"
+			><span aria-hidden="true">{@html discountIcon}</span>{offerHeadline(offer)}</span
+		>
+	{:else if saving}
+		<span class="package-price__badge"
+			><span aria-hidden="true">{@html savingIcon}</span>Save {formatUsd(saving.savedCents)} · {saving.percent}%</span
+		>
 	{/if}
 	<span class="package-price__line">
 		{#if offer}
@@ -46,13 +61,20 @@
 		<span class="package-price__per">{price.per}</span>
 	</span>
 	{#if offer}
-		<span class="package-price__note">Then {price.amount} {price.per}</span>
+		<span class="package-price__note"
+			><b>Then {price.amount} {price.per}</b>
+			{#if offer.claim_ends_at}<span
+					>Join by {new Date(offer.claim_ends_at).toLocaleDateString('en-US', {
+						month: 'long',
+						day: 'numeric',
+						year: 'numeric'
+					})} to get it.</span
+				>{:else if interval === 'year'}<span>Paid upfront</span>{/if}
+		</span>
 	{:else if saving}
 		<span class="package-price__note">
-			That's {formatUsd(saving.perMonthCents)} a month
-			<span class="package-price__save"
-				>Save {formatUsd(saving.savedCents)} · {saving.percent}%</span
-			>
+			<b>That's {formatUsd(saving.perMonthCents)} a month</b>
+			<span>Paid upfront</span>
 		</span>
 	{/if}
 </span>
@@ -64,8 +86,18 @@
 		justify-items: start;
 		font-variant-numeric: tabular-nums;
 
-		&__badge,
-		&__save {
+		&__badge {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-smaller);
+			> span {
+				display: flex;
+				flex: 0 0 auto;
+			}
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 			width: fit-content;
 			padding: var(--space-smallest) var(--space-small);
 			border-radius: var(--radius-larger);
@@ -73,7 +105,8 @@
 			background: var(--color-success--surface);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
-			white-space: nowrap;
+			max-width: 100%;
+			white-space: normal;
 		}
 
 		&__line {
@@ -84,7 +117,7 @@
 
 			strong {
 				color: var(--color-heading);
-				font-size: var(--typography--fontSize-largest);
+				font-size: var(--typography--fontSize-display);
 				font-weight: 700;
 				line-height: 1.1;
 				letter-spacing: -0.02em;
@@ -103,12 +136,36 @@
 		}
 
 		&__note {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: var(--space-small);
+			display: grid;
+			gap: var(--space-smaller);
+			padding: var(--space-small) var(--space-slim);
+			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			background: var(--color-surface--background);
+			font-size: var(--typography--fontSize-overline);
+			b {
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 600;
+			}
+		}
+		&--feature {
+			.package-price__badge {
+				background: var(--color-feature--text);
+				color: var(--color-feature--start);
+			}
+			.package-price__line strong,
+			.package-price__note b {
+				color: var(--color-feature--text);
+			}
+			.package-price__was,
+			.package-price__per,
+			.package-price__note {
+				color: var(--color-feature--text--secondary);
+			}
+			.package-price__note {
+				background: var(--color-feature--subtle);
+			}
 		}
 
 		&__hidden {
@@ -121,12 +178,12 @@
 		}
 
 		&--hero &__line strong {
-			font-size: var(--typography--fontSize-jumbo);
+			font-size: var(--typography--fontSize-extravagant);
 			line-height: 1;
 		}
 
 		&--hero &__was {
-			font-size: var(--typography--fontSize-large);
+			font-size: var(--typography--fontSize-base);
 		}
 
 		&--hero &__note {
