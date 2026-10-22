@@ -440,7 +440,10 @@
 			isError={deliveryOptionsQuery.isError}
 			errorMessage={deliveryError}
 			onRetry={() => deliveryOptionsQuery.refetch()}
-			onBack={() => (step = 3)}
+			onBack={() => {
+				deliveryError = '';
+				step = 3;
+			}}
 			onContinue={continueFromDelivery}
 		/>
 	{:else}

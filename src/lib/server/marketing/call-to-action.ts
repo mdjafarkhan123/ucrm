@@ -1,6 +1,11 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import type { MarketingCta } from '$lib/marketing/campaign-content';
+import {
+	MARKETING_FORM_CTA_LABELS,
+	MARKETING_PHONE_CTA_LABEL,
+	MARKETING_WEBSITE_CTA_LABEL,
+	type MarketingCta
+} from '$lib/marketing/campaign-content';
 import type { FormOutcome } from '$lib/forms/types';
 
 // The campaign's primary action (blueprint §8 step 4), resolved from the records that own each fact at send
@@ -16,12 +21,6 @@ export type MarketingCtaTarget = {
 	type: MarketingCta['type'];
 	label: string;
 	url: string;
-};
-
-const FORM_LABELS: Record<FormOutcome, string> = {
-	request: 'Request service',
-	assessment: 'Book an assessment',
-	job: 'Book now'
 };
 
 // The query parameter the public form reads the token from in M5b.
@@ -91,7 +90,7 @@ export async function resolveMarketingCtaTarget(
 		if (!form.data?.current_published_version_id || !organization.data?.slug) return null;
 		return {
 			type: 'internal_form',
-			label: FORM_LABELS[form.data.outcome as FormOutcome] ?? 'Get started',
+			label: MARKETING_FORM_CTA_LABELS[form.data.outcome as FormOutcome] ?? 'Get started',
 			url: `${origin}/forms/${encodeURIComponent(organization.data.slug)}/${encodeURIComponent(form.data.public_slug)}`
 		};
 	}
@@ -105,9 +104,9 @@ export async function resolveMarketingCtaTarget(
 
 	if (cta.type === 'website') {
 		const url = data?.website ? websiteUrl(data.website.trim()) : null;
-		return url ? { type: 'website', label: 'Visit our website', url } : null;
+		return url ? { type: 'website', label: MARKETING_WEBSITE_CTA_LABEL, url } : null;
 	}
 
 	const url = data?.phone ? phoneUrl(data.phone) : null;
-	return url ? { type: 'phone', label: 'Call us', url } : null;
+	return url ? { type: 'phone', label: MARKETING_PHONE_CTA_LABEL, url } : null;
 }

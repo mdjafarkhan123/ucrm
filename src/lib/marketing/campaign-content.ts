@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { FormOutcome } from '$lib/forms/types';
 
 // A campaign's email content: subject, preview text, and an ordered list of blocks. Validated here (before
 // it reaches the API) and the database only guards that it is a json object -- same split as
@@ -188,6 +189,16 @@ export const MARKETING_CTA_TYPE_LABELS: Record<MarketingCtaType, string> = {
 	website: 'Your website',
 	phone: 'A phone call'
 };
+
+// The words on the email's button. A form's follow what the form does; the Delivery step shows the same words
+// the sent email carries (call-to-action.ts).
+export const MARKETING_FORM_CTA_LABELS: Record<FormOutcome, string> = {
+	request: 'Request service',
+	assessment: 'Book an assessment',
+	job: 'Book now'
+};
+export const MARKETING_WEBSITE_CTA_LABEL = 'Visit our website';
+export const MARKETING_PHONE_CTA_LABEL = 'Call us';
 
 export const marketingCampaignContentSchema = z
 	.object({
