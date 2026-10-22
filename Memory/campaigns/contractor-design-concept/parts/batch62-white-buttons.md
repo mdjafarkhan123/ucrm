@@ -13,4 +13,4 @@
   and tabs still use it).
 - **Built 2026-10-22** on branch `claude/design-batch62` (`docs/evidence/2026-10-22-batch62/`): `ui/Button`, joined
   groups in CalendarBar, ScheduleControls, CampaignBlockEditor, DropdownMenu's unavailable More. Checked 1440 light
-  and dark on the branch server. **Waiting to merge:** main had unclaimed edits to `_variables.scss` and others.
+  and dark on the branch server. Merged to main `43e76ae4` with Jafar's pending main edits (his yes, 2026-10-22). Pencil tidy-up of `SU6gO` left.
