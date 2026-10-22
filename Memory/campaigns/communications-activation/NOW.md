@@ -14,7 +14,8 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 
 ## Next
 
-Add number pop-up approved B 2026-10-22 (`concept.pen` board `qaFQf`); its states and dark mode are next. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
+Add number pop-up approved B with every state and dark mode 2026-10-22 (`concept.pen` board `qaFQf`); Compliance
+screens are the next drawing. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
 
 ## Constraints
 

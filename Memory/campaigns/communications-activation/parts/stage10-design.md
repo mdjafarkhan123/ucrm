@@ -10,9 +10,9 @@
 - [x] Add number pop-up — Jafar approved B 2026-10-22 ("I approved"): guided three steps, with option A's number
   list in step 2 and no cards/list switch. Option A deleted; board `qaFQf` renamed "Concept · Communications ·
   Add number pop-up · Approved B · 2026-10-22".
-- [ ] Next session: draw every state on the approved B: searching, no numbers in
-  stock, provider unreachable, country with no texting numbers, buying (spinner), interrupted purchase being
-  checked, bought → next step; plus dark mode.
+- [x] States and dark mode drawn on `qaFQf` 2026-10-22 (Jafar: "complete"): Germany paperwork first, Brazil
+  nothing to text, searching, no numbers, phone company unreachable, paperwork bill, buying, connection dropped and
+  checking, bought. Rules in `.claude/skills/design/modals.md` § Add number pop-up.
 - [ ] Compliance list and form (paperwork per country).
 - [ ] Readiness of each number ("Business details needed", "Under review", "Action needed", "Ready to text").
 - [ ] Charges shown before sending or buying.
@@ -20,15 +20,13 @@
 
 ## Next
 
-Jafar stopped drawing for this session ("we will design more on next session"). Next session: add an "Every
-state" section to board `qaFQf` with the states listed above (Germany step 1 = only Mobile texts, paperwork first,
-$3.00 setup; a country with no texting numbers greys every kind and disables Continue; step 3 for a paperwork
-country swaps Buy for Start paperwork and must not promise to hold the number), then dark mode. If `concept.pen`
-is still uncommitted, ask Jafar for Ctrl+S and commit it from main first.
+Next session: draw the Compliance list and form (paperwork per country) on a new board, researched from GHL's
+Regulatory Bundle/Address area and Twilio's Regulations API. If `concept.pen` is still uncommitted, ask Jafar for
+Ctrl+S and commit it from main first. The Add number pop-up can be built once its paperwork and readiness
+screens are approved, per the plan's order.
 
 ## Notes
 
 - Research: GoHighLevel Add Number (country → filters for type, Voice/SMS/MMS, digits → select → Proceed to Buy →
   paperwork prompt) and Twilio Buy a number. Example prices on the board ($2.00 US local, $2.50 toll-free, $6.00 +
   $3.00 setup for Germany mobile) are placeholders; real ones are Jafar's selling prices.
-- Board drawn from the main checkout's `concept.pen`; Pencil had not saved it to disk when this note was written.

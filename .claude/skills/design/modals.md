@@ -412,3 +412,46 @@ Jafar 2026-10-22 (Pencil: "Batch 59 · Mark as lost pop-up · Approved A", `o0Hf
 - Reasons loading: the dropdown disabled with "Loading reasons…". "Other" without a note: Mark as lost disabled.
   Saving: the spinner takes the button's icon; Cancel and × disabled. Couldn't save: a critical notice strip at the
   top of the body with the server's words; the reason and note stay.
+
+## Add number pop-up
+
+Buying a texting number in three steps (`concept.pen` board `qaFQf`, "Add number pop-up · Approved B", Jafar
+2026-10-22, with option A's number list in step 2).
+
+- Large pop-up (940). Header: 40 tile in `--color-conversation` (`phone`), "Add number", the hint "A new number for
+  texting your customers". Footer: "Step 2 of 3" 12/500 quiet at the left; Cancel or Back (`arrow-left`), then
+  Continue (`arrow-right`), "Buy for $2.00" (`shopping-cart`) or "Start paperwork" (`file-plus`).
+- Body splits in two. Left, a 260 step rail: `--color-conversation--surface`, a 1px `--surface-edge` line on its
+  right, padding 16, gap 6; "3 STEPS" 12/600 `--onSurface`; each step padding 10, radius 10: a 28 circle (done:
+  `--color-conversation` fill with a white `check`; current: white with a 1.5px `--color-conversation` edge and its
+  number; next: white, 1px `--surface-edge`), the title 14/600 over the choice made 12 `--onSurface` ("You are
+  here", "Next"). The current step is a white row with a 1px `--surface-edge`. At the foot a white card (radius 12,
+  padding 14): "MONTHLY PRICE" 12/600 quiet, the price 20/700 with "a month" 12 quiet, one 12 quiet line.
+- Right pane padding 24, gap 18; a heading 16/600 over a 14 quiet line.
+- **Step 1:** the country picker (360), then "What kind of number?" as three equal tiles (white, 1px
+  `--color-border`, radius 12, padding 16, gap 10): a 32 conversation tile, the name 16/600, a radio at the right
+  (chosen: a 22 green circle with a white `check` and a 1.5px `--color-interactive` tile edge), the description 14
+  quiet, three 24 ability squares (`message-square`, `image`, `phone` on `--color-conversation--surface`), "From
+  $2.00" 14/700 with "a month", and a need band (radius 8, padding 8 10, 14 icon, 12/600 words) in its status
+  tone: informative for a registration needed after buying, warning for paperwork before buying. A kind the country
+  can't text from: `--color-surface--background--subtle`, 80% opacity, an inactive tile, a disabled radio, "—" and an
+  inactive band with `ban`.
+- **Step 2:** the search box (220) and the Picture messages and Calls checkboxes in one row, then the list: a
+  radius 12 card, a head row on `--color-surface--background--subtle` ("8 NUMBERS FOR 512 · AUSTIN AREA" and
+  "Price per month", 12/600 quiet), rows padding 10 12, gap 14, radius 8: radio, the number 14/600 over "City ·
+  Local" 12 quiet, ability pills in a 250 column (24 high, `--color-conversation--surface`, 13 icon, 12/600; one it
+  lacks is `--color-surface--background--subtle` with `minus` and struck-through words), the price 14/600 with
+  "/month" in a 110 column. The chosen row is white with a 1.5px `--color-interactive` edge. Foot: "Showing 5 of 8"
+  and a quiet "Show other numbers".
+- **Step 3:** the bill card (radius 12): a `--color-conversation--surface` band with a 40 white tile, the number
+  24/700 (-0.5), "Austin, TX · Local number" 14/500 `--onSurface` and white ability pills; then lines padding 11 0
+  with hairlines: Paperwork (a success "Not needed in the US" or warning "Needed first" pill), Today or "When you
+  buy" (700), Every month after, Setup charge, Paid from. Under it "WHAT HAPPENS NEXT": three equal
+  `--color-surface--background--subtle` boxes (radius 12, padding 12) with a 24 status tile, a 14/600 title and a 12
+  quiet line, `chevron-right` between them.
+- States: searching, the list's loading rows; no numbers, and the phone company unreachable, the page-states
+  empty and couldn't-load layouts inside the list card, Continue disabled; a country with nothing to text from,
+  every kind greyed, a warning notice strip, Continue disabled; buying, the button's spinner, Back and × disabled;
+  connection dropped, an informative notice strip with a spinner tile at the top and "Checking…"; bought, a 40
+  success tile, "<number> is yours" 24/700, the charge line, a warning notice strip that it can't text yet, and
+  "Register your business" as the main button beside Done.
