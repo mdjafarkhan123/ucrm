@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Select as SelectPrimitive } from 'bits-ui';
 	import alertIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import chevronUpIcon from '@tabler/icons/outline/chevron-up.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 
 	type SelectOption = {
@@ -10,6 +10,7 @@
 		label: string;
 		disabled?: boolean;
 		tone?: string;
+		reason?: string;
 	};
 
 	let {
@@ -63,6 +64,7 @@
 	let selectedLabel = $derived(
 		options.find((option) => option.value === value)?.label ?? placeholder
 	);
+	let selectedTone = $derived(options.find((option) => option.value === value)?.tone);
 	let isInvalid = $derived(invalid || Boolean(errorMessage));
 	let labelId = $derived(label ? `${id}-label` : undefined);
 
@@ -102,9 +104,18 @@
 		>
 			{#if icon}<span class="select__icon" aria-hidden="true">{@html icon}</span>{/if}
 			{#if prefix}<span class="select__prefix">{prefix}</span>{/if}
+			{#if selectedTone}<span
+					class="select__status-tile"
+					style:--status-tone={`var(--color-${selectedTone})`}
+					style:--status-surface={`var(--color-${selectedTone}--surface)`}
+					style:--status-edge={`var(--color-${selectedTone}--surface-edge)`}
+					aria-hidden="true"><span></span></span
+				>{/if}
 			<span class="select__value">{selectedLabel}</span>
-			<span class="select__chevron" aria-hidden="true"
-				>{@html locked ? lockIcon : chevronDownIcon}</span
+			<span class={['select__chevron', locked && 'select__chevron--locked']} aria-hidden="true"
+				>{@html locked ? lockIcon : chevronDownIcon}<span class="select__chevron-up"
+					>{@html chevronUpIcon}</span
+				></span
 			>
 		</SelectPrimitive.Trigger>
 
@@ -125,15 +136,17 @@
 							disabled={option.disabled}
 						>
 							{#snippet children({ selected })}
+								<span
+									class={['select__radio', selected && 'select__radio--selected']}
+									aria-hidden="true"
+								></span>
 								<span class="select__option-label"
 									>{#if option.tone}<span
 											class="select__option-dot"
 											style:background={`var(--color-${option.tone})`}
 										></span>{/if}{option.label}</span
 								>
-								{#if selected}
-									<span class="select__check" aria-hidden="true">{@html checkIcon}</span>
-								{/if}
+								{#if option.reason}<span class="select__option-reason">{option.reason}</span>{/if}
 							{/snippet}
 						</SelectPrimitive.Item>
 					{/each}
@@ -187,7 +200,7 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
-			padding: 0 var(--space-slim);
+			padding: 0 calc(var(--space-smaller) + var(--space-minuscule)) 0 var(--space-slim);
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			outline: none;
@@ -206,6 +219,7 @@
 			background: var(--color-surface--active);
 		}
 		:global(.select__trigger[data-state='open']) {
+			border: 1.5px solid var(--color-interactive);
 			box-shadow: var(--shadow-focus);
 		}
 		&.select--invalid :global(.select__trigger) {
@@ -252,6 +266,7 @@
 		}
 
 		:global(.select__value) {
+			flex: 1 1 auto;
 			min-width: 0;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -260,24 +275,60 @@
 
 		:global(.select__chevron) {
 			display: grid;
-			width: 16px;
-			height: 16px;
+			width: calc(var(--space-larger) - var(--space-smallest));
+			height: calc(var(--space-larger) - var(--space-smallest));
 			flex: 0 0 auto;
 			place-items: center;
-			color: var(--color-icon--secondary);
-			transition: transform var(--timing-quick);
+			border-radius: var(--radius-tile-small);
+			color: var(--color-icon);
+			background: var(--color-surface--background--subtle);
 		}
 
 		:global(.select__trigger[data-state='open']) :global(.select__chevron) {
-			transform: rotate(180deg);
+			color: var(--color-surface);
+			background: var(--color-interactive);
+		}
+
+		:global(.select__trigger:disabled) :global(.select__chevron) {
+			background: var(--color-disabled--secondary);
 		}
 	}
 
-	:global(.select__chevron svg),
-	:global(.select__check svg) {
+	:global(.select__chevron svg) {
 		display: block;
-		width: 16px;
-		height: 16px;
+		width: 14px;
+		height: 14px;
+	}
+	:global(.select__chevron-up) {
+		display: none;
+	}
+	:global(
+		.select__trigger[data-state='open'] .select__chevron:not(.select__chevron--locked) > svg
+	) {
+		display: none;
+	}
+	:global(
+		.select__trigger[data-state='open']
+			.select__chevron:not(.select__chevron--locked)
+			.select__chevron-up
+	) {
+		display: contents;
+	}
+	:global(.select__status-tile) {
+		display: grid;
+		width: var(--space-large);
+		height: var(--space-large);
+		flex: 0 0 auto;
+		place-items: center;
+		border: var(--border-base) solid var(--status-edge);
+		border-radius: var(--radius-tile-small);
+		background: var(--status-surface);
+	}
+	:global(.select__status-tile span) {
+		width: var(--space-small);
+		height: var(--space-small);
+		border-radius: var(--radius-circle);
+		background: var(--status-tone);
 	}
 
 	:global(.select__content) {
@@ -301,7 +352,7 @@
 	:global(.select__viewport) {
 		max-height: inherit;
 		overflow-y: auto;
-		padding: var(--space-small);
+		padding: calc(var(--space-smaller) + var(--space-smallest));
 	}
 
 	:global(.select__option) {
@@ -310,10 +361,11 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		min-height: 36px;
+		min-height: calc(var(--space-largest) - var(--space-small));
 		margin-bottom: 2px;
 		padding: 0 10px;
-		border-radius: var(--radius-base);
+		border: 1.5px solid transparent;
+		border-radius: var(--radius-tile-large);
 		outline: none;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
@@ -333,6 +385,8 @@
 	:global(.select__option[data-selected]) {
 		color: var(--color-heading);
 		font-weight: 600;
+		border-color: var(--color-interactive);
+		background: var(--color-surface);
 	}
 
 	:global(.select__option:active:not([data-disabled])) {
@@ -345,19 +399,30 @@
 	}
 
 	.select__option-label {
+		flex: 1 1 auto;
 		min-width: 0;
 		overflow: hidden;
 		white-space: normal;
 		overflow-wrap: anywhere;
 	}
 
-	.select__check {
-		display: grid;
-		width: 16px;
-		height: 16px;
+	:global(.select__radio) {
+		width: 18px;
+		height: 18px;
 		flex: 0 0 auto;
-		place-items: center;
-		color: var(--color-interactive);
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-circle);
+		background: var(--color-surface);
+	}
+	:global(.select__radio--selected) {
+		border: 5px solid var(--color-interactive);
+	}
+	:global(.select__option[data-disabled] .select__radio) {
+		border-color: var(--color-disabled--secondary);
+	}
+	:global(.select__option-reason) {
+		color: var(--color-disabled);
+		font-size: var(--typography--fontSize-smaller);
 	}
 	.select__option-label {
 		display: inline-flex;

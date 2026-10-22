@@ -95,6 +95,18 @@
 	} = $props();
 
 	const customTrigger = $derived(Boolean(trigger || triggerClass));
+	const safeItems = $derived(items.filter((item) => !item.destructive));
+	const safeGroups = $derived(
+		groups
+			.map((group) => ({ ...group, items: group.items.filter((item) => !item.destructive) }))
+			.filter((group) => group.items.length > 0)
+	);
+	const safeFooter = $derived(footer.filter((item) => !item.destructive));
+	const dangerItems = $derived([
+		...items.filter((item) => item.destructive),
+		...groups.flatMap((group) => group.items.filter((item) => item.destructive)),
+		...footer.filter((item) => item.destructive)
+	]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -120,7 +132,7 @@
 			>
 		{:else if item.icon}
 			<span
-				class="dropdown-menu__item-icon"
+				class="dropdown-menu__item-icon dropdown-menu__item-icon--boxed"
 				style:color={item.iconColor}
 				aria-hidden="true">{@html item.icon}</span
 			>
@@ -138,7 +150,7 @@
 		{/if}
 		{#if item.current}
 			<span class="dropdown-menu__item-note">, current</span>
-			<span class="dropdown-menu__item-icon dropdown-menu__item-check" aria-hidden="true">
+			<span class="dropdown-menu__item-current" aria-hidden="true">
 				{@html checkIcon}
 			</span>
 		{/if}
@@ -204,10 +216,10 @@
 				sideOffset={4}
 				collisionPadding={8}
 			>
-				{#each items as item (item.key ?? item.label)}
+				{#each safeItems as item (item.key ?? item.label)}
 					{@render menuItem(item)}
 				{/each}
-				{#each groups as group (group.heading)}
+				{#each safeGroups as group (group.heading)}
 					<DropdownMenuPrimitive.Group class="dropdown-menu__group">
 						<DropdownMenuPrimitive.GroupHeading class="dropdown-menu__heading">
 							{group.heading}
@@ -217,9 +229,16 @@
 						{/each}
 					</DropdownMenuPrimitive.Group>
 				{/each}
-				{#if footer.length > 0}
+				{#if safeFooter.length > 0}
 					<DropdownMenuPrimitive.Group class="dropdown-menu__group">
-						{#each footer as item (item.key ?? item.label)}
+						{#each safeFooter as item (item.key ?? item.label)}
+							{@render menuItem(item)}
+						{/each}
+					</DropdownMenuPrimitive.Group>
+				{/if}
+				{#if dangerItems.length > 0}
+					<DropdownMenuPrimitive.Group class="dropdown-menu__danger">
+						{#each dangerItems as item (item.key ?? item.label)}
 							{@render menuItem(item)}
 						{/each}
 					</DropdownMenuPrimitive.Group>
@@ -297,24 +316,25 @@
 
 	:global(.dropdown-menu__content) {
 		z-index: var(--elevation-modal);
-		width: 200px;
+		width: 236px;
 		max-width: calc(100vw - var(--space-large) * 2);
 		// A long menu scrolls inside the space the screen has left, rather than running off it.
 		max-height: var(--bits-dropdown-menu-content-available-height);
 		overflow-y: auto;
-		padding: var(--space-small);
+		padding: calc(var(--space-smaller) + var(--space-smallest));
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
 
 	:global(.dropdown-menu__content--wide) {
-		width: 260px;
+		width: 276px;
 	}
 
 	// A short list of kinds of thing: radius 16, 8 inside, rows 2 apart, each row 36 high (48 with a hint).
 	:global(.dropdown-menu__content--roomy) {
+		width: 306px;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smallest);
@@ -340,22 +360,27 @@
 	}
 
 	:global(.dropdown-menu__heading) {
-		padding: var(--space-smaller) var(--space-small);
+		padding: 10px var(--space-small) var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
 	}
 
 	:global(.dropdown-menu__item) {
 		display: flex;
 		width: 100%;
 		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-small);
-		border-radius: var(--radius-small);
+		gap: 10px;
+		min-height: 40px;
+		margin-bottom: var(--space-smallest);
+		padding: 0 var(--space-small);
+		border-radius: var(--radius-tile-large);
 		outline: none;
-		color: var(--color-text);
+		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
 		line-height: var(--typography--lineHeight-base);
 		cursor: pointer;
 		transition: background-color var(--timing-quick);
@@ -377,12 +402,27 @@
 	}
 
 	:global(.dropdown-menu__item--destructive) {
-		color: var(--color-destructive);
+		color: var(--color-critical--onSurface);
+		font-weight: 600;
 	}
 
 	:global(.dropdown-menu__item--destructive[data-highlighted]) {
-		color: var(--color-destructive--hover);
+		color: var(--color-critical--onSurface);
+		background: var(--color-critical--surface-edge);
+	}
+	:global(.dropdown-menu__danger) {
+		display: block;
+		margin-top: var(--space-small);
+		padding: var(--space-smallest);
+		border-radius: var(--radius-tile-large);
 		background: var(--color-critical--surface);
+	}
+	:global(.dropdown-menu__danger .dropdown-menu__item:last-child) {
+		margin-bottom: 0;
+	}
+	:global(.dropdown-menu__item--destructive .dropdown-menu__item-icon--boxed) {
+		color: var(--color-critical);
+		background: var(--color-surface);
 	}
 
 	:global(.dropdown-menu__item--current) .dropdown-menu__item-label {
@@ -390,8 +430,19 @@
 		font-weight: 600;
 	}
 
-	.dropdown-menu__item-check {
-		color: var(--color-interactive);
+	.dropdown-menu__item-current {
+		display: grid;
+		width: var(--space-medium);
+		height: var(--space-medium);
+		flex: 0 0 auto;
+		place-items: center;
+		border-radius: var(--radius-circle);
+		color: var(--color-surface);
+		background: var(--color-interactive);
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
 	}
 
 	.dropdown-menu__item-label {
@@ -437,11 +488,20 @@
 		height: 16px;
 		flex: 0 0 auto;
 		place-items: center;
-
 		:global(svg) {
 			display: block;
 			width: 16px;
 			height: 16px;
 		}
+	}
+	.dropdown-menu__item-icon--boxed {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+	:global(.dropdown-menu__item[data-highlighted] .dropdown-menu__item-icon--boxed) {
+		border: var(--border-base) solid var(--color-border);
+		background: var(--color-surface);
 	}
 </style>
