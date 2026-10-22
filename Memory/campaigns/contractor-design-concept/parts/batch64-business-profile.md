@@ -1,7 +1,8 @@
 # Batch 64 · Business profile
 
-**Board:** `concept.pen` → "Concept · Batch 64 · Business profile · Options A and B · 2026-10-22" (`dw4fp`).
-Drawn 2026-10-22, **waiting for Jafar** to pick A or B. Piece: `(app)/settings/business-profile` (list-6a).
+**Board:** `concept.pen` → "Concept · Batch 64 · Business profile · Approved B · 2026-10-22" (`dw4fp`).
+**Approved B (Profile at a glance) by Jafar 2026-10-22**, after first picking A and then asking why B showed no
+forms (only Contact was drawn open). Option A removed. Look rules: design `layout.md` § Business profile. Piece: `(app)/settings/business-profile` (list-6a).
 Opened from Edit profile on the approved Settings home (Batch 63 A, `PZ8xu`).
 
 ## Research (what to show, not the look)
@@ -30,5 +31,9 @@ Opened from Edit profile on the approved Settings home (Batch 63 A, `PZ8xu`).
   on the approved Settings home. Needs Jafar's yes.
 - B saves one section at a time (live page saves the whole form once). The save command can still send the whole
   profile; only the screen changes.
-- Not drawn yet: permission-limited (read-only) view, loading, and the save-conflict message. Draw them for the
-  chosen option.
+- Drawn with B: the other three sections open (Your business, Time zone and currency, Where you work), the
+  "someone saved first" message on an open section (See their version), and the staff view (`t8ZDv`: all closed,
+  no Edit or Confirm, lock notice). Loading follows the approved Page loading pattern (Batch 48).
+- Business email: kept, because Jafar approved B with it (it also shows on the approved Settings home).
+- Only one section open at a time; opening another asks to save or drop the open one.
+- Screens: page `o5GAHJ` (Contact open), dark `C7YEUR`, opened sections panel `wZCYI`, staff view `t8ZDv`.
