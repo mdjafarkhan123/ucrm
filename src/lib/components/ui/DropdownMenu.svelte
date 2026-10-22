@@ -259,8 +259,9 @@
 		color: var(--color-icon);
 	}
 	:global(.button.button--secondary.dropdown-menu__more-button:disabled:not([aria-busy='true'])) {
-		border-color: var(--color-border--interactive);
-		background: var(--color-surface);
+		border-color: transparent;
+		background: linear-gradient(var(--color-surface--key), var(--color-surface--hover));
+		box-shadow: var(--shadow-button--key);
 	}
 	.dropdown-menu__unavailable {
 		position: relative;

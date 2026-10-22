@@ -80,9 +80,13 @@
 
 	.calendar-bar__stepper {
 		display: inline-flex;
-		// A joined group is one box with the soft grey edge, not a row of brand-edged buttons.
-		--button--edge: var(--color-border--interactive);
-		--button--edge--hover: var(--color-border--interactive--hover);
+		// A joined group is one raised key, its buttons split by a thin line.
+		--button--shadow: none;
+		--button--shadow--hover: none;
+		--button--shadow--pressed: none;
+		--button--edge--on: transparent;
+		border-radius: var(--radius-base);
+		box-shadow: var(--shadow-button--key);
 		:global(.button) {
 			border-radius: 0;
 		}
@@ -93,6 +97,9 @@
 			border-radius: 0 var(--radius-base) var(--radius-base) 0;
 		}
 		:global(.button + .button) {
+			--button--shadow: inset 1px 0 0 var(--color-border);
+			--button--shadow--hover: inset 1px 0 0 var(--color-border);
+			--button--shadow--pressed: inset 1px 0 0 var(--color-border);
 			margin-left: -1px;
 		}
 		:global(.button:focus-visible) {

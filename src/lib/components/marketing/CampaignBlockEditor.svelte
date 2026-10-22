@@ -401,11 +401,15 @@
 			font-weight: 700;
 		}
 
-		// Move up / Move down: one box with the soft grey edge, as the calendar's stepper is.
+		// Move up / Move down: one raised key, as the calendar's stepper is.
 		&__moves {
 			display: inline-flex;
-			--button--edge: var(--color-border--interactive);
-			--button--edge--hover: var(--color-border--interactive--hover);
+			--button--shadow: none;
+			--button--shadow--hover: none;
+			--button--shadow--pressed: none;
+			--button--edge--on: transparent;
+			border-radius: var(--radius-base);
+			box-shadow: var(--shadow-button--key);
 
 			:global(.button) {
 				border-radius: 0;
@@ -417,6 +421,9 @@
 				border-radius: 0 var(--radius-base) var(--radius-base) 0;
 			}
 			:global(.button + .button) {
+				--button--shadow: inset 1px 0 0 var(--color-border);
+				--button--shadow--hover: inset 1px 0 0 var(--color-border);
+				--button--shadow--pressed: inset 1px 0 0 var(--color-border);
 				margin-left: -1px;
 			}
 			:global(.button:focus-visible) {
