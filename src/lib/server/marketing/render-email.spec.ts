@@ -156,6 +156,35 @@ describe('renderCampaignEmail block marks', () => {
 	});
 });
 
+describe('renderCampaignEmail half-written blocks', () => {
+	const ids = [1, 2, 3, 4].map((n) => `${n}${n}${n}${n}${n}${n}${n}${n}-6666-6666-6666-666666666666`);
+	const blocks = [
+		{ id: ids[0], type: 'heading', level: 'h1', text: '' },
+		{ id: ids[1], type: 'text', text: '' },
+		{ id: ids[2], type: 'button', label: '', url: '#' },
+		{ id: ids[3], type: 'image', file_id: '', alt: '' }
+	] as MarketingCampaignContent['blocks'];
+
+	it('draws each empty block as a quiet stand-in the editor can outline', async () => {
+		const result = await renderCampaignEmail(contentWith(blocks), { ...baseCtx, markBlocks: true });
+		expect(result.errors).toEqual([]);
+		for (const words of ['Your heading', 'Your text', 'Your button', 'Your photo shows here'])
+			expect(result.html).toContain(words);
+		for (const id of ids) expect(result.html).toContain(`ucrm-block-${id}`);
+	});
+
+	it('never puts the photo stand-in in a sent email whose picture has an address', async () => {
+		const fileId = '77777777-7777-7777-7777-777777777777';
+		const image = [{ id: ids[3], type: 'image', file_id: fileId, alt: 'Lawn' }] as MarketingCampaignContent['blocks'];
+		const sent = await renderCampaignEmail(contentWith(image), {
+			...baseCtx,
+			imageUrls: { [fileId]: 'https://example.com/lawn.jpg' }
+		});
+		expect(sent.html).toContain('https://example.com/lawn.jpg');
+		expect(sent.html).not.toContain('Your photo shows here');
+	});
+});
+
 describe('resolveMarketingVariablesPlainText', () => {
 	it('substitutes without HTML-escaping, for building a real Subject header', () => {
 		expect(

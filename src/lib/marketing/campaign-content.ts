@@ -213,6 +213,45 @@ export const marketingCampaignContentSchema = z
 
 export type MarketingCampaignContent = z.infer<typeof marketingCampaignContentSchema>;
 
+// The Email step's live preview renders after every pause in typing, so a block still being filled in -- an
+// empty heading, a button without its link yet, a photo not uploaded yet -- must still render (render-email.ts
+// draws an empty field as a quiet stand-in). Same shape as the content above without its "ready to save"
+// requirements: an address that is not a full web address previews as `#`, and an unknown {{token}} stays
+// visible as typed. Preview only -- saving and sending still use marketingCampaignContentSchema.
+const draftText = (max: number) => z.string().trim().max(max);
+const draftUrl = z
+	.string()
+	.trim()
+	.max(2048)
+	.transform((value) => (value === '#' || /^https?:\/\//i.test(value) ? value : '#'));
+
+export const marketingPreviewContentSchema = marketingCampaignContentSchema.extend({
+	subject: draftText(MARKETING_SUBJECT_MAX),
+	preview_text: draftText(MARKETING_PREVIEW_TEXT_MAX)
+		.optional()
+		.transform((value) => (value ? value : undefined)),
+	blocks: z
+		.array(
+			z.discriminatedUnion('type', [
+				marketingImageBlockSchema.extend({
+					file_id: z.union([z.string().uuid(), z.literal('')]),
+					link_url: draftUrl.optional()
+				}),
+				marketingHeadingBlockSchema.extend({ text: draftText(MARKETING_HEADING_TEXT_MAX) }),
+				marketingTextBlockSchema.extend({ text: draftText(MARKETING_TEXT_BLOCK_MAX) }),
+				marketingButtonBlockSchema.extend({
+					label: draftText(MARKETING_BUTTON_LABEL_MAX),
+					url: draftUrl
+				}),
+				marketingDividerBlockSchema,
+				marketingServiceSummaryBlockSchema.extend({
+					title: draftText(MARKETING_SERVICE_SUMMARY_TITLE_MAX)
+				})
+			])
+		)
+		.max(MARKETING_MAX_BLOCKS)
+});
+
 export const emptyMarketingCampaignContent: MarketingCampaignContent = {
 	version: '1',
 	subject: '',

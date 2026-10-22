@@ -147,7 +147,7 @@
 		</button>
 	</li>
 {:else}
-	<li class="block-card">
+	<li class="block-card" data-block-id={block.id}>
 		<header class="block-card__head">
 			<button
 				type="button"

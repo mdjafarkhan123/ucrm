@@ -14,6 +14,7 @@
 	} from '$lib/marketing/campaign-content';
 	import desktopIcon from '@tabler/icons/outline/device-desktop.svg?raw';
 	import mobileIcon from '@tabler/icons/outline/device-mobile.svg?raw';
+	import blocksIcon from '@tabler/icons/outline/list-details.svg?raw';
 
 	// The Email step's live preview (design skill `layout.md` → New campaign · Email step): the toolbar, the
 	// inbox line a customer sees, then the email exactly as the server renders it. It follows the text a moment
@@ -77,6 +78,9 @@
 	function measure() {
 		const doc = frame?.contentDocument;
 		if (!doc?.body) return;
+		// The frame grows to the email's height, so it never needs a scrollbar; one showing for a moment while
+		// it grows would narrow the email and shift the outline.
+		doc.documentElement.style.overflow = 'hidden';
 		frameHeight = Math.ceil(doc.body.getBoundingClientRect().height);
 		const block = editingBlock ? doc.querySelector(`.ucrm-block-${editingBlock.id}`) : null;
 		if (!block) {
@@ -141,32 +145,38 @@
 			/>
 		</div>
 	{:else}
-		<div class="email-preview__inbox">
-			<span class="email-preview__avatar" aria-hidden="true">{senderInitial}</span>
-			<div class="email-preview__inbox-copy">
-				<div class="email-preview__inbox-top">
-					{#if rendered}
+		<!-- The inbox line waits for the first render: before it, the email bone alone shows it is coming. -->
+		{#if rendered}
+			<div class="email-preview__inbox">
+				<span class="email-preview__avatar" aria-hidden="true">{senderInitial}</span>
+				<div class="email-preview__inbox-copy">
+					<div class="email-preview__inbox-top">
 						<b>{rendered.sender_name}</b>
-					{:else}
-						<span class="skeleton skeleton--text email-preview__sender-bone"></span>
-					{/if}
-					<span class="email-preview__time">{sentAt}</span>
+						<span class="email-preview__time">{sentAt}</span>
+					</div>
+					<span class={['email-preview__subject', !rendered.subject && 'email-preview__quiet']}
+						>{rendered.subject || 'Your subject line'}</span
+					>
+					<span class="email-preview__preview-text email-preview__quiet-text"
+						>{rendered.preview_text || 'Your preview text'}</span
+					>
 				</div>
-				<span class={['email-preview__subject', !rendered?.subject && 'email-preview__quiet']}
-					>{rendered?.subject || 'Your subject line'}</span
-				>
-				<span class="email-preview__preview-text email-preview__quiet-text"
-					>{rendered?.preview_text || 'Your preview text'}</span
-				>
 			</div>
-		</div>
+		{/if}
 
-		<div class={['email-preview__paper', viewport === 'mobile' && 'email-preview__paper--mobile']}>
+		<div
+			class={[
+				'email-preview__paper',
+				rendered && 'email-preview__paper--email',
+				viewport === 'mobile' && 'email-preview__paper--mobile'
+			]}
+		>
 			{#if !rendered}
 				<EmailPreviewBone />
 			{:else}
 				{#if !hasBlocks}
 					<div class="email-preview__empty">
+						<span class="email-preview__empty-icon" aria-hidden="true">{@html blocksIcon}</span>
 						<b>Your blocks show here</b>
 						<span>The business name and the unsubscribe line are added for you.</span>
 					</div>
@@ -308,9 +318,6 @@
 				white-space: nowrap;
 			}
 		}
-		&__sender-bone {
-			width: 40%;
-		}
 		&__time {
 			flex: none;
 			color: var(--color-text--secondary);
@@ -350,6 +357,11 @@
 				max-width: 375px;
 			}
 
+			// Once the email is in, the paper is the email's own white, in dark mode too.
+			&--email {
+				background: var(--color-white);
+			}
+
 			// The email keeps its own light colours in dark mode.
 			iframe {
 				display: block;
@@ -359,27 +371,40 @@
 			}
 		}
 
-		// No blocks yet: a quiet box where they will go.
+		// No blocks yet: a quiet box where they will go. It sits on the email's own white paper, so like the email
+		// it keeps its light colours in dark mode (fixed base shades, not the theme's surface tokens).
 		&__empty {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			gap: 2px;
+			justify-content: center;
+			gap: 4px;
+			min-height: 260px;
 			margin: var(--space-large) var(--space-large) 0;
 			padding: var(--space-large) var(--space-base);
-			border: 1.5px dashed var(--color-border--interactive);
+			border: var(--border-base) solid var(--color-base-grey--300);
 			border-radius: var(--radius-base);
-			background: var(--color-surface--background--subtle);
+			background: var(--color-base-grey--100);
 			text-align: center;
 
 			b {
-				color: var(--color-heading);
+				color: var(--color-base-grey--1000);
 				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
-			span {
-				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
+			span:not(.email-preview__empty-icon) {
+				color: var(--color-base-grey--700);
+				font-size: var(--typography--fontSize-base);
+			}
+		}
+		&__empty-icon {
+			display: flex;
+			margin-bottom: 4px;
+			color: var(--color-base-purple--700);
+
+			:global(svg) {
+				width: 24px;
+				height: 24px;
 			}
 		}
 

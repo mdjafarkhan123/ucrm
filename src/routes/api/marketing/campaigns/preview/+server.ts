@@ -4,7 +4,10 @@ import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { databaseError, validationError, NO_STORE_HEADERS } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import { marketingCampaignContentSchema } from '$lib/marketing/campaign-content';
+import {
+	marketingPreviewContentSchema,
+	type MarketingCampaignContent
+} from '$lib/marketing/campaign-content';
 import { hydrateRuleLabels } from '$lib/server/marketing/customer-groups';
 import { getMarketingBusinessIdentity } from '$lib/server/marketing/business-identity';
 import {
@@ -19,10 +22,11 @@ import { createPresignedPreviewImageUrl } from '$lib/server/storage/r2';
 // preview route. Uses a representative sample name and the organization's real business identity, never a
 // raw {{token}}, matching the blueprint's "no leaking a placeholder" rule.
 
+// The content may still be half-written (marketingPreviewContentSchema): the Email step previews as you type.
 // `mark_blocks` is the editor's own switch (see MarketingRenderContext.markBlocks); the review step and the
 // template pop-up leave it off.
 const previewSchema = z.object({
-	content: marketingCampaignContentSchema,
+	content: marketingPreviewContentSchema,
 	mark_blocks: z.boolean().optional()
 });
 
@@ -41,7 +45,9 @@ export const POST: RequestHandler = async (event) => {
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
 	const organizationId = access.auth.organization.id;
-	const content = parsed.data.content;
+	// Only an image block's not-yet-uploaded photo ('') differs from saved content; the renderer draws it as a
+	// stand-in.
+	const content = parsed.data.content as MarketingCampaignContent;
 	const catalogItemIds = content.blocks
 		.filter((block) => block.type === 'service_summary')
 		.flatMap((block) => (block.type === 'service_summary' ? block.catalog_item_ids : []));

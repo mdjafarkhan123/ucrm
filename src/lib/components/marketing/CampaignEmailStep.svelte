@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import FormErrorSummary from '$lib/components/forms/FormErrorSummary.svelte';
@@ -56,6 +57,7 @@
 	} = $props();
 
 	let openBlockId = $state<string | null>(null);
+	let addBlockArea = $state<HTMLDivElement>();
 	let formError = $state<{ reveal: () => Promise<void> }>();
 
 	const openBlock = $derived(content.blocks.find((block) => block.id === openBlockId) ?? null);
@@ -68,15 +70,55 @@
 		tile: 'growth',
 		tileSize: 32 as const,
 		hint: BLOCK_TYPE_HINTS[type],
-		onSelect: () => (openBlockId = onAddBlock(type))
+		onSelect: () => (openBlockId = justAdded = onAddBlock(type))
 	}));
+
+	// A block just added opens with focus in its first place to type (or on Add a photo), not back on Add a
+	// block.
+	let justAdded: string | null = null;
+	function focusAddedBlock(event: Event) {
+		const id = justAdded;
+		justAdded = null;
+		if (!id) return;
+		event.preventDefault();
+		tick().then(() => {
+			const card = document.querySelector<HTMLElement>(`[data-block-id="${id}"]`);
+			const target =
+				card?.querySelector<HTMLElement>(
+					'.block-card__body :is([contenteditable="true"], input:not([type="hidden"]):not([type="file"]), textarea, .photo-slot__add)'
+				) ?? card?.querySelector<HTMLElement>('.block-card__title');
+			target?.focus();
+		});
+	}
 
 	function toggleBlock(id: string) {
 		openBlockId = openBlockId === id ? null : id;
 	}
+	// Moving a block re-places its card, which drops keyboard focus; it goes back to the same move button, or
+	// to the other one once the block reaches the top or the bottom.
+	function moveBlock(index: number, by: number, id: string) {
+		onMoveBlock(index, by);
+		tick().then(() => {
+			const buttons = document.querySelectorAll<HTMLButtonElement>(
+				`[data-block-id="${id}"] .block-card__moves button`
+			);
+			const [up, down] = buttons;
+			const wanted = by < 0 ? up : down;
+			(wanted && !wanted.disabled ? wanted : by < 0 ? down : up)?.focus();
+		});
+	}
+	// A removed block takes keyboard focus with it, so focus goes to the block now in its place (or the one
+	// above), or to Add a block once none are left.
 	function removeBlock(index: number) {
 		if (content.blocks[index]?.id === openBlockId) openBlockId = null;
 		onRemoveBlock(index);
+		tick().then(() => {
+			const rows = document.querySelectorAll<HTMLElement>(
+				'.blocks__list .block-row__button, .blocks__list .block-card__title'
+			);
+			const target = rows[Math.min(index, rows.length - 1)] ?? addBlockArea?.querySelector('button');
+			target?.focus();
+		});
 	}
 
 	// A failed save names its reason at the top of the editor, and brings it into view.
@@ -137,7 +179,7 @@
 								open={block.id === openBlockId}
 								{catalogLabels}
 								onToggle={() => toggleBlock(block.id)}
-								onMove={(by) => onMoveBlock(i, by)}
+								onMove={(by) => moveBlock(i, by, block.id)}
 								onRemove={() => removeBlock(i)}
 								{onUploadImage}
 								{onDiscardOrphanedImage}
@@ -146,7 +188,7 @@
 					</ol>
 				{/if}
 
-				<div class="blocks__add">
+				<div class="blocks__add" bind:this={addBlockArea}>
 					<DropdownMenu
 						items={addBlockItems}
 						triggerLabel="Add a block"
@@ -157,6 +199,7 @@
 						contentClass="email-step__add-menu"
 						align="start"
 						disabled={!canAddBlock}
+						onCloseAutoFocus={focusAddedBlock}
 					/>
 				</div>
 				{#if !canAddBlock}

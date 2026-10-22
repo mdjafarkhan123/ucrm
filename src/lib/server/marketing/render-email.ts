@@ -91,29 +91,52 @@ function resolveVariablesHtml(
 	});
 }
 
+// A block still being written in the editor (only the live preview accepts one -- saving and sending require
+// every field) shows a quiet grey stand-in, so it keeps its place in the email and can be outlined.
+const STAND_IN_COLOR = '#9ca3af';
+
+function standIn(words: string): string {
+	return `<span style="color:${STAND_IN_COLOR}">${words}</span>`;
+}
+
 function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): string {
 	const mark = ctx.markBlocks ? ` css-class="ucrm-block-${block.id}"` : '';
 	switch (block.type) {
 		case 'heading': {
 			const fontSize = block.level === 'h1' ? '28px' : '22px';
-			return `<mj-text${mark} font-size="${fontSize}" font-weight="700" padding="16px 24px 8px">${resolveVariablesHtml(block.text, ctx.variables)}</mj-text>`;
+			const words = block.text.trim()
+				? resolveVariablesHtml(block.text, ctx.variables)
+				: standIn('Your heading');
+			return `<mj-text${mark} font-size="${fontSize}" font-weight="700" padding="16px 24px 8px">${words}</mj-text>`;
 		}
 		case 'text': {
-			const paragraphs = block.text
-				.split(/\n{2,}/)
-				.map(
-					(paragraph) =>
-						`<p style="margin:0 0 12px">${resolveVariablesHtml(paragraph, ctx.variables).replace(/\n/g, '<br/>')}</p>`
-				)
-				.join('');
+			const paragraphs = block.text.trim()
+				? block.text
+						.split(/\n{2,}/)
+						.map(
+							(paragraph) =>
+								`<p style="margin:0 0 12px">${resolveVariablesHtml(paragraph, ctx.variables).replace(/\n/g, '<br/>')}</p>`
+						)
+						.join('')
+				: `<p style="margin:0 0 12px">${standIn('Your text')}</p>`;
 			return `<mj-text${mark} padding="8px 24px">${paragraphs}</mj-text>`;
 		}
-		case 'button':
-			return `<mj-button${mark} href="${escapeHtml(block.url)}" padding="16px 24px" background-color="#2563eb">${resolveVariablesHtml(block.label, ctx.variables)}</mj-button>`;
-		case 'image':
-			return `<mj-image${mark} src="${escapeHtml(ctx.imageUrls[block.file_id] ?? '')}" alt="${escapeHtml(block.alt)}"${
+		case 'button': {
+			const label = block.label.trim()
+				? resolveVariablesHtml(block.label, ctx.variables)
+				: 'Your button';
+			return `<mj-button${mark} href="${escapeHtml(block.url || '#')}" padding="16px 24px" background-color="#2563eb">${label}</mj-button>`;
+		}
+		case 'image': {
+			// No photo chosen yet, or (in the editor) one still being uploaded or checked. A real send always
+			// has its picture's address, and never gets the stand-in.
+			const src = block.file_id ? ctx.imageUrls[block.file_id] : undefined;
+			if (!block.file_id || (ctx.markBlocks && !src))
+				return `<mj-text${mark} padding="8px 24px"><div style="padding:56px 16px;border:1px dashed #d1d5db;border-radius:6px;background:#f9fafb;text-align:center;font-size:14px">${standIn('Your photo shows here')}</div></mj-text>`;
+			return `<mj-image${mark} src="${escapeHtml(src ?? '')}" alt="${escapeHtml(block.alt)}"${
 				block.link_url ? ` href="${escapeHtml(block.link_url)}"` : ''
 			} padding="8px 24px" />`;
+		}
 		case 'divider':
 			return `<mj-divider${mark} border-color="#e5e7eb" padding="8px 24px" />`;
 		case 'service_summary': {
@@ -124,7 +147,8 @@ function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): st
 				items.length > 0
 					? `<ul style="margin:8px 0 0;padding-left:20px">${items.map((name) => `<li>${escapeHtml(name)}</li>`).join('')}</ul>`
 					: `<p style="margin:8px 0 0;color:#6b7280">No services selected yet.</p>`;
-			return `<mj-text${mark} padding="8px 24px"><strong>${escapeHtml(block.title)}</strong>${list}</mj-text>`;
+			const title = block.title.trim() ? escapeHtml(block.title) : standIn('Your title');
+			return `<mj-text${mark} padding="8px 24px"><strong>${title}</strong>${list}</mj-text>`;
 		}
 	}
 }

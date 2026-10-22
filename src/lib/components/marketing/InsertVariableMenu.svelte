@@ -59,7 +59,7 @@
 	triggerClass={`variable-button variable-button--${variant}`}
 	roomy
 	wide
-	align="end"
+	align={variant === 'labelled' ? 'start' : 'end'}
 	onCloseAutoFocus={keepFocusInField}
 >
 	{#snippet trigger()}

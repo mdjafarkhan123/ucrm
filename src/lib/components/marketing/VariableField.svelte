@@ -91,7 +91,8 @@
 		}
 		surface.normalize();
 		for (const tag of surface.querySelectorAll<HTMLElement>('[data-variable]')) {
-			if (tag.previousSibling?.nodeType !== Node.TEXT_NODE) tag.before(document.createTextNode(ZWSP));
+			if (tag.previousSibling?.nodeType !== Node.TEXT_NODE)
+				tag.before(document.createTextNode(ZWSP));
 			if (tag.nextSibling?.nodeType !== Node.TEXT_NODE) tag.after(document.createTextNode(ZWSP));
 		}
 	}
@@ -171,8 +172,12 @@
 
 	function insertText(raw: string) {
 		if (!surface) return;
+		// Focusing the box puts the browser's caret at its start, so a box coming back from the Variable menu
+		// uses the caret it remembered on the way out; only a box that kept focus (a paste) reads the live one.
+		const hadFocus = document.activeElement === surface;
+		const saved = liveSavedRange();
 		surface.focus();
-		const range = rangeInBox() ?? liveSavedRange() ?? endRange();
+		const range = (hadFocus ? rangeInBox() : null) ?? saved ?? endRange();
 		let text = multiline ? raw.replace(/\r\n?/g, '\n') : raw.replace(/\s*[\r\n]+\s*/g, ' ');
 		// Room is what the saved text has left once the selection is replaced.
 		const replaced = readFrom(range.cloneContents()).length;
@@ -181,12 +186,21 @@
 
 		range.deleteContents();
 		const nodes = nodesFor(text);
-		range.insertNode(nodes.reduce((all, node) => (all.append(node), all), document.createDocumentFragment()));
-		padTags();
-		// The caret goes after what was put in: for a tag, into the text node that follows it.
+		range.insertNode(
+			nodes.reduce((all, node) => (all.append(node), all), document.createDocumentFragment())
+		);
+		// The caret goes after what was put in. After text it is placed now, before the tidy-up below merges
+		// that text into its neighbours (the range moves with the merge; the node it named would not survive).
 		const last = nodes.at(-1);
-		if (last?.isConnected) {
-			const next = isTag(last) ? last.nextSibling : null;
+		if (last && !isTag(last)) range.setStartAfter(last);
+		range.collapse(false);
+		padTags();
+		// Also before the caret is shown: a caret after a trailing line break with nothing yet holding that
+		// line open is pulled back up to the line above by the browser.
+		holdTrailingLine();
+		// After a tag it goes into the caret space the tidy-up put after it.
+		if (last && isTag(last) && last.isConnected) {
+			const next = last.nextSibling;
 			if (next) range.setStart(next, 0);
 			else range.setStartAfter(last);
 		}
@@ -400,6 +414,8 @@
 			min-width: 0;
 			padding: 8px 0;
 			outline: 0;
+			// The box around it shows the focus ring; the app-wide one would draw a second ring inside it.
+			box-shadow: none;
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
 			line-height: 24px;
