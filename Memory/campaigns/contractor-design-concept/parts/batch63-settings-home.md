@@ -24,10 +24,10 @@ Research other top apps only for which setting belongs to which group, not for t
 
 ## Options
 
-- **A · Control room** (`BQ4xC`, dark `OoU6R`): business identity card with facts; green "Ready for
+- **A · Control room** (`BQ4xC`, dark `GfffW`): business identity card with facts; green "Ready for
   customers" card (count, bar, what is left); area cards whose rows show each setting's current value; a
   slim "Your account" strip.
-- **B · Search first** (`W1VqRy`, dark `IkCbX`): big settings search with "changed most" chips; area tiles on
+- **B · Search first** (`W1VqRy`, dark `htr5S`): big settings search with "changed most" chips; area tiles on
   the left; the chosen area opens on the right with a needs-you banner and large tiles (what it controls, Now).
 
 **Balance (2026-10-22):** Jafar asked where contractors see their texting balance (classic.pen shows a card).
