@@ -264,6 +264,9 @@
 	--color-surface--hover: var(--color-base-taupe--100);
 	--color-surface--reverse: var(--color-base-blue--900);
 	--color-surface--active: var(--color-base-taupe--200);
+	--color-surface--key: var(--color-surface);
+	--color-surface--key-hover: var(--color-base-taupe--100);
+	--color-surface--key-pressed: var(--color-base-taupe--200);
 	--color-surface--background: var(--color-base-taupe--200);
 	--color-surface--background--hover: var(--color-base-taupe--300);
 	--color-surface--background--subtle: var(--color-base-taupe--100);
@@ -378,6 +381,18 @@
 	--shadow-button--raised:
 		0 1px 2px color-mix(in srgb, var(--color-interactive--hover) 30%, transparent),
 		inset 0 1px 0 rgb(255 255 255 / 20%);
+	--shadow-button--key:
+		0 0 1px color-mix(in srgb, var(--color-heading) 24%, transparent),
+		0 1px 2px color-mix(in srgb, var(--color-heading) 8%, transparent),
+		0 2px 6px color-mix(in srgb, var(--color-heading) 6%, transparent),
+		inset 0 -1px 0 color-mix(in srgb, var(--color-heading) 6%, transparent);
+	--shadow-button--key-hover:
+		0 0 1px color-mix(in srgb, var(--color-heading) 30%, transparent),
+		0 2px 4px color-mix(in srgb, var(--color-heading) 10%, transparent),
+		0 4px 10px color-mix(in srgb, var(--color-heading) 8%, transparent);
+	--shadow-button--key-pressed:
+		0 0 1px color-mix(in srgb, var(--color-heading) 24%, transparent),
+		inset 0 1px 2px color-mix(in srgb, var(--color-heading) 12%, transparent);
 	--timing-quick: 0.1s;
 	--timing-base: 0.2s;
 	--timing-slow: 0.3s;
@@ -484,6 +499,9 @@
 		--color-surface: var(--color-base-blue--900);
 		--color-surface--hover: var(--color-base-blue--800);
 		--color-surface--active: var(--color-base-blue--700);
+		--color-surface--key: var(--color-base-blue--800);
+		--color-surface--key-hover: var(--color-base-blue--700);
+		--color-surface--key-pressed: var(--color-base-blue--900);
 		--color-surface--background: var(--color-base-blue--1000);
 		--color-surface--background--hover: var(--color-base-blue--800);
 		--color-surface--background--subtle: var(--color-base-blue--800);
@@ -558,6 +576,11 @@
 		--shadow-high:
 			0px var(--space-base) var(--space-base) 0px #00000013,
 			0px 0px var(--space-small) 0px #0000002d;
+		--shadow-button--key:
+			0 1px 2px rgb(0 0 0 / 40%),
+			inset 0 1px 0 rgb(255 255 255 / 8%);
+		--shadow-button--key-hover: var(--shadow-button--key);
+		--shadow-button--key-pressed: inset 0 1px 2px rgb(0 0 0 / 35%);
 		--field--placeholder-color: var(--color-base-blue--400);
 		--field--border-color: var(--color-base-blue--500);
 	}
@@ -572,6 +595,9 @@
 		--color-surface: var(--color-base-blue--800);
 		--color-surface--hover: var(--color-base-blue--700);
 		--color-surface--active: var(--color-base-blue--600);
+		--color-surface--key: var(--color-base-blue--700);
+		--color-surface--key-hover: var(--color-base-blue--600);
+		--color-surface--key-pressed: var(--color-base-blue--800);
 		--color-surface--background: var(--color-base-blue--900);
 		--color-surface--background--hover: var(--color-base-blue--800);
 		--color-surface--background--subtle: var(--color-base-blue--700);

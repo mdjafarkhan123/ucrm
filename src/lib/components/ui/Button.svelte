@@ -22,8 +22,8 @@
 		...rest
 	}: {
 		children: Snippet;
-		/** `primary` is the green main button (red when `destructive`). `secondary` and `tertiary` are the white
-		 *  button with a brand-green edge (red when `destructive`). `quiet` is for link-like actions such as Clear filters. */
+		/** `primary` is the green main button (red when `destructive`). `secondary` and `tertiary` are the raised
+		 *  white key (red text when `destructive`). `quiet` is for link-like actions such as Clear filters. */
 		variant?: 'primary' | 'secondary' | 'tertiary' | 'quiet';
 		variation?: 'work' | 'learning' | 'subtle' | 'destructive';
 		size?: 'small' | 'base' | 'large';
@@ -34,7 +34,7 @@
 		/** A square button that holds only an icon, as wide as its size is tall. Needs `label`. */
 		iconOnly?: boolean;
 		/** A switch-like button that stays on while what it opens is showing (Map, Unscheduled, Filters). Only
-		 *  for the white bordered kinds. Sets `aria-pressed`, except on a menu or popover trigger, whose own
+		 *  for the white kinds. Sets `aria-pressed`, except on a menu or popover trigger, whose own
 		 *  `aria-expanded` already tells a screen reader it is open. */
 		pressed?: boolean;
 		/** A number bubble after the label, e.g. how many filters are set. Hidden when null. */
@@ -198,55 +198,46 @@
 			}
 		}
 
-		// White bordered: secondary, and danger when destructive. A thin brand-green edge (red for danger) keeps it
-		// apart from a white card or the page. A joined group (‹ Today ›) sets `--button--edge` to the soft grey.
+		// White kinds: secondary, and danger when destructive. A raised white key with no drawn line; its shadow
+		// ring keeps it apart from a white card or the page. A joined group (‹ Today ›) is one key: it sets the
+		// `--button--shadow*` settings to none and draws the key around its buttons.
 		&--secondary,
 		&--tertiary {
 			color: var(--color-heading);
-			border-color: var(--button--edge, var(--color-interactive));
-			background: var(--color-surface);
-			box-shadow: var(--shadow-button);
+			border-color: transparent;
+			background: linear-gradient(var(--color-surface--key), var(--color-surface--hover));
+			box-shadow: var(--button--shadow, var(--shadow-button--key));
 
 			&:hover {
-				border-color: var(--button--edge--hover, var(--color-interactive--hover));
-				background: var(--color-surface--hover);
+				background: var(--color-surface--key-hover);
+				box-shadow: var(--button--shadow--hover, var(--shadow-button--key-hover));
 			}
 			&:active {
-				border-color: var(--button--edge--hover, var(--color-interactive--hover));
-				background: var(--color-surface--active);
-				box-shadow: none;
+				background: var(--color-surface--key-pressed);
+				box-shadow: var(--button--shadow--pressed, var(--shadow-button--key-pressed));
 			}
 		}
 		&--secondary.button--destructive,
 		&--tertiary.button--destructive {
 			color: var(--color-destructive);
-			border-color: var(--color-destructive);
 
 			&:hover,
 			&:active {
-				border-color: var(--color-destructive);
 				background: var(--color-critical--surface);
-			}
-			&:active {
-				box-shadow: none;
 			}
 		}
 
-		// Switched on: brand-green border, label and icon on white, while its panel shows or its filter is set.
+		// Switched on: the key adds a brand-green border, label and icon while its panel shows or its filter is
+		// set. Inside a joined group only the label and icon turn green (`--button--edge--on`).
 		&--pressed.button--secondary,
 		&--pressed.button--tertiary {
 			color: var(--color-interactive);
-			border-color: var(--color-interactive);
-			background: var(--color-surface);
+			border-color: var(--button--edge--on, var(--color-interactive));
 
 			&:hover,
 			&:active {
 				color: var(--color-interactive--hover);
-				border-color: var(--color-interactive--hover);
-				background: var(--color-surface);
-			}
-			&:active {
-				box-shadow: inset 0 1px 3px color-mix(in srgb, var(--color-heading) 12%, transparent);
+				border-color: var(--button--edge--on, var(--color-interactive--hover));
 			}
 		}
 
