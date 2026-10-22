@@ -4115,6 +4115,202 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_number_paperwork: {
+				Row: {
+					address: Json | null;
+					answers: Json;
+					country_code: string;
+					created_at: string;
+					created_by: string | null;
+					decided_at: string | null;
+					document_choices: Json;
+					end_user_type: string;
+					failure_reason: string | null;
+					fixes: Json;
+					id: string;
+					last_checked_at: string | null;
+					number_type: string;
+					organization_id: string;
+					provider_address_sid: string | null;
+					provider_bundle_sid: string | null;
+					provider_end_user_sid: string | null;
+					provider_status: string | null;
+					regulation_sid: string | null;
+					revision: number;
+					sending_claim_token: string | null;
+					sending_claimed_at: string | null;
+					status: string;
+					submitted_at: string | null;
+					updated_at: string;
+					valid_until: string | null;
+				};
+				Insert: {
+					address?: Json | null;
+					answers?: Json;
+					country_code: string;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					document_choices?: Json;
+					end_user_type?: string;
+					failure_reason?: string | null;
+					fixes?: Json;
+					id?: string;
+					last_checked_at?: string | null;
+					number_type: string;
+					organization_id: string;
+					provider_address_sid?: string | null;
+					provider_bundle_sid?: string | null;
+					provider_end_user_sid?: string | null;
+					provider_status?: string | null;
+					regulation_sid?: string | null;
+					revision?: number;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					valid_until?: string | null;
+				};
+				Update: {
+					address?: Json | null;
+					answers?: Json;
+					country_code?: string;
+					created_at?: string;
+					created_by?: string | null;
+					decided_at?: string | null;
+					document_choices?: Json;
+					end_user_type?: string;
+					failure_reason?: string | null;
+					fixes?: Json;
+					id?: string;
+					last_checked_at?: string | null;
+					number_type?: string;
+					organization_id?: string;
+					provider_address_sid?: string | null;
+					provider_bundle_sid?: string | null;
+					provider_end_user_sid?: string | null;
+					provider_status?: string | null;
+					regulation_sid?: string | null;
+					revision?: number;
+					sending_claim_token?: string | null;
+					sending_claimed_at?: string | null;
+					status?: string;
+					submitted_at?: string | null;
+					updated_at?: string;
+					valid_until?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_number_paperwork_documents: {
+				Row: {
+					created_at: string;
+					document_type: string;
+					failure_reason: string | null;
+					fields: Json;
+					id: string;
+					organization_id: string;
+					paperwork_id: string;
+					protected_document_id: string | null;
+					provider_document_sid: string | null;
+					provider_fields: Json | null;
+					provider_protected_document_id: string | null;
+					provider_status: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					document_type: string;
+					failure_reason?: string | null;
+					fields?: Json;
+					id?: string;
+					organization_id: string;
+					paperwork_id: string;
+					protected_document_id?: string | null;
+					provider_document_sid?: string | null;
+					provider_fields?: Json | null;
+					provider_protected_document_id?: string | null;
+					provider_status?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					document_type?: string;
+					failure_reason?: string | null;
+					fields?: Json;
+					id?: string;
+					organization_id?: string;
+					paperwork_id?: string;
+					protected_document_id?: string | null;
+					provider_document_sid?: string | null;
+					provider_fields?: Json | null;
+					provider_protected_document_id?: string | null;
+					provider_status?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_d_protected_document_id_fkey';
+						columns: ['protected_document_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_protected_documents';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_documents_set_fkey';
+						columns: ['organization_id', 'paperwork_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_paperwork';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_sms_number_paperwork_events: {
+				Row: {
+					action: string;
+					actor_user_id: string | null;
+					created_at: string;
+					detail: Json;
+					id: number;
+					organization_id: string;
+					paperwork_id: string;
+				};
+				Insert: {
+					action: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id: string;
+					paperwork_id: string;
+				};
+				Update: {
+					action?: string;
+					actor_user_id?: string | null;
+					created_at?: string;
+					detail?: Json;
+					id?: never;
+					organization_id?: string;
+					paperwork_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_paperwork_events_set_fkey';
+						columns: ['organization_id', 'paperwork_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_paperwork';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			communication_sms_number_retail_rates: {
 				Row: {
 					country_code: string;
@@ -21947,6 +22143,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_schedule_paperwork_file_deletion: {
+				Args: { target_paperwork_id: string };
+				Returns: number;
 			};
 			communication_sms_set_compliance_settings: {
 				Args: {
