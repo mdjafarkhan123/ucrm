@@ -3,7 +3,7 @@
 	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 
 	// Display-only progress track for the campaign journey (design skill `layout.md` → Setup steps → New
@@ -16,7 +16,7 @@
 		{ n: 1, title: 'Goal', hint: 'Why this campaign', icon: targetIcon },
 		{ n: 2, title: 'Customers', hint: 'Who receives it', icon: usersIcon },
 		{ n: 3, title: 'Email', hint: 'Build the message', icon: mailIcon },
-		{ n: 4, title: 'Delivery', hint: 'When it sends', icon: calendarClockIcon },
+		{ n: 4, title: 'Delivery', hint: 'Button and replies', icon: sendIcon },
 		{ n: 5, title: 'Review', hint: 'Check and launch', icon: listCheckIcon }
 	];
 </script>
