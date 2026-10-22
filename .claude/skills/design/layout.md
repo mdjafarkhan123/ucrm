@@ -482,6 +482,76 @@ B", `NbWfA`, Jafar 2026-10-22). Texting parts use `--color-conversation`.
 - **States:** loading shows shapes for the summary and each card (the band as a subtle strip); no numbers and
   couldn't load use page states in a white card (conversation `phone` with Add number; critical with Try again).
 
+## Texting setup (Control Room)
+
+Uplift's hand work so businesses can text, and the price list (Pencil: "Communications · Uplift texting setup ·
+Approved mix (B + A's table)", `v6Jtu`, Jafar 2026-10-22, with every state). Texting parts use `--color-conversation`.
+
+- **Page:** Platform Operations › Texting setup in the Control Room sidebar (`message-square-text`, a count of tasks).
+  Page header (40 conversation tile; Open Twilio secondary `external-link`), four number cards (`cards.md`: To do
+  `informative`, Waiting on Twilio `warning`, Countries live `success`, Country with no price `warning`), a tab strip
+  on a white capsule (To do, Waiting on Twilio, Countries & prices, Businesses, each with its count), then the work
+  area: a 380 queue card and the task panel filling the rest, 24 apart, both full height.
+- **Queue card:** head (16/600 title, "Oldest first" 13/500 quiet with `arrow-down-up`), rows padding 14 16 with a
+  1px line under each: a 32 round flag, the task 14/600 over the business and when 12/500 quiet, a 24 kind chip
+  (`--color-conversation--surface`, 12 icon, 12/600 `--onSurface`: Twilio permission `globe`, Price `tag`, Opt-out
+  words `message-square-off`), `chevron-right`. The open task: `--color-surface--active` with a 3px
+  `--color-interactive` bar down its left edge and a green chevron. A subtle foot band with a 14 informative `info`.
+- **Task panel:** head padding 20 24 (40 flag, title 20/700 with a status pill, a 14 quiet line; Open the business as a
+  small secondary). Steps padding 16 0 with a 1px line between: a 28 circle (done `success` `check` with a quiet
+  title and "Done" 12/600 `--color-success--onSurface`; your turn filled `--color-informative` with a white `pencil`;
+  not yet white with a border and its number), title 14/600 over a 13 quiet line. The Twilio step adds a subtle box
+  (radius 12, 1px border, padding 12 14): a 32 informative `key-round` tile, the account 13/600 over where to go
+  12/500 quiet, Copy ID and Open in Twilio (small secondary). The last step holds the "I did it" checkbox. A
+  HISTORY block (12/600 uppercase quiet; rows with a 24 tile, 13/500 text, 12 quiet time). Foot (subtle, 1px line on
+  top, padding 16 24): Can't turn on (danger, `ban`) at the left, a 12 quiet hint and the main button at the right,
+  at 45% until the box is ticked; saving shows its spinner ("Marking…") with the rest at 45%.
+- **Price task:** a subtle box of Twilio's costs (12/500 quiet labels over 14/600 values, 24 apart), money boxes two
+  to a row each with its margin as a 12 hint (`--color-success--onSurface` 600 when the margin is back on target),
+  a locked subtle box for what a country doesn't offer, Starts as the segmented switch (Now, On a date) with a
+  date box. **Opt-out task:** groups (1px line on top) with 28 word chips (subtle, 1px border, 12/600) and the reply
+  line (14 `corner-down-right`, 13 text, 14 `copy`).
+- **Results:** done and "a teammate did it first" replace the panel with a centred page state (40 `success`
+  `circle-check` / `informative` `user-check`) and Next task (main, `arrow-right`). Can't turn on is a 600 form pop-up
+  with a critical `ban` tile, a reason select, a big text box of what the business sees, and Close request (danger ·
+  confirm).
+- **Waiting on Twilio:** a list card, head with Check now (small secondary, `rotate-cw`; checking shows its spinner
+  and "Asking Twilio…"); rows with a 32 tile, title 14/600 over 12/500 quiet, a status pill. A turned-down row is
+  filled `--color-critical--surface` with a white pill.
+- **Countries & prices tab:** one card: Card header (40 conversation `badge-dollar-sign`; a 240 search box, Check
+  Twilio prices secondary, Add a country main); a warning notice strip when Twilio's price moved, with Review price;
+  the uppercase 12 head row on subtle; rows padding 14 20: 32 flag with the country 14/600 over its number kind,
+  then Twilio cost 13/500 `--color-text`, their price 14/700 with "a segment" 12 quiet (or Set price, small
+  secondary), margin 13/600 (a fallen margin in `--color-warning--onSurface` with `trending-down`), picture and
+  number prices 13/500 (not offered in quiet), businesses 13/600, a status pill (Live `success`, No price `warning`,
+  Off `inactive`) and the 32 ⋯ button. A price starting later adds an informative chip under the price ("$0.10 from
+  Nov 1", `calendar-clock`). Change price is a 640 form pop-up: the flag in the header, the Twilio costs box, money
+  boxes with margins, Starts, and an informative notice strip that sent texts keep their price.
+- **States:** loading shows queue rows and panel shapes; nothing to do is a page state with a 40 `success`
+  `circle-check`; couldn't load uses the critical page state with Try again. The price list uses the same states.
+
+## A business's Texting view (Control Room)
+
+On a business's Communications tab, Texting chosen on the segmented switch (Email, Texting, Website chat), under the
+business header card with its page tabs (same board, `v6Jtu`).
+
+- Two side cards side by side: Texting mode (40 `success` `power` tile; an On pill in the header; fact rows of
+  what the package allows, what the business chose and Uplift's override; a subtle foot with a 12 quiet line and
+  Change) and Twilio account (40 `informative` `key-round`; fact rows with a 14 `copy` on IDs; a subtle foot link
+  "Open this account in Twilio" 13/600 `--color-interactive` with `external-link`). Changing the mode puts the
+  override select and a required reason field in the card, with Cancel and Save mode in the foot.
+- Then the countries card at full width: Card header (40 conversation `globe`; Add a country small secondary), the
+  uppercase 12 head row on subtle, rows padding 14 20: 32 flag with the country 14/600 over when it was asked 12/500
+  quiet; the Twilio permission (16 icon: `check` `--color-success`, `hourglass` `--color-warning--onSurface`,
+  `circle-off` quiet) with its state 13/600 over who and when 12/500 quiet; the price 13/600 over the picture price
+  12/500 quiet (or the warning "No price yet" chip); a status pill (Ready `success`, Setting up `warning`, Off
+  `inactive`); and Open task (small secondary, `arrow-right`) on a row waiting on Uplift, otherwise the 32 ⋯. A
+  subtle foot band with a 14 informative `info`.
+- The ⋯ menu (276): See it in Twilio, Show its history, and Turn off for the business on the danger strip, which asks
+  first in the "are you sure?" pop-up with a required reason.
+- **States:** loading shows Loading rows in the card; only the home country shows its row and one 14 quiet line;
+  couldn't load is the critical page state inside the card.
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

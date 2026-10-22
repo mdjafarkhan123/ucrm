@@ -22,20 +22,18 @@
   working out the price, emoji, picture text, country not switched on, no price yet, couldn't work out the price,
   sending), light only; Jafar approved the states the same day ("saved, approved"). Rules in
   `.claude/skills/design/inputs.md` § Text price in the reply box.
-- [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio). Options A and B drawn
-  2026-10-22 on board `v6Jtu` ("Uplift texting setup · Options A and B"), light only, waiting for Jafar: A = a
-  Texting setup view on the organization's Communications tab (setup journey, countries table with Twilio permission,
-  price, status and the row's button; Texting mode and Twilio account side cards); B = a new Platform Operations page
-  "Texting setup", an inbox-like to-do queue across businesses with a step-by-step task panel. Shared by both: the
-  Countries & prices card (Twilio cost, their price, margin, picture, number a month, businesses, status; a notice
-  when Twilio's price moves), replacing the live "SMS retail rates" list.
+- [x] Uplift's internal setup controls — Jafar approved the mix 2026-10-22 ("approved", after my recommendation):
+  B's Texting setup page (Platform Operations; to-do queue across businesses with a step-by-step task panel) plus
+  A's countries table on the business's Communications › Texting view (Texting mode and Twilio account side cards;
+  a waiting country's button is Open task, into the queue). A's journey card and next-step strip deleted. Shared
+  Countries & prices tab replaces the live "SMS retail rates" list. Board `v6Jtu` renamed "Approved mix (B + A's
+  table)". Every state drawn the same day under "Every state · drawn on the approved mix", light only, waiting for
+  Jafar's yes. Rules in `.claude/skills/design/layout.md` § Texting setup (Control Room) and § A business's Texting view.
 
 ## Next
 
-Wait for Jafar's pick on board `v6Jtu` (A, B or a mix). On his yes: delete the unchosen option, rename the board
-"Approved", draw every state on the chosen one (loading, empty, couldn't load, Mark as turned on saving, Can't turn
-on with a reason, set-price pop-up, Twilio price moved), record the rules in the design skill. It is the last Stage
-10 screen; after its approval Stage 10 moves to building. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Wait for Jafar's yes on the states on board `v6Jtu`; record it here. That closes Stage 10 design; Stage 10 then moves
+to building (plan § Order and design: Part 1 server foundation first). If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
 
 ## Notes
 
