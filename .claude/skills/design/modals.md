@@ -349,3 +349,46 @@ for the team, never a message to the client.
 - Saving: Add reminder spins, Cancel goes disabled grey. Couldn't save: a critical notice strip at the top of the body
   with the server's words; the day and note stay.
 
+
+## Plan details pop-up and plan price
+
+The "View details" pop-up on Get started (`packages/PackageDetails`) and the price on each plan card and the plan's
+own page (`packages/PackagePrice`). Approved B by Jafar 2026-10-22 (Pencil: "Batch 57 · Plan details and price ·
+Approved B", `S4I7i`).
+
+- **Pop-up:** large (940). Header: a 40 brand tile (`--color-interactive` fill, white `package`), the plan name, its
+  promise as the hint. Footer: Close (secondary), then "Choose <plan>" or "Keep this package" (main, `check`).
+- **Body:** padding 20 24 24, blocks 24 apart. A section head is a 32 tile, the title 16/600 and an optional 12 quiet
+  hint, 12 above its content.
+  - **Hero:** the screen's feature card (`cards.md`), padding 24 24 24 28, gap 28. Left: a feature-subtle 32 tile
+    (`sparkles`), "What you get" 20/700, then each highlight as a white 18 `circle-check` and 14/500 white words, 14
+    apart. Right, 300 wide: a feature-subtle panel (1px feature border, radius 16, padding 20, gap 12): "MONTHLY ·
+    SELECTED" 12/600 white 72%, the price part on green (pill white with `--color-feature--start` words, figures
+    white, the old price and period white 72%), its note band feature-subtle.
+  - **Services we deliver** (Growth `briefcase-business`, "Uplift does this work for you."): one tile per service in a
+    row, 12 apart, the same height: `--color-surface--background`, radius 12, padding 16, gap 10; a 40 tile in the
+    service's section colour (website Growth `globe`, Google profile Review `map-pin`, reviews Review `star`, calls
+    and texting Conversation `phone`, marketing Growth `megaphone`), the name 14/600, the description 14 quiet.
+  - **In the app** beside **Limits** (280), 16 apart, each a `--color-surface--background` box (radius 12, padding
+    16, gap 14) with an inactive section head. In the app: the extra features two to a row, 8 apart, in white boxes
+    (radius 8, padding 12, gap 10, the same height per row): a 32 tile in the feature's section colour, the name 14/600
+    over the description 12 quiet; then "INCLUDED IN EVERY PACKAGE" 12/600 quiet and the basics as white chips (1px
+    `--color-border`, pill corners, padding 4 10, 14/500 heading). Limits: one white box per allowance (radius 8,
+    padding 10 12): the number 28/700 (-0.6) over its words 14/500 quiet ("Unlimited" when it has no cap), then a 14
+    `refresh-cw` and the monthly-reset line 12 quiet when an amount resets.
+  - **Price and payment** (Invoice `credit-card`, "Prices are in US dollars."): each billing the plan offers as a white
+    tile side by side, 12 apart (radius 12, padding 16, gap 10, 1px `--color-border`): "MONTHLY"/"YEARLY" 12/600
+    quiet; the chosen one has a 1.5px `--color-interactive` edge and a 14 `check` with "Selected" 14/600
+    `--color-interactive` at the right. Under them a "HOW PAYING WORKS" box (`--color-invoice--surface`, 1px
+    `--surface-edge`, radius 12, padding 16, gap 12): three white step boxes in a row (radius 8, padding 12, gap 10):
+    a 28 `--color-invoice` circle with the white number, the title 14/600 over 12 quiet words — "You apply" / "Pick a
+    package and send this form.", "We send payment instructions" / "You pay us directly, outside the app.", "Your
+    account starts" / "Once the first payment arrives." Then the prepaid-balance line 12 `--onSurface`.
+  - **Not included:** a strip at the end (`--color-inactive--surface`, radius 16, padding 12, gap 12): a white 32
+    tile with `circle-minus`, "Not included" 14/600 over the words 14/500, in `--onSurface`.
+- **Plan price** (on a white card): an optional pill on top (success, `badge-percent` "50% off for 3 months" for an
+  intro offer, `piggy-bank` "Save $498 · 17%" for a yearly saving; never both); one line, 6 apart: the price 28/700
+  (-0.6; 48 on the plan's own page), the old price struck through and the period, 14 quiet; then a grey note band
+  (`--color-surface--background`, radius 8, padding 8 10): "Then $249 a month" or "That's $207.50 a month" 14/600
+  heading over an optional 12 quiet line ("Paid upfront", "Join by <date> to get it."). No offer or saving: the price
+  line alone.
