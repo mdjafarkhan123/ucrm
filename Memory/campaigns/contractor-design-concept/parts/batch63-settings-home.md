@@ -19,7 +19,7 @@ Research other top apps only for which setting belongs to which group, not for t
 - Our groups: **Your business** (profile, branding, hours, taxes, payments) · **Work** (quotes, invoices,
   products & services, checklists, pipeline) · **Talking to customers** (email, phone & texting, website chat,
   request forms, new-customer alerts, templates, snippets, contact matching, blocked addresses, texting
-  balance) · **Team** (members, roles, activity) · **Growth** (automations, Google reviews) · **Your account**
+  balance moved to its own card) · **Team** (members, roles, activity) · **Growth** (automations, Google reviews) · **Your account**
   (photo, security, desktop alerts).
 
 ## Options
@@ -29,6 +29,11 @@ Research other top apps only for which setting belongs to which group, not for t
   slim "Your account" strip.
 - **B · Search first** (`W1VqRy`, dark `IkCbX`): big settings search with "changed most" chips; area tiles on
   the left; the chosen area opens on the right with a needs-you banner and large tiles (what it controls, Now).
+
+**Balance (2026-10-22):** Jafar asked where contractors see their texting balance (classic.pen shows a card).
+Both options now have a "Texting & email balance" card near the top: amount, used this month, held for texts
+sending now, Request top-up, a state pill (Enough; amber "Running low" when low). A: under the green Ready card;
+B: beside the search. The row left the Talking to customers list (9 settings).
 
 ## Needs Jafar's decision before building
 
