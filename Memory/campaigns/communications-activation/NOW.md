@@ -7,17 +7,15 @@ SMS Stages 1–9 and MMS are built. Live SMS stays off until its launch gate pas
 
 ## Active part
 
-**Stage 10 global texting — plan and all designs approved 2026-10-22; implementation unstarted.** Core agreement:
-`docs/global-sms-behavior-contract.md`. GHL journey; Uplift handles provider setup behind the scenes. Includes
-sender/destination readiness, provider permissions, configured opt-out languages and clear selling prices.
-Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/global-sms-country-requirements-2026-10-22.md`.
+**Stage 10 global texting.** Core agreement: `docs/global-sms-behavior-contract.md` (GHL journey; Uplift handles
+provider setup). Comparison: `docs/global-sms-codex-review-plan.md`; evidence:
+`docs/research/global-sms-country-requirements-2026-10-22.md`. Designs approved in `concept.pen`
+(`parts/stage10-design.md`). **Part 1 built 2026-10-22** — `parts/stage10-part1.md`.
 
 ## Next
 
-Every Stage 10 screen approved with every state 2026-10-22 in `concept.pen`: Add number (`qaFQf`), Number paperwork
-(`A0URqF`), Number readiness (`NbWfA`), Charges before sending (`nLAe4`), Uplift texting setup (`v6Jtu`, mix of B's
-queue and A's countries table). Next action: build Stage 10 Part 1, server foundation (plan § Order and design).
-No Stage 10 code started.
+Build Parts 2 and 3 together (buy a number + paperwork), plan § Order and design, against boards `qaFQf` and
+`A0URqF`. Open: Jafar to give the Twilio monitoring email (`TWILIO_ISV_MONITORING_EMAIL`).
 
 ## Constraints
 
@@ -25,4 +23,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `continue communication campaign` — start building Stage 10 Part 1 from the plan.
+Resume: `continue communication campaign` — build Stage 10 Parts 2 and 3.

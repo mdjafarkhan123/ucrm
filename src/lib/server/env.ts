@@ -23,7 +23,16 @@ const serverEnvSchema = z.object({
 	// pipeline then leaves uploads pending rather than publishing content nothing has checked.
 	FILES_SCANNER_HOST: z.string().trim().min(1).optional(),
 	FILES_SCANNER_PORT: z.coerce.number().int().positive().optional(),
-	MAPBOX_ACCESS_TOKEN: z.string().trim().min(1).optional()
+	MAPBOX_ACCESS_TOKEN: z.string().trim().min(1).optional(),
+	// Uplift's own approved Twilio Primary Customer Profile (ISV Reseller or Partner) and the address Twilio
+	// emails about registrations it submits. Not secrets, but server-only: they identify the platform to Twilio.
+	// Unset means global texting setup cannot submit anything yet.
+	TWILIO_ISV_PRIMARY_PROFILE_SID: z
+		.string()
+		.trim()
+		.regex(/^BU[0-9A-Fa-f]{32}$/)
+		.optional(),
+	TWILIO_ISV_MONITORING_EMAIL: z.email().optional()
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -49,7 +58,9 @@ export function getServerEnv(): ServerEnv {
 		FILES_PROCESSING_WORKER_SECRET: env.FILES_PROCESSING_WORKER_SECRET,
 		FILES_SCANNER_HOST: env.FILES_SCANNER_HOST,
 		FILES_SCANNER_PORT: env.FILES_SCANNER_PORT,
-		MAPBOX_ACCESS_TOKEN: env.MAPBOX_ACCESS_TOKEN
+		MAPBOX_ACCESS_TOKEN: env.MAPBOX_ACCESS_TOKEN,
+		TWILIO_ISV_PRIMARY_PROFILE_SID: env.TWILIO_ISV_PRIMARY_PROFILE_SID || undefined,
+		TWILIO_ISV_MONITORING_EMAIL: env.TWILIO_ISV_MONITORING_EMAIL?.trim().toLowerCase() || undefined
 	});
 
 	if (!result.success) {
