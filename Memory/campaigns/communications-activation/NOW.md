@@ -14,11 +14,8 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 
 ## Next
 
-Jafar approved the plan, then requested campaign updates only: “dont do any pencil design now”; “just udate
-the campaign”. Next session: Pencil screens for approval before implementation.
-
-**Integrated into main 2026-10-22.**
-Checks: documentation diff, plan pointers and checkpoint consistency. No Stage 10 design or code started.
+Design started 2026-10-22: Add number pop-up options A and B on `concept.pen` board `qaFQf`, waiting for
+Jafar's pick. Screen list and next action: `parts/stage10-design.md`. No Stage 10 code started.
 
 ## Constraints
 
@@ -26,4 +23,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `continue communication campaign` — read this checkpoint and start designing for approval.
+Resume: `continue communication campaign` — read `parts/stage10-design.md` and take its next step.
