@@ -1,7 +1,7 @@
 # Stage 10 design — Pencil screens for global texting
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Order and design
-**Stage:** Design
+**Stage:** Design — done 2026-10-22
 **Code:** none; drawings in `concept.pen` (main folder)
 **Done when:** Jafar has approved every Stage 10 screen in Pencil, and the unchosen options are deleted.
 
@@ -27,13 +27,13 @@
   A's countries table on the business's Communications › Texting view (Texting mode and Twilio account side cards;
   a waiting country's button is Open task, into the queue). A's journey card and next-step strip deleted. Shared
   Countries & prices tab replaces the live "SMS retail rates" list. Board `v6Jtu` renamed "Approved mix (B + A's
-  table)". Every state drawn the same day under "Every state · drawn on the approved mix", light only, waiting for
-  Jafar's yes. Rules in `.claude/skills/design/layout.md` § Texting setup (Control Room) and § A business's Texting view.
+  table)". Every state drawn the same day under "Every state · drawn on the approved mix", light only; Jafar approved
+  them the same day ("approved and saved"). Rules in `.claude/skills/design/layout.md` § Texting setup (Control Room) and § A business's Texting view.
 
 ## Next
 
-Wait for Jafar's yes on the states on board `v6Jtu`; record it here. That closes Stage 10 design; Stage 10 then moves
-to building (plan § Order and design: Part 1 server foundation first). If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Stage 10 design is complete. Building starts in a new session: Part 1 (server foundation) per
+`docs/global-sms-behavior-contract.md` § Order and design; each built screen is checked against its board here.
 
 ## Notes
 
