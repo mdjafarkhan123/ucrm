@@ -46,3 +46,9 @@ staff view with the last editor; someone-saved-first message; leave-page warning
   Branding.
 - **Next:** Jafar's Ctrl+S in Pencil (file last saved 10:46, before the approval edits), then commit
   `concept.pen` from the main checkout copy and merge this branch to main for building.
+
+**Built 2026-10-22** (branch `claude/build-batch65`, evidence `docs/evidence/2026-10-22-batch65/`): page
+`(app)/settings/branding/+page.svelte`, preview `components/settings/branding/BrandPreview.svelte`, colour rules
+`lib/settings/brand-colour.ts`. Quick picks, colour-code box and the readability notice are live; the customer
+quote's top line takes the brand colour. Left alone: the customer Approve button colour and the shared-files page
+(they keep today's colours; Jafar to decide). Pencil board `FjLSw` already holds only the approved A.
