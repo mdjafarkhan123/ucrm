@@ -14,12 +14,11 @@ Comparison: `docs/global-sms-codex-review-plan.md`; evidence: `docs/research/glo
 
 ## Next
 
-Jafar approved with “Implement the plan”, then narrowed this session: “dont do any pencil design now”; “just
-udate the campaign”. Campaign update only; no Pencil or code work. Jafar will start a new session for designing. Next: prepare
-Pencil screens for approval before implementation.
+Jafar approved the plan, then requested campaign updates only: “dont do any pencil design now”; “just udate
+the campaign”. Next session: Pencil screens for approval before implementation.
 
-**Waiting to merge:** `codex/global-sms-plan-review`, `.worktrees/global-sms-plan-review`, claim `b87551963f9d`.
-Main has unrelated unfinished edits. Checks: documentation diff and checkpoint consistency.
+**Integrated into main 2026-10-22.**
+Checks: documentation diff, plan pointers and checkpoint consistency. No Stage 10 design or code started.
 
 ## Constraints
 
@@ -27,4 +26,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `read memory and continue — communications-activation`.
+Resume: `continue communication campaign` — read this checkpoint and start designing for approval.
