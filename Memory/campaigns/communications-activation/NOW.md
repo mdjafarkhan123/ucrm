@@ -6,11 +6,11 @@ Deliver email and SMS through the unified inbox, with safe channels for dependen
 
 ## Active part
 
-**Stage 10 global texting — planning; Jafar compares two plans next session.** Read the [other agent's plan](../../../docs/global-sms-behavior-contract.md) and [Codex comparison](../../../docs/global-sms-codex-review-plan.md), then the [country research](../../../docs/research/global-sms-country-requirements-2026-10-22.md) as needed. No region is blocked in the app; subscription sales decide access. Twilio approved the platform ISV profile on 2026-10-19; it is not yet configured in the app.
+**Stage 10 global texting — planning; Jafar compares two plans next session.** Read the [other agent's plan](../../../docs/global-sms-behavior-contract.md) and [Codex comparison](../../../docs/global-sms-codex-review-plan.md), then the [country research](../../../docs/research/global-sms-country-requirements-2026-10-22.md) as needed. No region is blocked; subscriptions decide access. Twilio approved the platform ISV profile on 2026-10-19; it is not yet configured.
 
 ## Next
 
-Jafar reviews both plans, especially country readiness, SMS destination permissions, opt-out languages and pricing. Record his chosen agreement in the canonical plan before build. Pencil designs precede new screens. No code has started.
+Jafar reviews both plans, especially country readiness, SMS destination permissions, opt-out languages and pricing. Record his chosen agreement in the canonical plan before build. Pencil designs precede new screens. Comparison is **waiting to merge** from `codex/global-sms-plan-review` (worktree `.worktrees/global-sms-plan-review`, claim `b87551963f9d`); main has another session's unclaimed changes. No code has started.
 
 ## Constraints
 
