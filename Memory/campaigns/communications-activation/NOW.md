@@ -18,8 +18,8 @@ Research: `docs/research/global-sms-country-requirements-2026-10-22.md`. Platfor
 
 Next session: Jafar reviews the plan with an agent. Walk him through it in everyday English, record his
 changes in the plan, then get his go-ahead. No code has started. After the go-ahead: Pencil designs (Add number,
-Compliance, per-number readiness) in design sessions, then Part 1. Jafar's own task: ask Twilio support whether a
-Bangladesh-registered ISV profile affects customers' US 10DLC registration. Real purchases/registrations wait for
+Compliance, per-number readiness) in design sessions, then Part 1. Settled 2026-10-22: the ISV's own country is not a
+Twilio limit (ISV guide needs only an approved ISV profile; the "headquartered outside" line is the Direct guide's). Real purchases/registrations wait for
 the first paying customer and Jafar's yes.
 
 Pre-existing and unrelated to this campaign, found in an earlier session, do not re-investigate: a full local

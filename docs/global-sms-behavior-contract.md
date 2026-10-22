@@ -122,9 +122,16 @@ Following GHL settles last session's six questions:
   form shows the UK's real fields, New Zealand and Brazil show "no texting numbers".
 - Real purchase, registration and a live text wait for the first paying customer, with Jafar's yes.
 
-## For Jafar to do
-- Ask Twilio support one question: does our Bangladesh-registered platform profile cause any problem for US
-  10DLC registration of our customers? Twilio's guide has one unclear sentence about this.
+## Platform location (settled 2026-10-22)
+Uplift being registered in Bangladesh is not a Twilio limit. The ISV guide requires only an approved Primary Business
+Profile of type "ISV Reseller or Partner", with no country rule
+([ISV guide](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc/onboarding-isv-api)). The "headquartered outside
+the US, Canada, EU, UK, or Australia" line belongs to the Direct guide, which is for businesses registering themselves
+([Direct guide](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc/direct-standard-onboarding)). What matters is
+the contractor's location: Sole Proprietor (no tax ID) is US/Canada only, so a contractor elsewhere texting US numbers
+registers as a Standard brand with its local company number
+([Sole Proprietor for ISVs](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc/onboarding-isv-api-sole-prop-new),
+[business info](https://www.twilio.com/docs/messaging/compliance/a2p-10dlc/collect-business-info)).
 
 ## Approval record
 
