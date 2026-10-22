@@ -8,6 +8,7 @@ import {
 	loadBoughtBalance,
 	loadNumberPrices
 } from '$lib/server/communications/sms-number-shop';
+import type { NumberType } from '$lib/server/communications/twilio-country-catalog';
 import { smsNumberCountrySchema } from '$lib/server/validation/communications-sms-settings.schema';
 
 const noStore = { 'Cache-Control': 'no-store' };
@@ -25,16 +26,25 @@ export const GET: RequestHandler = async (event) => {
 
 	const client = getOwnerSupabaseClient();
 	let balance, prices;
+	const approved = new Set<NumberType>();
 	try {
 		balance = await loadBoughtBalance(client, check.auth.organization.id);
 		prices = await loadNumberPrices(client, country.data, balance.currencyCode);
+		const { data, error } = await client
+			.from('communication_sms_number_paperwork')
+			.select('number_type')
+			.eq('organization_id', check.auth.organization.id)
+			.eq('country_code', country.data)
+			.eq('status', 'approved');
+		if (error) throw error;
+		for (const row of data ?? []) approved.add(row.number_type as NumberType);
 	} catch (error) {
 		console.error('Could not load the number prices.', error);
 		return json({ error: 'The prices could not be loaded.' }, { status: 500, headers: noStore });
 	}
 
 	try {
-		const kinds = await listNumberKinds(getSmsCountryCatalog(), prices, country.data);
+		const kinds = await listNumberKinds(getSmsCountryCatalog(), prices, country.data, approved);
 		return json(
 			{
 				country_code: country.data,

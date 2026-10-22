@@ -88,7 +88,9 @@ export async function loadBoughtBalance(
 export async function listNumberKinds(
 	catalog: Pick<SmsCountryCatalog, 'listNumberTypeOptions' | 'getRegulation'>,
 	prices: Map<NumberType, NumberPrice>,
-	countryCode: string
+	countryCode: string,
+	// Kinds whose paperwork this business already has approved: they can be bought straight away.
+	approvedPaperwork: ReadonlySet<NumberType> = new Set()
 ): Promise<NumberKind[]> {
 	const options = await catalog.listNumberTypeOptions(countryCode);
 	return Promise.all(
@@ -104,7 +106,9 @@ export async function listNumberKinds(
 				});
 				const needsAddress =
 					option.addressRequirement !== null && option.addressRequirement !== 'none';
-				if (regulation || needsAddress) needs = 'paperwork_first';
+				if ((regulation || needsAddress) && !approvedPaperwork.has(option.numberType)) {
+					needs = 'paperwork_first';
+				}
 			}
 			const price = prices.get(option.numberType);
 			return {

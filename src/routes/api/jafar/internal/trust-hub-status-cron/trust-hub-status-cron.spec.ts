@@ -8,6 +8,10 @@ import { createSupabaseTrustHubStatusTriggerStore } from '$lib/server/communicat
 import { runTrustHubStatusPollCron } from '$lib/server/communications/trust-hub-status-poll-cron';
 
 vi.mock('$lib/server/env', () => ({ getServerEnv: vi.fn() }));
+vi.mock('$lib/server/communications/sms-number-paperwork', () => ({
+	createNumberPaperworkDeps: vi.fn(() => ({})),
+	runPaperworkStatusCheck: vi.fn(async () => ({ checked: 2, approved: 1, needsFix: 0, failed: 0 }))
+}));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 vi.mock('$lib/server/communications/trust-hub-submission-store', () => ({
 	createSupabaseTrustHubSubmissionStore: vi.fn()
@@ -87,7 +91,8 @@ describe('trust-hub-status-cron internal route', () => {
 			approved: 1,
 			actionNeeded: 1,
 			stillPending: 1,
-			failed: 0
+			failed: 0,
+			paperwork: { checked: 2, approved: 1, needsFix: 0, failed: 0 }
 		});
 	});
 

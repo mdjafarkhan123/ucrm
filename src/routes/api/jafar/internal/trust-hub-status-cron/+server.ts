@@ -7,6 +7,10 @@ import { createSupabaseTrustHubSubmissionStore } from '$lib/server/communication
 import { createTwilioTrustHubClient } from '$lib/server/communications/twilio-trust-hub';
 import { createSupabaseTrustHubStatusTriggerStore } from '$lib/server/communications/trust-hub-status-trigger-store';
 import { runTrustHubStatusPollCron } from '$lib/server/communications/trust-hub-status-poll-cron';
+import {
+	createNumberPaperworkDeps,
+	runPaperworkStatusCheck
+} from '$lib/server/communications/sms-number-paperwork';
 
 function isAuthorized(request: Request): boolean {
 	const expected = getServerEnv().TRUST_HUB_STATUS_CRON_SECRET;
@@ -40,7 +44,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		const result = await runTrustHubStatusPollCron(deps, triggerStore);
-		return json(result);
+		// Stage 10 Part 3: the same daily safety net re-checks number paperwork Twilio is still reviewing, behind
+		// its status callback (webhooks/twilio/number-paperwork). Its failure never hides the registration result.
+		const paperwork = await runPaperworkStatusCheck(createNumberPaperworkDeps()).catch((error) => {
+			console.error('The number paperwork status check failed.', error);
+			return { failed: true };
+		});
+		return json({ ...result, paperwork });
 	} catch (error) {
 		console.error('The Trust Hub status poll cron failed.', error);
 		return json({ error: 'The Trust Hub status poll cron failed.' }, { status: 500 });

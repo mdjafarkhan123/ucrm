@@ -1,3 +1,4 @@
+import { ALLOWED_TYPES, pickerAccept } from '$lib/files/allowlist';
 import { httpError } from '$lib/http-error';
 import type { NumberType } from './sms-number-shop';
 
@@ -165,6 +166,13 @@ export function fieldKind(name: string, pattern: string | null): FormField['kind
 	if (pattern?.includes('@')) return 'email';
 	return 'text';
 }
+
+// Twilio takes a document as a JPEG, PNG or PDF of up to 5 MB.
+export const PAPERWORK_FILE_TYPES = ALLOWED_TYPES.filter((type) =>
+	['jpeg', 'png', 'pdf'].includes(type.signature)
+);
+export const PAPERWORK_FILE_ACCEPT = pickerAccept(PAPERWORK_FILE_TYPES);
+export const PAPERWORK_MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 // --- Filling in ----------------------------------------------------------------------------------------------
 
