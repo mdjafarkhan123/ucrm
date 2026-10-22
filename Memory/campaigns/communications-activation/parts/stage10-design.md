@@ -25,13 +25,15 @@
   B as drawn, without A's cost card): price on Send ("Send · $0.33"), country and price per segment in the To line,
   segment blocks under the message, balance beside Send; not enough balance turns them red, Send off, Add credit →
   Balance. Option A deleted; board `nLAe4` renamed "Charges before sending · Approved B". Buying is covered by the
-  Add number bill (`qaFQf`). Remaining states being drawn, light only.
+  Add number bill (`qaFQf`). Every state drawn the same day under "Every state · drawn on B" (nothing typed,
+  working out the price, emoji, picture text, country not switched on, no price yet, couldn't work out the price,
+  sending), light only; waiting for Jafar's yes on the states.
 - [ ] Uplift's internal setup controls (destination permissions done by hand in Twilio).
 
 ## Next
 
-Draw B's remaining states on `nLAe4` (empty, estimating, emoji, picture text, country not switched on, no price
-for the country, couldn't work out the price, sending), show Jafar, then record the rule in the design skill. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
+Wait for Jafar's yes on the states on `nLAe4`; then tick this step and record the rule in the design skill
+(`inputs.md` or `modals.md`, beside the reply box parts). Then draw Uplift's internal setup controls. If `concept.pen` is uncommitted, ask Jafar for Ctrl+S and commit it from main.
 
 ## Notes
 
