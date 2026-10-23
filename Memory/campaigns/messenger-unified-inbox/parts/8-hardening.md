@@ -15,7 +15,7 @@ bounded checks; numerical service capacity remains unverified. App-level callbac
 Page subscription needs dashboard recovery proof in Part 9/10.
 
 **Migration:** CLI created the file, then its version was moved after the repo's existing future-dated migrations:
-`20270103090000_messenger_connection_health.sql`. Creation and claims tested in a rolled-back transaction; not yet
+`20270104090000_messenger_connection_health.sql`. Creation and claims tested in a rolled-back transaction; not yet
 applied persistently. No auth/RLS or credential changes.
 
 **Next:** merge current main into branch, commit/push, merge into main, apply/record migration once with project
