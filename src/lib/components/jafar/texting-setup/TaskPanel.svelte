@@ -54,7 +54,7 @@
 	const busy = $derived(marking || closing);
 	const segment = $derived(task.price.segment);
 	const businessHref = $derived(
-		`${resolve('/jafar/(protected)/organizations/[organizationId]', { organizationId: task.organization_id })}?tab=communications`
+		`${resolve('/jafar/(protected)/organizations/[organizationId]', { organizationId: task.organization_id })}?tab=communications&channel=texting`
 	);
 	const line = $derived(
 		[

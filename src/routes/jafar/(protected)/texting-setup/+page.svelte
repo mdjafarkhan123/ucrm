@@ -159,7 +159,7 @@
 	}
 
 	function businessHref(task: TextingTask) {
-		return `${resolve('/jafar/(protected)/organizations/[organizationId]', { organizationId: task.organization_id })}?tab=communications`;
+		return `${resolve('/jafar/(protected)/organizations/[organizationId]', { organizationId: task.organization_id })}?tab=communications&channel=texting`;
 	}
 
 	function doneTime(at: string) {

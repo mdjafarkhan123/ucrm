@@ -125,3 +125,7 @@ export function destinationStatus(destination: BusinessDestination) {
 	}
 	return { label: 'Setting up', tone: 'warning' as const };
 }
+
+/** Twilio's Subaccounts list. Twilio has no link to one account's page, so the card copies the id beside it. */
+export const TWILIO_SUBACCOUNTS_URL =
+	'https://console.twilio.com/us1/account/manage-account/subaccounts';

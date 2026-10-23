@@ -15,10 +15,15 @@
 	import AutomationAuthorityActions from '$lib/components/jafar/AutomationAuthorityActions.svelte';
 	import StripeConnectionActions from '$lib/components/jafar/StripeConnectionActions.svelte';
 	import ReviewCampaignActions from '$lib/components/jafar/ReviewCampaignActions.svelte';
-	import SmsModeActions from '$lib/components/jafar/SmsModeActions.svelte';
 	import SmsRegistrationActions from '$lib/components/jafar/SmsRegistrationActions.svelte';
 	import SmsSenderCapabilitiesActions from '$lib/components/jafar/SmsSenderCapabilitiesActions.svelte';
 	import TextingCountriesCard from '$lib/components/jafar/organization/TextingCountriesCard.svelte';
+	import TextingSideCards from '$lib/components/jafar/organization/TextingSideCards.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import { page } from '$app/state';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-2.svg?raw';
+	import chatIcon from '@tabler/icons/outline/message-circle.svg?raw';
 
 	let {
 		access,
@@ -27,6 +32,31 @@
 		access: EffectiveAccess | null;
 		preview: OrganizationDetailPreview | null;
 	} = $props();
+
+	// One channel at a time (`concept.pen` board `v6Jtu`): Texting setup's business links open on Texting.
+	type Channel = 'email' | 'texting' | 'chat';
+	const CHANNELS: Record<Channel, { title: string; description: (name: string) => string }> = {
+		email: {
+			title: 'Email setup',
+			description: (name) => `How ${name} sends everyday and marketing email, and how much it may send.`
+		},
+		texting: {
+			title: 'Texting setup',
+			description: (name) =>
+				`Where ${name} can text and what it pays. Uplift’s own steps happen in Texting setup.`
+		},
+		chat: {
+			title: 'Website chat',
+			description: (name) => `Whether ${name} can use the chat on its website, and how much.`
+		}
+	};
+	const CHANNEL_OPTIONS = [
+		{ value: 'email', label: 'Email', icon: mailIcon },
+		{ value: 'texting', label: 'Texting', icon: messageIcon },
+		{ value: 'chat', label: 'Website chat', icon: chatIcon }
+	];
+	const asked = page.url.searchParams.get('channel');
+	let channel = $state<Channel>(asked === 'texting' || asked === 'chat' ? asked : 'email');
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -64,65 +94,70 @@
 				</div>
 			</section>
 		{:else if access}
+			{@const organizationId = access.organization.id}
+			{@const name = access.organization.name}
+			<section class="organization-detail__section" aria-labelledby="channel-title">
+				<div class="organization-detail__channel-heading">
+					<div>
+						<h2 id="channel-title">{CHANNELS[channel].title}</h2>
+						<p>{CHANNELS[channel].description(name)}</p>
+					</div>
+					<SegmentedControl
+						ariaLabel="Channel"
+						options={CHANNEL_OPTIONS}
+						bind:value={channel}
+						white
+					/>
+				</div>
+				{#if channel === 'email'}
+					<Card class="organization-detail__commercial-explainer">
+						<EmailCard {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<EmailSendingPauseActions {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<EmailReputationActions {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<EmailAllowanceActions {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<MarketingAllowanceActions {organizationId} />
+					</Card>
+				{:else if channel === 'texting'}
+					<TextingSideCards {organizationId} organizationName={name} />
+					<TextingCountriesCard {organizationId} organizationName={name} />
+					<Card class="organization-detail__commercial-explainer">
+						<SmsRegistrationActions {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<SmsSenderCapabilitiesActions {organizationId} />
+					</Card>
+				{:else}
+					<Card class="organization-detail__commercial-explainer">
+						<WebsiteChatAllowanceActions {organizationId} />
+					</Card>
+					<Card class="organization-detail__commercial-explainer">
+						<WebsiteChatAuthorityActions {organizationId} />
+					</Card>
+				{/if}
+			</section>
+
 			<section class="organization-detail__section" aria-labelledby="integrations-title">
 				<div class="organization-detail__section-heading">
 					<p class="organization-detail__eyebrow">Integrations</p>
 					<h2 id="integrations-title">Effective provider readiness</h2>
 				</div>
 				<Card class="organization-detail__commercial-explainer">
-					<EmailCard organizationId={access.organization.id} />
+					<AutomationAuthorityActions {organizationId} />
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
-					<EmailSendingPauseActions organizationId={access.organization.id} />
+					<StripeConnectionActions {organizationId} />
 				</Card>
 				<Card class="organization-detail__commercial-explainer">
-					<EmailReputationActions organizationId={access.organization.id} />
+					<ReviewCampaignActions {organizationId} />
 				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<EmailAllowanceActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<WebsiteChatAllowanceActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<MarketingAllowanceActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<WebsiteChatAuthorityActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<AutomationAuthorityActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<StripeConnectionActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<ReviewCampaignActions organizationId={access.organization.id} />
-				</Card>
-			</section>
-
-			<section class="organization-detail__section" aria-labelledby="sms-title">
-				<div class="organization-detail__section-heading">
-					<p class="organization-detail__eyebrow">SMS</p>
-					<h2 id="sms-title">Texting setup</h2>
-					<p>
-						The mode, carrier registration and business number capabilities behind this
-						organization's texting. No live SMS sending depends on this yet.
-					</p>
-				</div>
-				<Card class="organization-detail__commercial-explainer">
-					<SmsModeActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<SmsRegistrationActions organizationId={access.organization.id} />
-				</Card>
-				<Card class="organization-detail__commercial-explainer">
-					<SmsSenderCapabilitiesActions organizationId={access.organization.id} />
-				</Card>
-				<TextingCountriesCard
-					organizationId={access.organization.id}
-					organizationName={access.organization.name}
-				/>
 			</section>
 		{/if}
 	</div>
@@ -157,6 +192,21 @@
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-larger);
 		line-height: var(--typography--lineHeight-tight);
+	}
+	.organization-detail__channel-heading {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-base);
+	}
+	.organization-detail__channel-heading h2 {
+		font-size: var(--typography--fontSize-larger);
+		font-weight: 700;
+	}
+	.organization-detail__channel-heading p {
+		margin-top: var(--space-smaller);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-base);
 	}
 	.organization-detail__section-heading > p:last-child {
 		max-width: 65ch;
