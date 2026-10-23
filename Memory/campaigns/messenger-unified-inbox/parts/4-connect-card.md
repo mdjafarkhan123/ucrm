@@ -1,6 +1,6 @@
 # Part 4 — Connect and disconnect a Page
 
-**State:** Whole design approved 2026-10-23; building not started.
+**State:** Done 2026-10-23 — connect, live test, disconnect and reconnect proven on the live app.
 
 **Approved design:** Jafar chose **Option B · Connection hub** on 2026-10-23. Pencil `concept.pen`, Communications
 row, board "Concept · Communications · Messenger · Facebook Pages · Approved B · 2026-10-23" (`tEAXY`). Screen
@@ -25,3 +25,12 @@ with `config_id`, code → long-lived user token → `/me/accounts` Page tokens 
   subscribes each Page, then saves it encrypted; reconnect revives the same row. Disconnect unsubscribes, wipes the key.
 - Live test polls `/connections/[id]/test?since=` for the first message after the test began.
 - Meta dashboard: add redirect URI `https://app.upliftcontractor.com/api/settings/communications/messenger/callback`.
+
+## Proof so far (2026-10-23)
+28 unit tests (graph, connections, crypto specs). Meta redirect URI saved ("Changes saved"). Live: Jafar finished
+Facebook's window, Choose Pages showed Uplift Contractor, Connect 1 Page → row active, default, key encrypted, login
+session deleted (org Raad LTD). Jafar messaged the Page twice → 2 inbound rows under one new lead "Facebook user", row Receiving, banner "1 new conversation"; light and dark look right. Disconnect (confirm pop-up, loading) → row disconnected, key wiped, 2 messages kept, welcome card. Reconnect → same row revived, old thread shown, "back again" joined the same lead (1 identity, 1 lead, 3 messages). Inbox labels it "Email conversation" — Part 6.
+
+## Left over
+- Whether Meta accepted the unsubscribe on disconnect is unverified (dev server log not readable); reconnect resubscribes anyway. Part 8 health check covers it.
+- `--color-messenger` still needs its Pencil variable in `concept.pen` (pen-tidy claim held the file).

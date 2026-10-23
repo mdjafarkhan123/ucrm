@@ -4,12 +4,12 @@
 like GoHighLevel does; staff reply from there; Meta's rules are respected. Messenger only (Instagram later).
 **Core agreement — read on every resume:** `docs/messenger-behavior-contract.md` (Summary, First version, Rules, Decided) and the Messenger/Instagram + Connections sections of `docs/unified-inbox-behavior-contract.md`.
 **Plan:** `docs/messenger-behavior-contract.md` and `docs/messenger-implementation-plan.md` — approved 2026-10-23, including the three product choices.
-**Stage:** Building. Parts 3 and 5 done 2026-10-23.
+**Stage:** Building. Parts 3, 4 and 5 done 2026-10-23.
 
 **Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1709471683925717` (2nd Facebook account), development mode, portfolio Uplift Contractor 855656587107152, Business Verification **Verified** 2026-10-18. Webhook host `https://app.upliftcontractor.com`. Test Page **Uplift Contractor** (Random News is another account — never use it). Jafar logs in, types passwords and uploads; Claude drives Chrome.
 
-**Done:** Parts 1, 1b, 2, 3, 5 (2026-10-23). Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
+**Done:** Parts 1, 1b, 2, 3, 4, 5 (2026-10-23). Uplift Contractor connected to Raad LTD in the live app. Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
-**Next part:** 4 Connect card — whole design (B, pop-ups, states) approved 2026-10-23 (`parts/4-connect-card.md`); next a build session builds it. Part 6 (inbox) waits on a drawing.
+**Next part:** 6 Inbox shows Messenger — needs a Pencil drawing first (today the inbox labels Messenger chats "Email conversation"). Then 7 Reply.
 
 **Blockers:** none.
