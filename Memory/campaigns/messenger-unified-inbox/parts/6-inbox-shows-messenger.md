@@ -25,7 +25,7 @@ comment and emoji need database work → a later part, no dead buttons meanwhile
    Not yet run on live data — it deletes the test lead; needs Jafar's yes.
 8. 🔶 `ui/PaneResizer.svelte` drag lines (drag, arrows, double-click, saved per browser); chat ≥400; container
    `inbox-chat` folds words at 640/480; dark checked. Left: compare with Pencil (app was closed this session),
-   type check result, merge to main, live proof. Not built (need database, later part): Star, Archive, Mark as
+   merge to main, live proof (full type check waits for the campaign's last step). Not built (need database, later part): Star, Archive, Mark as
    unread, Internal comment, emoji, header ⋯ fold menu (nothing to fold yet).
 
 **Checking screens:** Playwright scripts (session scratchpad: `login.mjs`, `shot.mjs`, `expand.mjs`, `narrow.mjs`)
