@@ -50,8 +50,9 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
 - **Inside each bubble**, bottom right, all solid `--color-surface` on green: the channel mark 12, the time 12, and
   on yours the tick: `clock-3` sending (bubble at 70%), `check` sent, `check-check` delivered, and once read an 18
   filled `--color-surface` circle holding a 12 green `check-check` (`--color-interactive`), so Seen stands apart from Delivered.
-- **Seen line:** only under your last message the customer has read: a 16 filled `--color-interactive` circle with an 11
-  white `check-check`, then "Seen 9:26 AM" 12/500 quiet. No line for the other ticks.
+- **No line under the message.** Hovering the ticks shows the dark tooltip with the mark and "Seen at 9:26 AM · click for
+  details" 12/600; clicking them opens Message details, which lists Sent, Delivered (`check-check` quiet) and Seen
+  (a 16 filled `--color-interactive` circle with a white `check-check`) with their times.
 - **Failed:** the bubble stays; under it `circle-alert` and the reason 12 `--color-critical`, then "Retry" 12/700
   `--color-interactive`.
 - **Internal comment in the timeline:** a centred yellow pill (`--color-warning-surface`, its edge, `lock`, words
