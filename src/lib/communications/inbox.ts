@@ -622,9 +622,17 @@ export type SmsReplyEstimate =
 			cost_minor: number;
 			currency: string;
 			sender_phone: string;
+			recipient_country: string;
 			mms_eligible: boolean;
 	  }
-	| { ready: false; reason: string; mms_eligible: boolean };
+	| {
+			ready: false;
+			reason: string;
+			// Why texting this customer is closed (Stage 10 Part 5), e.g. destination_off; absent for an empty draft.
+			route_code?: string;
+			recipient_country?: string | null;
+			mms_eligible: boolean;
+	  };
 
 // The composer's live impact line, plus (Stage 6D-2) whether the current sender can attach a photo --
 // resolved from the sender alone, so it comes back even for an empty draft. Never throws on a normal

@@ -4070,6 +4070,90 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_destination_events: {
+				Row: {
+					actor: string | null;
+					destination_id: string;
+					event_kind: string;
+					id: string;
+					note: string | null;
+					occurred_at: string;
+					organization_id: string;
+				};
+				Insert: {
+					actor?: string | null;
+					destination_id: string;
+					event_kind: string;
+					id?: string;
+					note?: string | null;
+					occurred_at?: string;
+					organization_id: string;
+				};
+				Update: {
+					actor?: string | null;
+					destination_id?: string;
+					event_kind?: string;
+					id?: string;
+					note?: string | null;
+					occurred_at?: string;
+					organization_id?: string;
+				};
+				Relationships: [];
+			};
+			communication_sms_destinations: {
+				Row: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					business_message?: string | null;
+					country_code: string;
+					created_at?: string;
+					id?: string;
+					is_home?: boolean;
+					off_at?: string | null;
+					off_by?: string | null;
+					off_reason?: string | null;
+					organization_id: string;
+					ready_at?: string | null;
+					ready_by?: string | null;
+					requested_at?: string;
+					requested_by?: string | null;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					business_message?: string | null;
+					country_code?: string;
+					created_at?: string;
+					id?: string;
+					is_home?: boolean;
+					off_at?: string | null;
+					off_by?: string | null;
+					off_reason?: string | null;
+					organization_id?: string;
+					ready_at?: string | null;
+					ready_by?: string | null;
+					requested_at?: string;
+					requested_by?: string | null;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			communication_sms_holds: {
 				Row: {
 					id: string;
@@ -21895,6 +21979,111 @@ export type Database = {
 					to: 'communication_delivery_intents';
 					isOneToOne: true;
 					isSetofReturn: false;
+				};
+			};
+			communication_sms_reply_route_preview: {
+				Args: { p_client_id: string; p_organization_id: string };
+				Returns: {
+					code: string | null;
+					message: string | null;
+					mms_route: boolean;
+					ok: boolean;
+					recipient_country: string | null;
+					sender_country: string | null;
+					sender_id: string | null;
+					sender_type: string | null;
+				}[];
+			};
+			communication_sms_request_destination: {
+				Args: {
+					p_actor?: string;
+					p_country_code: string;
+					p_is_home?: boolean;
+					p_organization_id: string;
+				};
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+			};
+			communication_sms_request_number_destinations: {
+				Args: { p_actor?: string; p_organization_id: string };
+				Returns: number;
+			};
+			communication_sms_route_preview: {
+				Args: {
+					p_client_contact_method_id: string;
+					p_organization_id: string;
+					p_sender_id?: string;
+				};
+				Returns: {
+					code: string | null;
+					message: string | null;
+					mms_route: boolean;
+					ok: boolean;
+					recipient_country: string | null;
+					sender_country: string | null;
+					sender_id: string | null;
+					sender_type: string | null;
+				}[];
+			};
+			communication_sms_switch_on_destination: {
+				Args: { p_actor: string; p_destination_id: string };
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+			};
+			communication_sms_turn_off_destination: {
+				Args: {
+					p_actor: string;
+					p_business_message: string;
+					p_closing: boolean;
+					p_destination_id: string;
+					p_reason: string;
+				};
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
 				};
 			};
 			communication_sms_estimate_segments: {
