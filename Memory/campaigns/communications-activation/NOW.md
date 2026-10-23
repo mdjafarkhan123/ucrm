@@ -15,8 +15,9 @@ Parts 4a–4c built (`parts/stage10-part4.md`). Parts 5a and 5b (To do queue + b
 
 ## Next
 
-Next: 5b-2, the other Texting setup tabs and side cards (part note). 5c needs a Pencil drawing of the contractor's
-"Text customers in another country" pop-up. Live proof waits on number prices and Jafar's go-ahead.
+5b and the first 5b-2 pieces (business Texting view, Waiting on Twilio) are built on `claude/stage10-part5b`, **waiting
+to merge** once main is free. Next: plan Countries & prices with Part 6. Jafar must decide the undrawn Businesses
+tab, Add a country and Show its history. 5c needs a Pencil drawing.
 
 ## Constraints
 
@@ -24,4 +25,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `read memory and continue communications-activation` — Part 5b-2 next.
+Resume: `read memory and continue communications-activation` — merge 5b, then Countries & prices.
