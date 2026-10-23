@@ -8,23 +8,23 @@
 ## Steps
 
 - [x] Meta developer account works on this computer (2026-10-18)
-- [x] App "Ucrm Messaging" created, App ID `1419027217062214`, Messenger + Instagram messaging use cases
+- [x] App "Ucrm Messaging" created (now App ID `1709471683925717` on the 2nd account; old `1419027217062214` abandoned), Messenger + Instagram messaging use cases
 - [x] `META_APP_ID`, `PUBLIC_META_APP_ID`, `META_APP_SECRET` saved in `.env` (secret never printed)
 - [x] Jafar will test with a Facebook Page he already has (2026-10-18)
 - [x] Test Page name: **Random News** (2026-10-18). [x] Confirmed 2026-10-18: Md Jafar Khan manages Page Random News (ID 1387298701130366)
-- [ ] Add Jafar and any tester under App roles
-- [ ] In the app's Messenger use case, configure Facebook Login for Business so a Page admin can grant `pages_show_list`, `pages_manage_metadata`, `pages_messaging`, `pages_read_engagement`, `business_management`
+- [x] App roles checked 2026-10-23: Jafar Khan (2nd account) is Administrator; app is managed by business Uplift Contractor (portfolio link done). Add testers only if someone else must test
+- [x] 2026-10-23: all five permissions "Ready for testing" in the Messenger use case (added `pages_read_engagement`). Facebook Login for Business configuration "Messenger Page connect" created: General, **User access token**, those five permissions. Configuration ID `1133535439212464` (public; Part 4 passes it as `config_id`)
+- [ ] Test Page reachable: the 2nd account manages only Page **Uplift Contractor**, not Random News — waiting on Jafar's choice
 
 ## Next
 
-Ask Jafar for the Page name. Then use Claude in Chrome (`tabs_context_mcp` first) on
-`https://developers.facebook.com/apps/1419027217062214/` for roles and Login configuration. Jafar types passwords.
-Do NOT add the webhook callback URL yet: Meta checks it immediately and our handshake route does not exist until
-Part 5. Business Verification is Part 1b.
+Jafar chooses the test Page (Uplift Contractor, or add the 2nd account to Random News). Valid OAuth redirect URIs and
+app domains are set in Part 4 when the callback route exists; the webhook URL in Part 5.
 
 ## Outside actions
 
-- Meta app created — check: app 1419027217062214 appears at developers.facebook.com/apps — done
+- Meta app created — check: app 1709471683925717 appears at developers.facebook.com/apps — done
+- Login configuration created — check: Facebook Login for Business → Configurations lists "Messenger Page connect" — done 2026-10-23
 
 ## Notes
 

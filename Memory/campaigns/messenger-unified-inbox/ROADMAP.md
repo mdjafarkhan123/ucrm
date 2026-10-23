@@ -5,7 +5,7 @@
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
 | 1 Meta app dashboard setup | Assumptions | Test Page, tester roles, Facebook Login for Business ready | — | Jafar's Facebook account has a role and can pick the test Page; webhook URL is added in Part 5, not here | In progress |
-| 1b Business portfolio + Business Verification | Assumptions | Portfolio created and linked to the app; verification submitted early because review takes days | — | Submitted and "In review" in Security Center (approval is Part 10's gate); trade license in hand 2026-10-18 | Verified 2026-10-18; app link pending |
+| 1b Business portfolio + Business Verification | Assumptions | Portfolio created and linked to the app; verification submitted early because review takes days | — | Submitted and "In review" in Security Center (approval is Part 10's gate); trade license in hand 2026-10-18 | Done — Verified 2026-10-18; app linked to portfolio |
 | 2 Plan: Messenger research | Still unclear | `docs/research/messenger-transport-webhooks.md`; open questions answered | — | Unverified Meta facts closed; Jafar approved plan and the three open choices | Done 2026-10-23 |
 | 3 Database foundation | First version | Channel Connection and Identity tables, encrypted Page token, widened channel checks | 2 | Migration applied with the CLAUDE.md `psql` recipe; existing SMS/email tests still pass | Not started |
 | 4 Connect and disconnect a Page | First version: Connect | Settings → Communications → Messenger card; test message; disconnect | 3, Pencil design | Jafar connects the test Page in the live app and disconnects it | Not started |
