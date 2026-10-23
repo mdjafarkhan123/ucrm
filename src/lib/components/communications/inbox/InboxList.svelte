@@ -583,7 +583,7 @@
 			min-width: 0;
 			overflow: hidden;
 			color: var(--color-text);
-			font-size: var(--typography--fontSize-base);
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.4;
 			-webkit-box-orient: vertical;

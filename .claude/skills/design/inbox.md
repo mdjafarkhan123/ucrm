@@ -23,7 +23,7 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
   holding All plus one lane per channel mark.
 - Groups "Needs reply · 3" and "Earlier": 12/600 uppercase `--color-text-secondary`.
 - Row: radius 10, padding 10, gap 12: 40 avatar; name 14/700 heading with its channel mark (14) before it, the time
-  12/600 at the right; the preview 14/500 `--color-text`. Unread: green time (`--color-interactive`) and a 20-high
+  12/600 at the right; the preview 13/500 `--color-text`. Unread: green time (`--color-interactive`) and a 20-high
   green count pill (white 12/600). Picked row: `--color-surface-active`. An unknown customer's avatar is
   `--color-inactive-surface` with a `user-round` icon.
 
