@@ -85,8 +85,8 @@ connection working. People write every reply. We don't use Messenger data for ad
 follow Meta's Platform Terms.
 
 **When a contractor disconnects the Page,** new messages stop coming in and we erase the key at once. Earlier
-conversations stay in the contractor's records, like their other customer notes, until the contractor deletes
-them or asks us to. The contractor can also remove our access from Facebook: Settings → Business Integrations →
+conversations stay in the contractor's records, like their other customer notes, until the contractor asks us to
+delete them. The contractor can also remove our access from Facebook: Settings → Business Integrations →
 Uplift Contractor → Remove.
 
 To have your Messenger messages deleted, see our [Data deletion](/data-deletion) page.
@@ -149,15 +149,14 @@ If that business uses Uplift Contractor, your messages are stored in its inbox w
 2. Tell us which Facebook Page you messaged, the name on your Facebook account, and roughly when.
 3. We delete your messages and the Facebook ID linked to them, email you to confirm, and let the business know.
 
-You can also ask the business itself. It can delete your conversation from its inbox.
+You can also ask the business itself, and it will pass your request to us.
 
 ### Your business connected a Facebook Page
 
 1. In Uplift Contractor, open Settings → Communications → Messenger and press Disconnect. Messages stop and we
    erase the Page's key at once.
 2. To remove us from Facebook as well: Facebook Settings → Business Integrations → Uplift Contractor → Remove.
-3. To delete conversations already in your inbox, delete them in the app, or email us from your account's address
-   and we'll do it.
+3. To delete conversations already in your inbox, email us from your account's address and we'll do it.
 
 ### Anything else
 

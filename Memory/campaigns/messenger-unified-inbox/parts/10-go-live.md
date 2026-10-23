@@ -16,5 +16,8 @@ Review: app icon, reviewer instructions with a test login, screencasts for `page
 `pages_manage_metadata`, `pages_show_list`, `business_management`, Business Asset User Profile Access, and the
 Human Agent feature. Research notes: `docs/research/messenger-transport-webhooks.md` §6.
 
+**Deletion:** no in-app delete exists yet, so the Data deletion text says "email us" (fixed 2026-10-23). Whole-CRM
+deletion is its own campaign, `data-privacy-deletion`; update the page text when it ships.
+
 **Leftovers:** `UpliftContractor/design.pen` holds an unused header and footer drawing, and
 `UpliftContractor/design/brand-logo.png` is a logo copy; Jafar decides whether to keep them.
