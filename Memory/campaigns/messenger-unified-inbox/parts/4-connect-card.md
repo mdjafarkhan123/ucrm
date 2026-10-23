@@ -14,3 +14,14 @@ strips, three reconnect reasons.
 
 **Next:** a build session builds from the board (design sessions don't build). Jafar saved `concept.pen` 2026-10-23;
 it is committed from main once the pen-tidy claim is released (its uncommitted changes share the file).
+
+## Build approach (2026-10-23, branch `claude/messenger-part4-build`, worktree `.worktrees/messenger-part4-build`)
+
+Followed: GoHighLevel's popup Facebook login + Page picker; Meta's manual Login-for-Business flow (`dialog/oauth`
+with `config_id`, code → long-lived user token → `/me/accounts` Page tokens → `subscribed_apps`).
+- Popup opens `/api/settings/communications/messenger/login` (state cookie) → Facebook → `/callback` saves an
+  encrypted 30-minute login session (`communication_messenger_login_sessions`) and posts the result to the opener.
+- Choose Pages reads `/pages` (Graph call with the session token, no tokens sent to the browser); `POST /connections`
+  subscribes each Page, then saves it encrypted; reconnect revives the same row. Disconnect unsubscribes, wipes the key.
+- Live test polls `/connections/[id]/test?since=` for the first message after the test began.
+- Meta dashboard: add redirect URI `https://app.upliftcontractor.com/api/settings/communications/messenger/callback`.
