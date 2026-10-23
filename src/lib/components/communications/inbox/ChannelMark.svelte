@@ -14,9 +14,9 @@
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 
-	// Which channel a row, bubble or button belongs to (design skill inbox.md, Channel marks). Messenger keeps
-	// its own logo -- the one brand mark in the app, because customers recognise it -- and the others are small
-	// app-style tiles. `inverse` is the all-white version that sits inside a green bubble.
+	// Which channel a row, bubble or button belongs to (design skill inbox.md, Channel marks). Messenger, email
+	// and text show their real logos, because customers recognise them; Website chat is a small app-style tile.
+	// `inverse` is the all-white version that sits inside a green bubble.
 	let {
 		channel,
 		size = 14,
@@ -35,16 +35,26 @@
 		sms: messageIcon,
 		website_chat: messagesIcon
 	};
+
+	const logos: Partial<Record<InboxChannel, string>> = {
+		messenger: '/assets/messenger.png',
+		email: '/assets/mail.png',
+		sms: '/assets/sms.png'
+	};
+	const logo = $derived(inverse ? undefined : logos[channel]);
 </script>
 
 <span
 	class="channel-mark channel-mark--{size} channel-mark--{channel}"
 	class:channel-mark--inverse={inverse}
+	class:channel-mark--logo={Boolean(logo)}
 	role={label ? 'img' : undefined}
 	aria-label={label}
 	aria-hidden={label ? undefined : 'true'}
 >
-	{#if channel === 'messenger'}
+	{#if logo}
+		<img class="channel-mark__logo" src={logo} alt="" />
+	{:else if channel === 'messenger'}
 		<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 			<path
 				fill-rule="evenodd"
@@ -102,6 +112,18 @@
 				width: 100%;
 				height: 100%;
 			}
+		}
+
+		// A real logo carries its own shape and colour, so the tile steps back.
+		&--logo {
+			border-radius: 0;
+			background: none;
+		}
+
+		&__logo {
+			display: block;
+			width: 100%;
+			height: 100%;
 		}
 
 		// Inside a green bubble every mark is plain white, so the tile drops its colour and the glyph fills it.

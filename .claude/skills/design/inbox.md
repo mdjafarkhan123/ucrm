@@ -29,11 +29,11 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
 
 ## Channel marks
 
-- Messenger uses Messenger's own logo in `--color-messenger`: the one brand mark in the app, in place of a Tabler
-  icon, because customers recognise it.
-- Email, Text and Website chat are small app-style tiles: a radius-4 square in `--color-channel-email`,
-  `--color-channel-text` or `--color-channel-chat` with a white glyph (14 or 16).
-- Inside a green bubble the mark turns white.
+- Messenger, Email and Text use their real full-colour logos (`static/assets/messenger.png`, `mail.png`,
+  `sms.png`) in place of Tabler icons, because customers recognise them; `instagram.png` waits for that channel.
+- Website chat, which has no logo, is a small app-style tile: a radius-4 square in `--color-channel-chat` with a
+  white glyph.
+- Inside a green bubble the mark turns plain white.
 
 ## Chat card
 
