@@ -91,6 +91,14 @@ Bar order: item cost · expenses · labour · profit (or loss). Pills on profit,
 
 In `concept.pen`; add it to `_variables.scss` with the build.
 
+## Messenger Colour
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-messenger` | `#0866FF`, the same in light and dark | Facebook Messenger's own mark: the round Messenger badge on Settings → Messenger, a Page's small badge, the test chat bubble. Never for anything else |
+
+In `_variables.scss`; `concept.pen` still draws it as the raw `#0866FF` until its variable is added.
+
 ## File Families
 
 Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as photos.

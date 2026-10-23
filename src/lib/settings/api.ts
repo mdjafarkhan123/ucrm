@@ -78,6 +78,7 @@ export type SettingsHomeSummary = {
 		| 'roles'
 		| 'activity'
 		| 'website_chat'
+		| 'messenger'
 		| 'request_forms'
 		| 'email_templates'
 		| 'snippets'
