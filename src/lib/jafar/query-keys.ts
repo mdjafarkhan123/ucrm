@@ -91,6 +91,10 @@ export const jafarOrganizationSmsRefundsKey = (organizationId: string | undefine
 	[...jafarOrganizationKey(organizationId), 'sms', 'refunds'] as const;
 export const jafarOrganizationSmsSendersKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'sms', 'senders'] as const;
+export const jafarOrganizationSmsDestinationsKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'sms', 'destinations'] as const;
+export const jafarOrganizationSmsTwilioAccountKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'sms', 'twilio-account'] as const;
 export const jafarOrganizationSmsModeKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'sms', 'mode'] as const;
 export const jafarOrganizationSmsRegistrationEventsKey = (organizationId: string | undefined) =>

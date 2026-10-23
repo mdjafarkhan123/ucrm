@@ -3,19 +3,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { createSupabaseTrustHubSubmissionStore } from '$lib/server/communications/trust-hub-submission-store';
-import { createTwilioTrustHubClient } from '$lib/server/communications/twilio-trust-hub';
-import { createSupabaseTrustHubStatusTriggerStore } from '$lib/server/communications/trust-hub-status-trigger-store';
-import { runTrustHubStatusPollCron } from '$lib/server/communications/trust-hub-status-poll-cron';
-import {
-	createNumberPaperworkDeps,
-	runPaperworkStatusCheck
-} from '$lib/server/communications/sms-number-paperwork';
-import {
-	createTollfreeCheckDeps,
-	runTollfreeStatusCheck
-} from '$lib/server/communications/sms-tollfree-verification';
-import { reconcileAllSenderReadiness } from '$lib/server/communications/sms-number-readiness';
+import { runTwilioReviewChecks } from '$lib/server/communications/twilio-review-checks';
 
 function isAuthorized(request: Request): boolean {
 	const expected = getServerEnv().TRUST_HUB_STATUS_CRON_SECRET;
@@ -40,29 +28,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ error: 'Unauthorized.' }, { status: 401 });
 	}
 
-	const client = getOwnerSupabaseClient();
-	const deps = {
-		store: createSupabaseTrustHubSubmissionStore(client),
-		twilio: createTwilioTrustHubClient()
-	};
-	const triggerStore = createSupabaseTrustHubStatusTriggerStore(client);
-
 	try {
-		const result = await runTrustHubStatusPollCron(deps, triggerStore);
-		// Stage 10 Part 3: the same daily safety net re-checks number paperwork Twilio is still reviewing, behind
-		// its status callback (webhooks/twilio/number-paperwork). Its failure never hides the registration result.
-		const paperwork = await runPaperworkStatusCheck(createNumberPaperworkDeps()).catch((error) => {
-			console.error('The number paperwork status check failed.', error);
-			return { failed: true };
-		});
-		// Stage 10 Part 4b: toll-free checks carriers are still reviewing, behind their Event Streams events.
-		const tollfree = await runTollfreeStatusCheck(createTollfreeCheckDeps()).catch((error) => {
-			console.error('The toll-free status check failed.', error);
-			return { failed: true };
-		});
-		// Stage 10 Part 4: switch on every number whose approval has now passed, whichever check above found it.
-		const numbers = await reconcileAllSenderReadiness(client);
-		return json({ ...result, paperwork, tollfree, numbers });
+		return json(await runTwilioReviewChecks(getOwnerSupabaseClient()));
 	} catch (error) {
 		console.error('The Trust Hub status poll cron failed.', error);
 		return json({ error: 'The Trust Hub status poll cron failed.' }, { status: 500 });

@@ -58,7 +58,7 @@
 
 	// Group the flat, newest-first list into one row per currency, each carrying its own version history. The
 	// first version whose effective_from has arrived is the one currently charged; anything before it in time
-	// is superseded, anything after is scheduled. Mirrors SmsRetailRateActions' grouping, minus the SMS-only
+	// is superseded, anything after is scheduled. Mirrors the old SMS rate list's grouping, minus the SMS-only
 	// destination/sender/message-unit dimensions -- email has one price per currency.
 	const groups = $derived.by(() => {
 		const rates = listQuery.data?.rates ?? [];

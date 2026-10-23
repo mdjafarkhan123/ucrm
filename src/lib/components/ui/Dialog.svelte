@@ -15,6 +15,7 @@
 		iconTone = 'success',
 		flush = false,
 		badge,
+		lead,
 		closeDisabled = false,
 		onClose,
 		children,
@@ -35,6 +36,8 @@
 		flush?: boolean;
 		/** A small pill beside the title, e.g. "Recurring". */
 		badge?: Snippet;
+		/** Drawn in place of the icon tile, e.g. a country's flag. */
+		lead?: Snippet;
 		/** While something can't be interrupted, the × is greyed and Escape or a click outside does nothing. */
 		closeDisabled?: boolean;
 		onClose: () => void;
@@ -65,7 +68,7 @@
 				target.focus();
 			}}
 		>
-			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} {closeDisabled} />
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} {lead} {closeDisabled} />
 			<div class="dialog__body" class:dialog__body--flush={flush}>
 				{@render children()}
 			</div>
