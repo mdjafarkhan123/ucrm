@@ -235,6 +235,7 @@
 			avatarId: client.id,
 			latest: null,
 			unreadCount: 0,
+			awaitingReply: false,
 			messages: [],
 			guarded: false,
 			senderEmail: null,
