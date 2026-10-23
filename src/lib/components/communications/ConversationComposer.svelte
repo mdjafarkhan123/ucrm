@@ -39,6 +39,7 @@
 		formatTimeLeft,
 		type MessengerReplyWindow,
 		sendConversationReply,
+		sendConversationReplyMessenger,
 		sendConversationReplySms,
 		sendWebsiteChatStaffMessage,
 		type OutboundAttachmentPayload,
@@ -87,7 +88,9 @@
 		customerName?: string;
 		channels: InboxChannel[];
 		/** Where each channel goes, or why it can't send now, for the channel menu. */
-		channelDetails?: Partial<Record<InboxChannel, { address?: string; unavailable?: string | null }>>;
+		channelDetails?: Partial<
+			Record<InboxChannel, { address?: string; unavailable?: string | null }>
+		>;
 		/** Messenger: the Page the reply goes from, named in the channel pill. */
 		pageName?: string | null;
 		/** Messenger: the time Meta still allows a reply, shown as a chip on the tab strip. */
@@ -163,15 +166,29 @@
 					}
 				: null)
 	);
-	const reasonIcons = { critical: criticalIcon, warning: warningIcon, informative: informativeIcon };
+	const reasonIcons = {
+		critical: criticalIcon,
+		warning: warningIcon,
+		informative: informativeIcon
+	};
 
 	// Messenger's reply window, in words (design `inbox.md`, Reply-window chip).
 	const windowChip = $derived.by(() => {
 		if (channel !== 'messenger' || !replyWindow) return null;
 		if (replyWindow.pageDisconnected)
-			return { tone: 'critical', icon: unplugIcon, text: 'Page disconnected', short: 'Disconnected' };
+			return {
+				tone: 'critical',
+				icon: unplugIcon,
+				text: 'Page disconnected',
+				short: 'Disconnected'
+			};
 		if (replyWindow.state === 'closed')
-			return { tone: 'critical', icon: windowClosedIcon, text: 'Reply window closed', short: 'Closed' };
+			return {
+				tone: 'critical',
+				icon: windowClosedIcon,
+				text: 'Reply window closed',
+				short: 'Closed'
+			};
 		// On a narrow chat the words shorten: "23 h 17 min left to reply on Messenger", "23 h left", "23 h".
 		const hours = Math.floor(replyWindow.msLeft / 3_600_000);
 		const roughly = hours > 0 ? `${hours} h` : formatTimeLeft(replyWindow.msLeft);
@@ -310,28 +327,32 @@
 				publish('sent', attempt);
 			} else {
 				const result =
-					channel === 'sms'
-						? await sendConversationReplySms(
-								clientId as string,
-								attempt.body,
-								attempt.attachments,
-								attempt.id,
-								attempt.libraryFileIds
-							)
-						: await sendConversationReply(
-								clientId as string,
-								attempt.subject,
-								attempt.body,
-								attempt.attachments,
-								attempt.id,
-								null,
-								attempt.libraryFileIds
-							);
+					channel === 'messenger'
+						? await sendConversationReplyMessenger(clientId as string, attempt.body, attempt.id)
+						: channel === 'sms'
+							? await sendConversationReplySms(
+									clientId as string,
+									attempt.body,
+									attempt.attachments,
+									attempt.id,
+									attempt.libraryFileIds
+								)
+							: await sendConversationReply(
+									clientId as string,
+									attempt.subject,
+									attempt.body,
+									attempt.attachments,
+									attempt.id,
+									null,
+									attempt.libraryFileIds
+								);
 				// The mark flips here, on acceptance, rather than after the re-read below. The server has taken
 				// the message and told us what it did with it, which is the fact the user is waiting on -- making
 				// them watch a full inbox re-read first added seconds of "Sending…" to a message already sent.
 				publish('sent', attempt, { status: result.intent.status });
-				toast.success(channel === 'sms' ? 'Text sent' : 'Email sent');
+				toast.success(
+					channel === 'sms' ? 'Text sent' : channel === 'messenger' ? 'Message sent' : 'Email sent'
+				);
 			}
 
 			// The re-read still has to happen, but it now runs behind an already-confirmed bubble. Awaiting it
@@ -581,7 +602,9 @@
 					<span class="conversation-composer__chip-mid" aria-hidden="true"
 						>{windowChip.mid ?? windowChip.text}</span
 					>
-					<span class="conversation-composer__chip-short" aria-hidden="true">{windowChip.short}</span>
+					<span class="conversation-composer__chip-short" aria-hidden="true"
+						>{windowChip.short}</span
+					>
 				</span>
 			{/if}
 			<Button variant="quiet" size="small" iconOnly label="Minimize reply box" onclick={collapse}>
@@ -642,7 +665,10 @@
 		{/if}
 		{#if reason}
 			<div class="conversation-composer__reason-wrap">
-				<p class="conversation-composer__reason conversation-composer__reason--{reason.tone}" role="status">
+				<p
+					class="conversation-composer__reason conversation-composer__reason--{reason.tone}"
+					role="status"
+				>
 					<span class="conversation-composer__reason-icon" aria-hidden="true"
 						>{@html reasonIcons[reason.tone]}</span
 					>
@@ -699,7 +725,8 @@
 		{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
 		<footer class="conversation-composer__toolbar">
 			{@render channelPill()}
-			{#if channel === 'email' || channel === 'sms' || channel === 'website_chat'}
+			<!-- Messenger replies are words only for now, so it shows snippets but no files. -->
+			{#if channel === 'email' || channel === 'sms' || channel === 'messenger' || channel === 'website_chat'}
 				<span class="conversation-composer__divider" aria-hidden="true"></span>
 				<div class="conversation-composer__tools">
 					{#if channel === 'email' || channel === 'sms'}

@@ -33,6 +33,7 @@
 		scheduledFor = null,
 		status = null,
 		statusTone = 'inactive',
+		mark = null,
 		badges,
 		actions,
 		footer,
@@ -57,6 +58,8 @@
 		scheduledFor?: string | null;
 		status?: string | null;
 		statusTone?: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
+		/** Channels that report it (Messenger): the exact tick -- sent, delivered, or seen. */
+		mark?: 'sent' | 'delivered' | 'seen' | null;
 		badges?: Snippet;
 		actions?: Snippet;
 		/** A line under the bubble, e.g. "Scheduled by email · Cancel". */
@@ -75,14 +78,19 @@
 	const scheduledTime = $derived(scheduledFor ? timeFormat.format(new Date(scheduledFor)) : '');
 
 	// The ticks a messaging app uses: a clock while it is on its way, one tick once sent, two once delivered.
+	// Seen is its own mark: two ticks in a filled circle.
 	const tick = $derived(
-		pending || statusTone === 'informative'
-			? clockIcon
-			: statusTone === 'success'
+		mark === 'sent'
+			? checkIcon
+			: mark === 'delivered' || mark === 'seen'
 				? checksIcon
-				: statusTone === 'inactive'
-					? checkIcon
-					: null
+				: pending || statusTone === 'informative'
+					? clockIcon
+					: statusTone === 'success'
+						? checksIcon
+						: statusTone === 'inactive'
+							? checkIcon
+							: null
 	);
 	const hoverText = $derived(
 		[outbound && who ? who : null, status, dateTimeFormat.format(new Date(when))]
@@ -121,7 +129,9 @@
 				/>
 				<time datetime={when}>{time}</time>
 				{#if outbound && !failed && tick}
-					<span class="message__tick" aria-hidden="true">{@html tick}</span>
+					<span class="message__tick" class:message__tick--seen={mark === 'seen'} aria-hidden="true"
+						>{@html tick}</span
+					>
 				{/if}
 				{#if outbound && status}<span class="sr-only">{status}</span>{/if}
 			{/if}
@@ -296,6 +306,21 @@
 
 		&::after {
 			display: none;
+		}
+	}
+
+	// Read by the customer: a filled circle in the bubble's text colour holding green ticks.
+	.message__tick--seen {
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		border-radius: var(--radius-circle);
+		color: var(--color-interactive);
+		background: var(--color-surface);
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
 		}
 	}
 
