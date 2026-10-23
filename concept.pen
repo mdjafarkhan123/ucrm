@@ -417703,7 +417703,7 @@
       "id": "yjdF0",
       "x": 12456,
       "y": 39655,
-      "name": "Concept · Communications · Messenger · Inbox · Chosen mix · 2026-10-23",
+      "name": "Concept · Communications · Messenger · Inbox · Approved · 2026-10-23",
       "width": 1536,
       "fill": "$color-surface-background",
       "layout": "vertical",
@@ -420846,7 +420846,6 @@
                                           "type": "frame",
                                           "id": "sMLko",
                                           "name": "Meta",
-                                          "opacity": 0.8,
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
@@ -420876,93 +420875,124 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "N8KBU5",
-                                      "name": "Bubble",
-                                      "fill": "$color-interactive",
-                                      "cornerRadius": [
-                                        "$radius-large",
-                                        "$radius-small",
-                                        "$radius-small",
-                                        "$radius-large"
-                                      ],
-                                      "stroke": "$color-critical",
-                                      "effect": {
-                                        "type": "shadow",
-                                        "shadowType": "outer",
-                                        "color": "#032b3a14",
-                                        "offset": {
-                                          "x": 0,
-                                          "y": 1
-                                        },
-                                        "blur": 1
-                                      },
-                                      "gap": 10,
-                                      "padding": [
-                                        8,
-                                        12,
-                                        7,
-                                        14
-                                      ],
-                                      "alignItems": "end",
+                                      "id": "rcCBe",
+                                      "name": "Failed bubble row",
+                                      "gap": 8,
+                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "text",
-                                          "id": "p2uby",
-                                          "name": "t",
-                                          "fill": "$color-surface",
-                                          "content": "Reminder: our crew arrives at 8 AM tomorrow.",
-                                          "lineHeight": 1.45,
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "normal"
-                                        },
-                                        {
                                           "type": "frame",
-                                          "id": "pTs2K",
-                                          "name": "Meta",
-                                          "opacity": 0.8,
-                                          "gap": 4,
+                                          "id": "M5Awov",
+                                          "name": "Not sent mark",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-critical",
+                                          "cornerRadius": 999,
+                                          "justifyContent": "center",
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "type": "icon",
-                                              "id": "whgGD",
-                                              "name": "Text channel",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "message-circle",
-                                              "library": "lucide",
-                                              "fill": "$color-surface"
-                                            },
-                                            {
                                               "type": "text",
-                                              "id": "a4RNX",
-                                              "name": "time",
-                                              "fill": "$color-surface",
-                                              "content": "5:41 PM",
+                                              "id": "mX9zQ",
+                                              "name": "!",
+                                              "fill": "#ffffff",
+                                              "content": "!",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
+                                              "fontSize": 13,
+                                              "fontWeight": "800"
                                             }
                                           ]
                                         },
                                         {
-                                          "type": "path",
-                                          "id": "zY9ui",
-                                          "layoutPosition": "absolute",
-                                          "x": 394,
-                                          "y": 17,
-                                          "name": "Tail",
-                                          "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
-                                          "viewBox": [
-                                            0,
-                                            0,
-                                            16,
-                                            18
-                                          ],
+                                          "type": "frame",
+                                          "id": "N8KBU5",
+                                          "name": "Bubble",
                                           "fill": "$color-interactive",
-                                          "width": 16,
-                                          "height": 18
+                                          "cornerRadius": [
+                                            "$radius-large",
+                                            "$radius-small",
+                                            "$radius-small",
+                                            "$radius-large"
+                                          ],
+                                          "stroke": "$color-critical",
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#032b3a14",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 1
+                                          },
+                                          "gap": 10,
+                                          "padding": [
+                                            8,
+                                            12,
+                                            7,
+                                            14
+                                          ],
+                                          "alignItems": "end",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "p2uby",
+                                              "name": "t",
+                                              "fill": "$color-surface",
+                                              "content": "Reminder: our crew arrives at 8 AM tomorrow.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "pTs2K",
+                                              "name": "Meta",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "whgGD",
+                                                  "name": "Text channel",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "message-circle",
+                                                  "library": "lucide",
+                                                  "fill": "$color-surface"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "a4RNX",
+                                                  "name": "time",
+                                                  "fill": "$color-surface",
+                                                  "content": "5:41 PM",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "path",
+                                              "id": "zY9ui",
+                                              "layoutPosition": "absolute",
+                                              "x": 394,
+                                              "y": 17,
+                                              "name": "Tail",
+                                              "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
+                                              "viewBox": [
+                                                0,
+                                                0,
+                                                16,
+                                                18
+                                              ],
+                                              "fill": "$color-interactive",
+                                              "width": 16,
+                                              "height": 18
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -421316,7 +421346,6 @@
                                           "type": "frame",
                                           "id": "N9Mxp",
                                           "name": "Meta",
-                                          "opacity": 0.8,
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
@@ -421357,6 +421386,29 @@
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "k86wX",
+                                              "name": "Tick · Seen (filled)",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 999,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "NnsmR",
+                                                  "name": "tick",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "check-check",
+                                                  "library": "lucide",
+                                                  "fill": "$color-interactive"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -421364,7 +421416,7 @@
                                           "type": "path",
                                           "id": "SuGQN",
                                           "layoutPosition": "absolute",
-                                          "x": 369,
+                                          "x": 389,
                                           "y": 17,
                                           "name": "Tail",
                                           "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
@@ -421382,38 +421434,10 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Y093n",
-                                      "name": "Seen (only under your last sent message)",
-                                      "gap": 4,
-                                      "padding": [
-                                        1,
-                                        4,
-                                        8,
-                                        0
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "imGBb",
-                                          "name": "i",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "check-check",
-                                          "library": "lucide",
-                                          "fill": "$color-interactive"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "imfgX",
-                                          "name": "t",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Seen 9:26 AM",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "500"
-                                        }
-                                      ]
+                                      "id": "SRloT",
+                                      "name": "Space between runs",
+                                      "width": 1,
+                                      "height": 6
                                     },
                                     {
                                       "type": "frame",
@@ -425449,7 +425473,7 @@
         {
           "type": "frame",
           "id": "jU783",
-          "name": "Fold-up · wide, medium, narrow",
+          "name": "Fold-up · Approved · 2026-10-23",
           "width": "fill_container",
           "layout": "vertical",
           "gap": 16,
@@ -425459,7 +425483,7 @@
               "id": "cVqxi",
               "name": "Label",
               "fill": "$color-heading",
-              "content": "Fold-up · when a part gets narrower",
+              "content": "Fold-up · when a part gets narrower · Approved by Jafar 2026-10-23",
               "fontFamily": "$font-family",
               "fontSize": 20,
               "fontWeight": "700"
@@ -428045,7 +428069,6 @@
                                           "type": "frame",
                                           "id": "eZT17",
                                           "name": "Meta",
-                                          "opacity": 0.8,
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
@@ -428075,93 +428098,124 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Yarzr",
-                                      "name": "Bubble",
-                                      "fill": "$color-interactive",
-                                      "cornerRadius": [
-                                        "$radius-large",
-                                        "$radius-small",
-                                        "$radius-small",
-                                        "$radius-large"
-                                      ],
-                                      "stroke": "$color-critical",
-                                      "effect": {
-                                        "type": "shadow",
-                                        "shadowType": "outer",
-                                        "color": "#032b3a14",
-                                        "offset": {
-                                          "x": 0,
-                                          "y": 1
-                                        },
-                                        "blur": 1
-                                      },
-                                      "gap": 10,
-                                      "padding": [
-                                        8,
-                                        12,
-                                        7,
-                                        14
-                                      ],
-                                      "alignItems": "end",
+                                      "id": "Q11xyD",
+                                      "name": "Failed bubble row",
+                                      "gap": 8,
+                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "text",
-                                          "id": "PB2UN",
-                                          "name": "t",
-                                          "fill": "$color-surface",
-                                          "content": "Reminder: our crew arrives at 8 AM tomorrow.",
-                                          "lineHeight": 1.45,
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "normal"
-                                        },
-                                        {
                                           "type": "frame",
-                                          "id": "lE2p6",
-                                          "name": "Meta",
-                                          "opacity": 0.8,
-                                          "gap": 4,
+                                          "id": "DSm5I",
+                                          "name": "Not sent mark",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-critical",
+                                          "cornerRadius": 999,
+                                          "justifyContent": "center",
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "type": "icon",
-                                              "id": "mq6BD",
-                                              "name": "Text channel",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "message-circle",
-                                              "library": "lucide",
-                                              "fill": "$color-surface"
-                                            },
-                                            {
                                               "type": "text",
-                                              "id": "J5CFGd",
-                                              "name": "time",
-                                              "fill": "$color-surface",
-                                              "content": "5:41 PM",
+                                              "id": "m5MMvW",
+                                              "name": "!",
+                                              "fill": "#ffffff",
+                                              "content": "!",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
+                                              "fontSize": 13,
+                                              "fontWeight": "800"
                                             }
                                           ]
                                         },
                                         {
-                                          "type": "path",
-                                          "id": "zkI3k",
-                                          "layoutPosition": "absolute",
-                                          "x": 394,
-                                          "y": 17,
-                                          "name": "Tail",
-                                          "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
-                                          "viewBox": [
-                                            0,
-                                            0,
-                                            16,
-                                            18
-                                          ],
+                                          "type": "frame",
+                                          "id": "Yarzr",
+                                          "name": "Bubble",
                                           "fill": "$color-interactive",
-                                          "width": 16,
-                                          "height": 18
+                                          "cornerRadius": [
+                                            "$radius-large",
+                                            "$radius-small",
+                                            "$radius-small",
+                                            "$radius-large"
+                                          ],
+                                          "stroke": "$color-critical",
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#032b3a14",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 1
+                                          },
+                                          "gap": 10,
+                                          "padding": [
+                                            8,
+                                            12,
+                                            7,
+                                            14
+                                          ],
+                                          "alignItems": "end",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "PB2UN",
+                                              "name": "t",
+                                              "fill": "$color-surface",
+                                              "content": "Reminder: our crew arrives at 8 AM tomorrow.",
+                                              "lineHeight": 1.45,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "lE2p6",
+                                              "name": "Meta",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "mq6BD",
+                                                  "name": "Text channel",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "message-circle",
+                                                  "library": "lucide",
+                                                  "fill": "$color-surface"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "J5CFGd",
+                                                  "name": "time",
+                                                  "fill": "$color-surface",
+                                                  "content": "5:41 PM",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "path",
+                                              "id": "zkI3k",
+                                              "layoutPosition": "absolute",
+                                              "x": 394,
+                                              "y": 17,
+                                              "name": "Tail",
+                                              "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
+                                              "viewBox": [
+                                                0,
+                                                0,
+                                                16,
+                                                18
+                                              ],
+                                              "fill": "$color-interactive",
+                                              "width": 16,
+                                              "height": 18
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -428515,7 +428569,6 @@
                                           "type": "frame",
                                           "id": "M7LrNk",
                                           "name": "Meta",
-                                          "opacity": 0.8,
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
@@ -428556,6 +428609,29 @@
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "lfp8m",
+                                              "name": "Tick · Seen (filled)",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 999,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "i9eOq",
+                                                  "name": "tick",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "check-check",
+                                                  "library": "lucide",
+                                                  "fill": "$color-interactive"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -428563,7 +428639,7 @@
                                           "type": "path",
                                           "id": "pD53Q",
                                           "layoutPosition": "absolute",
-                                          "x": 369,
+                                          "x": 389,
                                           "y": 17,
                                           "name": "Tail",
                                           "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
@@ -428581,38 +428657,10 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "zRU85",
-                                      "name": "Seen (only under your last sent message)",
-                                      "gap": 4,
-                                      "padding": [
-                                        1,
-                                        4,
-                                        8,
-                                        0
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "LZwSq",
-                                          "name": "i",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "check-check",
-                                          "library": "lucide",
-                                          "fill": "$color-interactive"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "F8VEI",
-                                          "name": "t",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Seen 9:26 AM",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "500"
-                                        }
-                                      ]
+                                      "id": "J7ZT9",
+                                      "name": "Space between runs",
+                                      "width": 1,
+                                      "height": 6
                                     },
                                     {
                                       "type": "frame",
@@ -433501,7 +433549,7 @@
         {
           "type": "frame",
           "id": "y2sz2l",
-          "name": "States · reply box and messages",
+          "name": "States · Approved · 2026-10-23",
           "width": "fill_container",
           "layout": "vertical",
           "gap": 16,
@@ -433511,7 +433559,7 @@
               "id": "GyCdO",
               "name": "Label",
               "fill": "$color-heading",
-              "content": "States · reply box, messages and new customers",
+              "content": "States · reply box, messages and new customers · Approved by Jafar 2026-10-23",
               "fontFamily": "$font-family",
               "fontSize": 20,
               "fontWeight": "700"
@@ -436677,7 +436725,7 @@
                       "id": "H78fs",
                       "name": "Caption",
                       "fill": "$color-text-secondary",
-                      "content": "MESSAGE DETAILS POP-UP · A MESSENGER MESSAGE (KEPT FROM LIVE)",
+                      "content": "MESSAGE DETAILS POP-UP · CLICK THE TICKS ON YOUR MESSENGER MESSAGE (KEPT FROM LIVE, ADDS DELIVERED AND SEEN)",
                       "fontFamily": "$font-family",
                       "fontSize": 12,
                       "fontWeight": "600"
@@ -436913,7 +436961,7 @@
                                           "id": "aKIhm",
                                           "name": "t",
                                           "fill": "$color-text-secondary",
-                                          "content": "Received",
+                                          "content": "Sent",
                                           "fontFamily": "$font-family",
                                           "fontSize": 14,
                                           "fontWeight": "500"
@@ -436927,7 +436975,7 @@
                                       "fill": "$color-heading",
                                       "textGrowth": "fixed-width",
                                       "width": "fill_container",
-                                      "content": "Today at 9:12 AM",
+                                      "content": "Today at 9:24 AM",
                                       "lineHeight": 1.45,
                                       "fontFamily": "$font-family",
                                       "fontSize": 14,
@@ -436976,7 +437024,7 @@
                                       "fill": "$color-heading",
                                       "textGrowth": "fixed-width",
                                       "width": "fill_container",
-                                      "content": "Facebook user · to Uplift Contractor Page",
+                                      "content": "Jafar Khan · Uplift Contractor Page",
                                       "lineHeight": 1.45,
                                       "fontFamily": "$font-family",
                                       "fontSize": 14,
@@ -436986,8 +437034,8 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "Vit8m",
-                                  "name": "Conversation",
+                                  "id": "o519H",
+                                  "name": "Delivered",
                                   "width": "fill_container",
                                   "stroke": "$color-border",
                                   "strokeWidth": {
@@ -437002,16 +437050,16 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "p8LMbW",
+                                      "id": "NnSj7",
                                       "name": "Label",
                                       "width": 110,
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "Ast8P",
+                                          "id": "o8feT",
                                           "name": "t",
                                           "fill": "$color-text-secondary",
-                                          "content": "Conversation",
+                                          "content": "Delivered",
                                           "fontFamily": "$font-family",
                                           "fontSize": 14,
                                           "fontWeight": "500"
@@ -437020,37 +437068,112 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "e8EXk8",
-                                      "name": "Status pill",
-                                      "height": 24,
-                                      "fill": "$color-success-surface",
-                                      "cornerRadius": 999,
-                                      "stroke": "$color-success-surface-edge",
-                                      "strokeWidth": 1,
+                                      "id": "OLjpx",
+                                      "name": "Value",
+                                      "width": "fill_container",
                                       "gap": 6,
-                                      "padding": [
-                                        0,
-                                        10
-                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "ellipse",
-                                          "id": "Il52X",
-                                          "name": "dot",
-                                          "fill": "$color-success",
-                                          "width": 8,
-                                          "height": 8
+                                          "type": "icon",
+                                          "id": "uAS9r",
+                                          "name": "i",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "check-check",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
                                         },
                                         {
                                           "type": "text",
-                                          "id": "y7L5I",
+                                          "id": "YG4w5",
                                           "name": "t",
-                                          "fill": "$color-success-on-surface",
-                                          "content": "Accepted",
+                                          "fill": "$color-heading",
+                                          "content": "Today at 9:24 AM",
+                                          "lineHeight": 1.45,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "600"
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "TATpq",
+                                  "name": "Seen",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 12,
+                                  "padding": [
+                                    10,
+                                    0
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "rCPzS",
+                                      "name": "Label",
+                                      "width": 110,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "FyqRg",
+                                          "name": "t",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Seen",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "g4aUW",
+                                      "name": "Value",
+                                      "width": "fill_container",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Lmxrq",
+                                          "name": "Seen mark",
+                                          "width": 16,
+                                          "height": 16,
+                                          "fill": "$color-interactive",
+                                          "cornerRadius": 999,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "qmHfc",
+                                              "name": "tick",
+                                              "width": 11,
+                                              "height": 11,
+                                              "icon": "check-check",
+                                              "library": "lucide",
+                                              "fill": "$color-surface"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Z8KOks",
+                                          "name": "t",
+                                          "fill": "$color-heading",
+                                          "content": "Today at 9:26 AM",
+                                          "lineHeight": 1.45,
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
                                         }
                                       ]
                                     }
@@ -437245,7 +437368,6 @@
                                       "type": "frame",
                                       "id": "nrdGk",
                                       "name": "Meta",
-                                      "opacity": 0.8,
                                       "gap": 4,
                                       "alignItems": "center",
                                       "children": [
@@ -437396,7 +437518,6 @@
                                       "type": "frame",
                                       "id": "Q4YZs",
                                       "name": "Meta",
-                                      "opacity": 0.8,
                                       "gap": 4,
                                       "alignItems": "center",
                                       "children": [
@@ -437547,7 +437668,6 @@
                                       "type": "frame",
                                       "id": "jOOHV",
                                       "name": "Meta",
-                                      "opacity": 0.8,
                                       "gap": 4,
                                       "alignItems": "center",
                                       "children": [
@@ -437655,6 +437775,54 @@
                               "children": [
                                 {
                                   "type": "frame",
+                                  "id": "ReyQN",
+                                  "name": "Hover tip on the ticks",
+                                  "fill": "$color-surface-reverse",
+                                  "cornerRadius": 8,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "SsO2l",
+                                      "name": "Seen mark",
+                                      "width": 14,
+                                      "height": 14,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 999,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "z3ITJ",
+                                          "name": "tick",
+                                          "width": 10,
+                                          "height": 10,
+                                          "icon": "check-check",
+                                          "library": "lucide",
+                                          "fill": "$color-surface-reverse"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "mVjYH",
+                                      "name": "t",
+                                      "fill": "$color-text-reverse",
+                                      "content": "Seen at 9:26 AM · click for details",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
                                   "id": "XPQX5",
                                   "name": "Bubble",
                                   "fill": "$color-interactive",
@@ -437740,51 +437908,29 @@
                                           "fontWeight": "normal"
                                         },
                                         {
-                                          "type": "icon",
-                                          "id": "C4RQl",
-                                          "name": "Tick · Seen",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "check-check",
-                                          "library": "lucide",
-                                          "fill": "$color-surface"
+                                          "type": "frame",
+                                          "id": "ND7dp",
+                                          "name": "Tick · Seen (filled)",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 999,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "PpkEO",
+                                              "name": "tick",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "check-check",
+                                              "library": "lucide",
+                                              "fill": "$color-interactive"
+                                            }
+                                          ]
                                         }
                                       ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "wod2M",
-                                  "name": "Seen line",
-                                  "gap": 4,
-                                  "padding": [
-                                    1,
-                                    4,
-                                    0,
-                                    0
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "EtgSl",
-                                      "name": "check-check",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "check-check",
-                                      "library": "lucide",
-                                      "fill": "$color-interactive"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "r0YnrY",
-                                      "name": "t",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Seen 9:26 AM",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "500"
                                     }
                                   ]
                                 }
@@ -437840,99 +437986,121 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "sKPK5",
-                                  "name": "Bubble",
-                                  "fill": "$color-interactive",
-                                  "cornerRadius": [
-                                    "$radius-large",
-                                    "$radius-large",
-                                    "$radius-small",
-                                    "$radius-large"
-                                  ],
-                                  "effect": {
-                                    "type": "shadow",
-                                    "shadowType": "outer",
-                                    "color": "#032b3a14",
-                                    "offset": {
-                                      "x": 0,
-                                      "y": 1
-                                    },
-                                    "blur": 1
-                                  },
-                                  "gap": 10,
-                                  "padding": [
-                                    8,
-                                    12,
-                                    7,
-                                    14
-                                  ],
-                                  "alignItems": "end",
+                                  "id": "l43zHZ",
+                                  "name": "Failed bubble row",
+                                  "gap": 8,
+                                  "alignItems": "center",
                                   "children": [
                                     {
-                                      "type": "text",
-                                      "id": "P7lRc",
-                                      "name": "t",
-                                      "fill": "$color-surface",
-                                      "content": "See you Thursday at 8!",
-                                      "lineHeight": 1.45,
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
                                       "type": "frame",
-                                      "id": "rPGxg",
-                                      "name": "Meta",
-                                      "gap": 4,
+                                      "id": "AXXC4",
+                                      "name": "Not sent mark",
+                                      "width": 20,
+                                      "height": 20,
+                                      "fill": "$color-critical",
+                                      "cornerRadius": 999,
+                                      "justifyContent": "center",
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "X1xD91",
-                                          "name": "Messenger logo",
-                                          "width": 12,
-                                          "height": 12,
-                                          "layout": "none",
-                                          "children": [
-                                            {
-                                              "type": "path",
-                                              "id": "ivhx7",
-                                              "x": 0,
-                                              "y": 0,
-                                              "name": "Messenger mark",
-                                              "geometry": "M0.001 11.639c0-6.69 5.24-11.639 12-11.639s11.999 4.95 11.999 11.639c0 6.689-5.24 11.638-12 11.638-1.21 0-2.38-0.16-3.47-0.46a0.96 0.96 0 0 0-0.64 0.05l-2.39 1.05a0.96 0.96 0 0 1-1.35-0.85l-0.07-2.14a0.97 0.97 0 0 0-0.32-0.68 11.39 11.389 0 0 1-3.758-8.607z m8.32-2.19l-3.52 5.6c-0.35 0.53 0.32 1.139 0.82 0.75l3.79-2.87c0.26-0.2 0.6-0.2 0.87 0l2.8 2.1c0.84 0.63 2.04 0.4 2.6-0.48l3.52-5.6c0.35-0.53-0.32-1.13-0.82-0.75l-3.79 2.87c-0.25 0.2-0.6 0.2-0.86 0l-2.8-2.1a1.8 1.8 0 0 0-2.61 0.48z",
-                                              "fillRule": "evenodd",
-                                              "viewBox": [
-                                                0,
-                                                0,
-                                                24,
-                                                24
-                                              ],
-                                              "fill": "$color-surface",
-                                              "width": 12,
-                                              "height": 12
-                                            }
-                                          ]
+                                          "type": "text",
+                                          "id": "DvOf6",
+                                          "name": "!",
+                                          "fill": "#ffffff",
+                                          "content": "!",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "800"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "sKPK5",
+                                      "name": "Bubble",
+                                      "fill": "$color-interactive",
+                                      "cornerRadius": [
+                                        "$radius-large",
+                                        "$radius-large",
+                                        "$radius-small",
+                                        "$radius-large"
+                                      ],
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#032b3a14",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
                                         },
+                                        "blur": 1
+                                      },
+                                      "gap": 10,
+                                      "padding": [
+                                        8,
+                                        12,
+                                        7,
+                                        14
+                                      ],
+                                      "alignItems": "end",
+                                      "children": [
                                         {
                                           "type": "text",
-                                          "id": "f00dN",
-                                          "name": "time",
+                                          "id": "P7lRc",
+                                          "name": "t",
                                           "fill": "$color-surface",
-                                          "content": "9:24",
+                                          "content": "See you Thursday at 8!",
+                                          "lineHeight": 1.45,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 12,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         },
                                         {
-                                          "type": "icon",
-                                          "id": "x4fByv",
-                                          "name": "Tick · Failed",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "circle-alert",
-                                          "library": "lucide",
-                                          "fill": "$color-critical-surface"
+                                          "type": "frame",
+                                          "id": "rPGxg",
+                                          "name": "Meta",
+                                          "gap": 4,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "X1xD91",
+                                              "name": "Messenger logo",
+                                              "width": 12,
+                                              "height": 12,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "ivhx7",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Messenger mark",
+                                                  "geometry": "M0.001 11.639c0-6.69 5.24-11.639 12-11.639s11.999 4.95 11.999 11.639c0 6.689-5.24 11.638-12 11.638-1.21 0-2.38-0.16-3.47-0.46a0.96 0.96 0 0 0-0.64 0.05l-2.39 1.05a0.96 0.96 0 0 1-1.35-0.85l-0.07-2.14a0.97 0.97 0 0 0-0.32-0.68 11.39 11.389 0 0 1-3.758-8.607z m8.32-2.19l-3.52 5.6c-0.35 0.53 0.32 1.139 0.82 0.75l3.79-2.87c0.26-0.2 0.6-0.2 0.87 0l2.8 2.1c0.84 0.63 2.04 0.4 2.6-0.48l3.52-5.6c0.35-0.53-0.32-1.13-0.82-0.75l-3.79 2.87c-0.25 0.2-0.6 0.2-0.86 0l-2.8-2.1a1.8 1.8 0 0 0-2.61 0.48z",
+                                                  "fillRule": "evenodd",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    24,
+                                                    24
+                                                  ],
+                                                  "fill": "$color-surface",
+                                                  "width": 12,
+                                                  "height": 12
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "f00dN",
+                                              "name": "time",
+                                              "fill": "$color-surface",
+                                              "content": "9:24",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
                                         }
                                       ]
                                     }
@@ -437996,7 +438164,7 @@
                       "fill": "$color-text-secondary",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "WhatsApp-style ticks inside the bubble: clock while sending, one tick when Facebook has it, two ticks when delivered. “Seen” shows only under your last message the customer has read. Failed keeps the bubble with Facebook's reason in plain words and Retry.",
+                      "content": "Ticks inside the bubble, solid white: a clock while sending, one tick when Facebook has it, two ticks when delivered, and a filled white circle with a green double tick once read. No line under the message. Hovering the ticks shows a tip (“Seen at 9:26 AM”); clicking them opens Message details with Sent, Delivered and Seen times, as WhatsApp's Message info does. Failed: a solid red circle with a white “!” sits left of the bubble (as iMessage does), and under it Facebook's reason in plain words and Retry. Changed 2026-10-23 at Jafar's request.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font-family",
                       "fontSize": 12,
