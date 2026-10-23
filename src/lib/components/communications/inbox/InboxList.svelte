@@ -58,10 +58,11 @@
 				(lane === 'all' || group.messages.some((message) => message.channel === lane))
 		)
 	);
-	// Customers waiting on the team come first, the way a messaging app floats unread chats; selection never
-	// moves a row between the two, because opening one does not answer it.
-	const needsReply = $derived(visibleGroups.filter((group) => group.unreadCount > 0));
-	const earlier = $derived(visibleGroups.filter((group) => group.unreadCount === 0));
+	// Customers waiting on the team come first (Front's "Unreplied", Intercom's "waiting on you"): the customer
+	// spoke last, or something is still unread. Opening a conversation never moves it out -- only an answer does.
+	const waitingOnTeam = (group: ConversationGroup) => group.awaitingReply || group.unreadCount > 0;
+	const needsReply = $derived(visibleGroups.filter(waitingOnTeam));
+	const earlier = $derived(visibleGroups.filter((group) => !waitingOnTeam(group)));
 	const orderedGroups = $derived([...needsReply, ...earlier]);
 
 	// The list is one Tab stop, not one per row -- with hundreds of conversations a keyboard user would otherwise

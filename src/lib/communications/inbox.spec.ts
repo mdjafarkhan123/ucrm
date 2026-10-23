@@ -131,6 +131,48 @@ describe('groupMessagesByContact', () => {
 		expect(groups[0].unreadCount).toBe(0);
 	});
 
+	it('marks a conversation as waiting on the team when the customer spoke last, read or not', () => {
+		const groups = groupMessagesByContact([
+			inbound({ id: 'in-2', unread: false, created_at: '2026-08-25T12:00:00.000Z' }),
+			outbound({ id: 'out-1', created_at: '2026-08-25T11:00:00.000Z' })
+		]);
+		expect(groups[0].unreadCount).toBe(0);
+		expect(groups[0].awaitingReply).toBe(true);
+	});
+
+	it('clears waiting once a person answers, including a reply sent from the Facebook inbox', () => {
+		const groups = groupMessagesByContact([
+			outbound({
+				id: 'out-fb',
+				channel: 'messenger',
+				created_by: null,
+				created_at: '2026-08-25T12:00:00.000Z'
+			}),
+			inbound({ id: 'in-1', unread: false, created_at: '2026-08-25T11:00:00.000Z' })
+		]);
+		expect(groups[0].awaitingReply).toBe(false);
+	});
+
+	it('keeps waiting through automated sends and forwards, and ignores auto-responders', () => {
+		const automated = groupMessagesByContact([
+			outbound({ id: 'out-auto', send_kind: 'automated', created_at: '2026-08-25T13:00:00.000Z' }),
+			outbound({ id: 'out-fwd', send_kind: 'forward', created_at: '2026-08-25T12:30:00.000Z' }),
+			inbound({ id: 'in-1', unread: false, created_at: '2026-08-25T12:00:00.000Z' })
+		]);
+		expect(automated[0].awaitingReply).toBe(true);
+
+		const autoResponder = groupMessagesByContact([
+			inbound({
+				id: 'in-ooo',
+				unread: false,
+				message_kind: 'auto_response',
+				created_at: '2026-08-25T13:00:00.000Z'
+			}),
+			outbound({ id: 'out-1', created_at: '2026-08-25T12:00:00.000Z' })
+		]);
+		expect(autoResponder[0].awaitingReply).toBe(false);
+	});
+
 	it('carries assignment and follow state onto the group, constant across every message in it', () => {
 		const groups = groupMessagesByContact([
 			inbound({ id: 'in-1', assigned_to: 'user-9', assigned_to_name: 'Robin', is_following: true }),

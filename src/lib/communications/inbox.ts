@@ -422,6 +422,10 @@ export type ConversationGroup = {
 	latest: TimelineMessage;
 	/** Unread inbound items in this group; a guarded group has no read-mark seam, so it never clears. */
 	unreadCount: number;
+	/** The customer spoke last and no person has answered yet -- Front's "Unreplied", Intercom's "waiting on
+	 *  you". Opening the conversation does not change it; a reply from UCRM or the Page's own Facebook inbox
+	 *  does. Automated sends, forwards, chat system lines and auto-responders neither raise nor clear it. */
+	awaitingReply: boolean;
 	/** Full history, oldest first, for the conversation timeline. */
 	messages: TimelineMessage[];
 	guarded: boolean;
@@ -489,6 +493,8 @@ export function groupMessagesByContact(
 	);
 
 	const groups = new Map<string, ConversationGroup>();
+	// Groups whose newest person-to-person message has been seen, so `awaitingReply` is final.
+	const turnSettled = new Set<string>();
 	for (const item of timeline) {
 		const key = timelineItemKey(item);
 		const session = isWebsiteChatMessage(item) ? sessionsById.get(item.session_id) : undefined;
@@ -501,6 +507,7 @@ export function groupMessagesByContact(
 				avatarId: timelineItemAvatarId(item),
 				latest: item,
 				unreadCount: 0,
+				awaitingReply: false,
 				messages: [],
 				guarded: item.client_id === null,
 				senderEmail:
@@ -516,6 +523,11 @@ export function groupMessagesByContact(
 		}
 		group.messages.push(item);
 		if (item.direction === 'inbound' && item.unread) group.unreadCount += 1;
+		// Newest first, so the first person-to-person message settles who is waiting on whom.
+		if (!turnSettled.has(key) && isConversationalTurn(item)) {
+			group.awaitingReply = item.direction === 'inbound';
+			turnSettled.add(key);
+		}
 		if (
 			session &&
 			(!group.chatSession || session.last_activity_at > group.chatSession.last_activity_at)
@@ -525,6 +537,14 @@ export function groupMessagesByContact(
 	}
 	for (const group of groups.values()) group.messages.reverse();
 	return [...groups.values()];
+}
+
+// A message a person wrote to another person. Auto-responders, automated sends, forwards and a chat's system
+// or automation lines are bookkeeping: they say nothing about whether the customer is still waiting.
+function isConversationalTurn(item: TimelineMessage): boolean {
+	if (isWebsiteChatMessage(item)) return item.sender_type === 'visitor' || item.sender_type === 'staff';
+	if (item.direction === 'inbound') return item.message_kind !== 'auto_response';
+	return item.send_kind !== 'automated' && item.send_kind !== 'forward';
 }
 
 // A forward event (send_kind 'forward') is direction 'outbound' for timeline placement, but it targets an
