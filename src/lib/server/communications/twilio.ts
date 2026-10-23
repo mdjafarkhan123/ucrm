@@ -873,6 +873,8 @@ export type TwilioNumberPurchaseClient = {
 		input: SubaccountAuthInput & { phoneNumber: string }
 	): Promise<OwnedPhoneNumber | null>;
 	addPhoneNumberToMessagingService: TwilioProvisioningClient['addPhoneNumberToMessagingService'];
+	/** Part 7: let a number go. A number Twilio no longer has (404) counts as released. */
+	releasePhoneNumber(input: SubaccountAuthInput & { phoneNumberSid: string }): Promise<void>;
 };
 
 const E164 = /^\+[1-9][0-9]{7,14}$/;
@@ -950,7 +952,22 @@ export function createTwilioNumberPurchaseClient(
 		},
 
 		addPhoneNumberToMessagingService: (input) =>
-			provisioning.addPhoneNumberToMessagingService(input)
+			provisioning.addPhoneNumberToMessagingService(input),
+
+		async releasePhoneNumber({ subaccountSid, subaccountAuthToken, phoneNumberSid }) {
+			requireSid(phoneNumberSid, PHONE_NUMBER_SID, 'twilio_bad_phone_number_sid');
+			try {
+				await twilioRequest({
+					base: TWILIO_API_BASE,
+					path: `/2010-04-01/Accounts/${subaccountSid}/IncomingPhoneNumbers/${phoneNumberSid}.json`,
+					method: 'DELETE',
+					auth: subaccountAuth(subaccountSid, subaccountAuthToken)
+				});
+			} catch (error) {
+				if (error instanceof TwilioProvisioningError && error.status === 404) return;
+				throw error;
+			}
+		}
 	};
 }
 

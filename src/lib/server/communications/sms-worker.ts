@@ -6,6 +6,7 @@ import { runBoundedDrain, type BoundedDrainOptions, type BoundedDrainResult } fr
 import { submitTwilioSms, TwilioSmsSubmissionError, type SubmitTwilioSmsInput } from './twilio';
 import { createSupabaseTwilioProvisioningStore } from './twilio-provisioning-store';
 import { decryptTwilioCredential } from './twilio-credential-crypto';
+import { releaseDueNumbers } from './sms-number-release';
 
 // A2 Stage 4B: the SMS half of the bounded delivery drain. It mirrors the email worker exactly -- quarantine
 // stale claims once per wake, then bounded concurrent claim/send/finalize under a single-flight lease -- with
@@ -238,6 +239,8 @@ type MonitoredWakeDependencies = SmsWorkerDependencies &
 		leaseTtlSeconds?: number;
 		routeDeadlineMs?: number;
 		nowIso?: () => string;
+		/** Part 7: lets go of numbers whose grace ran out. Defaults to the real Twilio release. */
+		releaseNumbers?: (client: CommunicationWorkerClient) => Promise<unknown>;
 	};
 
 // Best-effort monitoring: a failed ledger write must never turn a drain that actually sent into an HTTP error.
@@ -317,6 +320,16 @@ export async function runMonitoredSmsWake(
 			});
 			return { outcome: 'route_deadline' };
 		}
+
+		// Still under the lease, so two wakes never release the same number. Best-effort: a failure here must not
+		// turn a drain that sent into an error; the number stays due and the next wake retries it.
+		const releaseNumbers =
+			dependencies.releaseNumbers ?? ((worker) => releaseDueNumbers({ client: worker }));
+		await releaseNumbers(client).catch((error: unknown) =>
+			console.error('Could not release due SMS numbers.', {
+				reason: error instanceof Error ? error.message : 'unknown'
+			})
+		);
 
 		await releaseSmsWakeLease(client, leaseToken);
 		await recordSmsWakeResult(client, {

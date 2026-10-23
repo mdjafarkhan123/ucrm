@@ -2,24 +2,33 @@
 	import PaperworkFlag from '$lib/components/communications/paperwork/PaperworkFlag.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
 	import { languageName } from '$lib/communications/sms-opt-out-words';
-	import { whenAsked, type OptOutTask, type TextingTask } from '$lib/jafar/texting-setup';
+	import {
+		whenAsked,
+		type OptOutTask,
+		type TextingTask,
+		type UnpaidNumberTask
+	} from '$lib/jafar/texting-setup';
 	import sortIcon from '@tabler/icons/outline/arrows-sort.svg?raw';
 	import globeIcon from '@tabler/icons/outline/world.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import messageOffIcon from '@tabler/icons/outline/message-off.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 
 	// The Texting setup queue card (board `v6Jtu`): every task for every business, oldest first. The open
 	// task is tinted with a green bar down its left edge.
 	let {
 		tasks,
 		optOutTasks,
+		unpaidTasks,
 		selectedId,
 		onSelect
 	}: {
 		tasks: TextingTask[];
 		/** Opt-out words tasks (Part 5d), in the same oldest-first list. */
 		optOutTasks: OptOutTask[];
+		/** Unpaid number tasks (Part 7): numbers that couldn't renew, waiting on the business's top-up. */
+		unpaidTasks: UnpaidNumberTask[];
 		selectedId: string | null;
 		onSelect: (id: string) => void;
 	} = $props();
@@ -33,6 +42,14 @@
 		icon: string;
 		at: string;
 	};
+
+	const DAY_MS = 86_400_000;
+	const day = (iso: string) =>
+		new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+	function releasedIn(iso: string) {
+		const days = Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / DAY_MS));
+		return days === 0 ? 'today' : `in ${days} day${days === 1 ? '' : 's'}`;
+	}
 
 	const rows = $derived(
 		[
@@ -52,6 +69,15 @@
 				meta: `For ${task.countries.map(countryDisplayName).join(' and ')} · ${task.organization_name} · ${whenAsked(task.requested_at)}`,
 				kind: 'Opt-out words',
 				icon: messageOffIcon,
+				at: task.requested_at
+			})),
+			...unpaidTasks.map((task): Row => ({
+				id: task.id,
+				flag: task.country,
+				title: `Unpaid number · ${task.name}`,
+				meta: `${task.organization_name} · since ${day(task.requested_at)} · released ${releasedIn(task.grace_ends_at)}`,
+				kind: 'Unpaid number',
+				icon: walletIcon,
 				at: task.requested_at
 			}))
 		].sort((a, b) => a.at.localeCompare(b.at))

@@ -5222,6 +5222,7 @@ export type Database = {
 					organization_id: string;
 					phone_number: string;
 					provider_phone_number_sid: string | null;
+					provider_released_at: string | null;
 					registration_id: string | null;
 					released_at: string | null;
 					renewal_anchor_at: string;
@@ -5249,6 +5250,7 @@ export type Database = {
 					organization_id: string;
 					phone_number: string;
 					provider_phone_number_sid?: string | null;
+					provider_released_at?: string | null;
 					registration_id?: string | null;
 					released_at?: string | null;
 					renewal_anchor_at: string;
@@ -5276,6 +5278,7 @@ export type Database = {
 					organization_id?: string;
 					phone_number?: string;
 					provider_phone_number_sid?: string | null;
+					provider_released_at?: string | null;
 					registration_id?: string | null;
 					released_at?: string | null;
 					renewal_anchor_at?: string;
@@ -22544,6 +22547,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_record_number_provider_released: {
+				Args: { p_sender_id: string };
+				Returns: boolean;
 			};
 			communication_sms_record_number_released: {
 				Args: { p_sender_id: string };

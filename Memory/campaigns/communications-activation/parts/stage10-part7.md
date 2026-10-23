@@ -3,7 +3,7 @@
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 7
 **Design:** Pencil board `QiDBX` approved B (Jafar 2026-10-23). Rules: `.claude/skills/design/layout.md` § Number
 readiness (Renewal strip) and § Texting setup (Unpaid number task), `inbox.md` § Reply box.
-**Stage:** Building — branch `claude/stage10-part7-build`, worktree `.worktrees/stage10-part7`, claim
+**Stage:** Built, waiting to merge — branch `claude/stage10-part7-build`, worktree `.worktrees/stage10-part7`, claim
 `6be781d0a40a` (owner `claude-stage10-part7-build`). Not merged.
 **Done when:** each number is charged once a month from the bought balance; a short balance starts a 14-day
 receive-only grace with warnings; a top-up pays and resumes sending; grace end releases the number (off while live
@@ -29,20 +29,19 @@ SMS is off); live-checked against `QiDBX`; merged to main.
 - Control Room: `sms-unpaid-number-tasks.ts` + API returns `unpaid_number_tasks` (counted in To do);
   `UnpaidNumberPanel.svelte` written but **not wired yet**.
 
+- Control Room wired: `TaskQueue.svelte` rows "Unpaid number · <name>" (wallet chip), page renders
+  `UnpaidNumberPanel`; unpaid tasks are never pinned.
+- Release worker: migration `20270107090000_sms_number_release_at_twilio.sql` **applied and recorded** (release is
+  recorded here first so a late top-up can't pay a let-go number; `provider_released_at` + retry list).
+  `sms-number-release.ts` runs inside `runMonitoredSmsWake` under the lease; `releasePhoneNumber` in `twilio.ts`
+  (404 = released). 6 new vitest cases pass.
+- Live check (branch dev server, 1440 light + dark) against `QiDBX`: Control Room row + panel and the Phone & SMS
+  card strip match. Reply box line not seen live: Raad LTD's plan has no texting and its number is pending setup,
+  so the route stops earlier. Test number restored (paid, renews 2026-11-13); no alerts created.
+
 ## Next (exact)
 
-1. `TaskQueue.svelte`: add an `unpaidTasks` prop → rows "Unpaid number · <name>", meta "<business> · since <date> ·
-   released in N days", chip "Unpaid number" with `wallet`.
-2. `texting-setup/+page.svelte`: add unpaid tasks to `AnyTask` / `ordered` (`'sender_id' in task`); render
-   `UnpaidNumberPanel` (pass `businessHref(task)`); don't pin them and keep them out of the `shown` result logic.
-3. Release worker: in `sms-worker.ts` `runMonitoredSmsWake`, after the drain, read
-   `communication_sms_due_number_releases`, DELETE `IncomingPhoneNumbers/{sid}.json` via `getSubaccountAccess`
-   (look up the SID with `findOwnedPhoneNumber` when it's missing; a 404 counts as released), then
-   `communication_sms_record_number_released`. Add `releasePhoneNumber` to `twilio.ts` next to the purchase client. Vitest with fake Twilio.
-4. Compile check through the dev server, svelte-autofixer on the changed components, focused vitest.
-5. Live Chrome check at 1440 light + dark against `QiDBX`: add a temporary unpaid state to the test number, check
-   card / reply box / Control Room, then put the row back. No real charge or Twilio release.
-6. Commit, merge to main (integration claim), update NOW.md, release the claim.
+1. Merge to main (integration claim), push, update NOW.md, release the claim.
 
 Known, not touched (needs Jafar's yes): `number-readiness.spec.ts` "toll-free … action toBeNull" was already failing
 before this part (Part 4c added the action).

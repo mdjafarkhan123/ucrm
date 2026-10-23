@@ -14,6 +14,7 @@
 	import TaskQueue from '$lib/components/jafar/texting-setup/TaskQueue.svelte';
 	import TaskPanel from '$lib/components/jafar/texting-setup/TaskPanel.svelte';
 	import OptOutTaskPanel from '$lib/components/jafar/texting-setup/OptOutTaskPanel.svelte';
+	import UnpaidNumberPanel from '$lib/components/jafar/texting-setup/UnpaidNumberPanel.svelte';
 	import { OPT_OUT_LANGUAGES, languageName } from '$lib/communications/sms-opt-out-words';
 	import CantTurnOnDialog from '$lib/components/jafar/texting-setup/CantTurnOnDialog.svelte';
 	import WaitingOnTwilio from '$lib/components/jafar/texting-setup/WaitingOnTwilio.svelte';
@@ -33,7 +34,8 @@
 		type AlreadyFinished,
 		type OptOutTask,
 		type PriceListRow,
-		type TextingTask
+		type TextingTask,
+		type UnpaidNumberTask
 	} from '$lib/jafar/texting-setup';
 	import messageIcon from '@tabler/icons/outline/message-2.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
@@ -55,10 +57,14 @@
 	const tasks = $derived(queue.data?.tasks ?? []);
 	// Part 5d: opt-out words tasks share the queue, oldest first with the countries.
 	const optOutTasks = $derived(queue.data?.opt_out_tasks ?? []);
-	type AnyTask = TextingTask | OptOutTask;
+	// Part 7: unpaid numbers too. They close by themselves (a top-up pays, or grace ends), so they are never pinned.
+	const unpaidTasks = $derived(queue.data?.unpaid_number_tasks ?? []);
+	type AnyTask = TextingTask | OptOutTask | UnpaidNumberTask;
+	type WorkTask = TextingTask | OptOutTask;
 	const isOptOut = (task: AnyTask): task is OptOutTask => 'language' in task;
+	const isUnpaid = (task: AnyTask): task is UnpaidNumberTask => 'sender_id' in task;
 	const ordered = $derived(
-		[...tasks, ...optOutTasks].sort((a, b) => a.requested_at.localeCompare(b.requested_at))
+		[...tasks, ...optOutTasks, ...unpaidTasks].sort((a, b) => a.requested_at.localeCompare(b.requested_at))
 	);
 	const summary = $derived(queue.data?.summary);
 
@@ -67,12 +73,12 @@
 	const selected = $derived(ordered.find((task) => task.id === selectedId) ?? ordered[0] ?? null);
 	// The task someone is working on: picked in the queue, or its box ticked. If it leaves the queue because a
 	// teammate finished it, the panel says so instead of moving on to another task under their hand.
-	let pinned = $state<AnyTask | null>(null);
+	let pinned = $state<WorkTask | null>(null);
 
 	/** What the panel says once a task is finished here, or was finished by a teammate first. */
 	type Result =
-		| { kind: 'done'; task: AnyTask; who: string; at: string }
-		| { kind: 'already'; task: AnyTask; finished: AlreadyFinished };
+		| { kind: 'done'; task: WorkTask; who: string; at: string }
+		| { kind: 'already'; task: WorkTask; finished: AlreadyFinished };
 	let result = $state<Result | null>(null);
 	const shown = $derived.by((): Result | null => {
 		if (result) return result;
@@ -119,7 +125,8 @@
 		if (marking || closing) return;
 		result = null;
 		selectedId = id;
-		pinned = ordered.find((task) => task.id === id) ?? null;
+		const task = ordered.find((item) => item.id === id) ?? null;
+		pinned = task && !isUnpaid(task) ? task : null;
 	}
 
 	function nextTask() {
@@ -386,6 +393,7 @@
 					<TaskQueue
 						{tasks}
 						{optOutTasks}
+						{unpaidTasks}
 						selectedId={shown ? null : (selected?.id ?? null)}
 						onSelect={select}
 					/>
@@ -470,6 +478,8 @@
 								{/if}
 							{/if}
 						</section>
+					{:else if selected && isUnpaid(selected)}
+						<UnpaidNumberPanel task={selected} businessHref={businessHref(selected)} />
 					{:else if selected && isOptOut(selected)}
 						{#key selected.id}
 							<OptOutTaskPanel

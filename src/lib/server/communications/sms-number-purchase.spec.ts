@@ -172,6 +172,7 @@ function fakeTwilio(overrides: Partial<TwilioNumberPurchaseClient> = {}) {
 		findOwnedPhoneNumber: vi.fn<TwilioNumberPurchaseClient['findOwnedPhoneNumber']>(
 			async () => null
 		),
+		releasePhoneNumber: vi.fn<TwilioNumberPurchaseClient['releasePhoneNumber']>(async () => {}),
 		addPhoneNumberToMessagingService: vi.fn<
 			TwilioNumberPurchaseClient['addPhoneNumberToMessagingService']
 		>(async () => ({ phoneNumberSid: PN_SID })),
