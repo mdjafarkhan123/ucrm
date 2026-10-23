@@ -28,8 +28,7 @@
 		type MessengerConnection,
 		type MessengerLoginOutcome
 	} from '$lib/communications/messenger-settings';
-	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
-	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import messengerIcon from '@tabler/icons/outline/brand-messenger.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 	import loginIcon from '@tabler/icons/outline/login-2.svg?raw';
 	import plugXIcon from '@tabler/icons/outline/plug-x.svg?raw';
@@ -268,11 +267,11 @@
 			<Breadcrumbs
 				items={[
 					{ label: 'Settings', href: resolve('/(app)/settings') },
-					{ label: 'Messenger', icon: messageCircleIcon }
+					{ label: 'Messenger', icon: messengerIcon }
 				]}
 			/>
 			<PageHeader
-				icon={phoneIcon}
+				icon={messengerIcon}
 				tone="conversation"
 				title="Messenger"
 				description="Your Facebook Pages, whether their messages reach Conversations, and what to do next."
