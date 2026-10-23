@@ -35,6 +35,7 @@
 	} from '$lib/support/api';
 	import { SUPPORT_FALLBACK_REFRESH_MS, listenForSupportActivity } from '$lib/support/live';
 	import { TEAM_ROLE_LABELS, canUseJafarPath } from '$lib/jafar/team-access';
+	import { fetchTextingSetup, textingSetupKey } from '$lib/jafar/texting-setup';
 	let { children, data } = $props();
 	const queryClient = useQueryClient();
 
@@ -71,6 +72,13 @@
 		queryKey: jafarSupportUnreadKey,
 		queryFn: fetchSupportInboxUnread,
 		enabled: supportVisible
+	}));
+
+	// Countries waiting on Uplift: the number on the Texting setup menu item, shared with that page's own read.
+	const textingSetup = createQuery(() => ({
+		queryKey: textingSetupKey,
+		queryFn: fetchTextingSetup,
+		enabled: canOpen('/jafar/texting-setup')
 	}));
 
 	// Support Inbox activity arrives live on this session's own secret channel (D2). Each ping refreshes the
@@ -154,6 +162,9 @@
 		if (pathname === '/jafar/operations') {
 			return hasCachedData(jafarOperationsKey);
 		}
+		if (pathname === '/jafar/texting-setup') {
+			return hasCachedData(textingSetupKey);
+		}
 		if (pathname === '/jafar/message-templates') {
 			return hasCachedData(jafarMessageTemplatesKey);
 		}
@@ -194,6 +205,7 @@
 <AppShell
 	variant="owner"
 	supportUnread={supportUnread.data?.unread ?? 0}
+	textingToDo={textingSetup.data?.summary.to_do ?? 0}
 	ownerCanOpen={canOpen}
 	{account}
 	ownerPhoto={{ ...data.photo, name: data.owner.name ?? data.owner.email }}

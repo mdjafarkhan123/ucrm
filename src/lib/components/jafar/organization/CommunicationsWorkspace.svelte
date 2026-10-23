@@ -18,6 +18,7 @@
 	import SmsModeActions from '$lib/components/jafar/SmsModeActions.svelte';
 	import SmsRegistrationActions from '$lib/components/jafar/SmsRegistrationActions.svelte';
 	import SmsSenderCapabilitiesActions from '$lib/components/jafar/SmsSenderCapabilitiesActions.svelte';
+	import TextingCountriesCard from '$lib/components/jafar/organization/TextingCountriesCard.svelte';
 
 	let {
 		access,
@@ -118,6 +119,10 @@
 				<Card class="organization-detail__commercial-explainer">
 					<SmsSenderCapabilitiesActions organizationId={access.organization.id} />
 				</Card>
+				<TextingCountriesCard
+					organizationId={access.organization.id}
+					organizationName={access.organization.name}
+				/>
 			</section>
 		{/if}
 	</div>

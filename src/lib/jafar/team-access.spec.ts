@@ -95,6 +95,10 @@ describe('Jafar Panel team access', () => {
 		expect(canUseJafarPath(operations, '/api/jafar/organizations/x', 'PATCH')).toBe(false);
 		expect(canUseJafarPath(operations, '/api/jafar/packages/x/publish', 'POST')).toBe(false);
 		expect(canUseJafarPath(operations, '/api/jafar/operations/x/retry', 'POST')).toBe(false);
+		// Texting setup belongs to Operations: looking opens the queue, marking a country needs work.
+		expect(canUseJafarPath(operations, '/jafar/texting-setup', 'GET')).toBe(true);
+		expect(canUseJafarPath(operations, '/api/jafar/texting-setup', 'GET')).toBe(true);
+		expect(canUseJafarPath(operations, '/api/jafar/texting-setup/x/switch-on', 'POST')).toBe(false);
 	});
 
 	it('sends every role to their own home, which they can open (D3b)', () => {

@@ -994,3 +994,19 @@ export const readinessDecisionSchema = z
 			});
 		}
 	});
+
+// Stage 10 Part 5b: Uplift could not switch a waiting country on. The reason stays in the log; the message is
+// what the business sees in place of "Setting up".
+export const communicationSmsDestinationCloseSchema = z.object({
+	reason: smsControlReasonSchema.max(500, 'Keep the reason under 500 characters.'),
+	business_message: z
+		.string()
+		.trim()
+		.min(1, 'Write what the business sees.')
+		.max(400, 'Keep it under 400 characters.')
+});
+
+// Stage 10 Part 5b: Uplift turns a ready country off for one business.
+export const communicationSmsDestinationTurnOffSchema = z.object({
+	reason: smsControlReasonSchema.max(500, 'Keep the reason under 500 characters.')
+});

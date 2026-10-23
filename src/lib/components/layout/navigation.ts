@@ -8,6 +8,7 @@ import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
+import messageTextIcon from '@tabler/icons/outline/message-2.svg?raw';
 import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 import packageIcon from '@tabler/icons/outline/package.svg?raw';
 import buildingIcon from '@tabler/icons/outline/building.svg?raw';
@@ -69,6 +70,7 @@ export const iconMap: Record<string, string> = {
 	clock: clockIcon,
 	receipt: receiptIcon,
 	messages: messagesIcon,
+	messageText: messageTextIcon,
 	hammer: hammerIcon,
 	package: packageIcon,
 	building: buildingIcon,
