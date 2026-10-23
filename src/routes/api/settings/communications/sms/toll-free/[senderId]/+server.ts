@@ -80,10 +80,16 @@ export const GET: RequestHandler = async (event) => {
 	const scope = await context(event);
 	if (scope.response) return scope.response;
 	try {
+		const [current, registration] = await Promise.all([
+			present(scope.client, scope.organizationId, scope.sender.id),
+			readRegistrationAnswers(scope.client, scope.organizationId)
+		]);
 		return json(
 			{
-				...(await present(scope.client, scope.organizationId, scope.sender.id)),
-				phone_number: scope.sender.phone_number
+				...current,
+				phone_number: scope.sender.phone_number,
+				// For "Same as your registration" beside the address the check was filled in with.
+				registration_address: registration?.business_address ?? null
 			},
 			{ headers: PRIVATE_READ_HEADERS }
 		);
