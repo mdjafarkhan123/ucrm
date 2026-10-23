@@ -2,7 +2,9 @@
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 7
 **Stage:** plan approved 2026-10-23 (Jafar: texting balance pays; 14-day grace; receive-only while unpaid).
-Next: Pencil design. Nothing built yet.
+Pencil board `QiDBX` drawn 2026-10-23 ("Monthly number renewal · Options"): Option A quiet renewal line +
+status band, Option B renewal strip with a balance meter / 14-day countdown; shared inbox reply-box and Control Room
+"Unpaid number" task. Waiting for Jafar's pick, then Ctrl+S and a commit of `concept.pen`. Nothing built yet.
 **Done when:** each number is charged once a month from the bought balance; a short balance starts a 14-day
 receive-only grace with warnings; a top-up pays and resumes sending; grace end releases the number (off while live SMS is off); merged to main.
 
