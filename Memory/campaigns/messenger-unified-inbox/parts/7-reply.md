@@ -1,7 +1,7 @@
 # Part 7 — Reply
 
-**State:** Built and merged to main 2026-10-23 (branch `claude/messenger-part7`). Migration
-`20270102090000_messenger_reply.sql` applied and recorded. Left: the live proof.
+**State:** Done 2026-10-23 (branch `claude/messenger-part7`, merged). Migration
+`20270102090000_messenger_reply.sql` applied and recorded.
 
 **What it does:** the reply box sends on Messenger (text only, ≤2,000 characters; snippets shown, no files). The
 database refuses with a plain reason when the Page is off/needs reconnect or the 24-hour window is closed, and the
@@ -18,6 +18,9 @@ foreign echo once, unknown settled by echo, token refusal → reconnect, closed 
 cancelled at claim, stale claim quarantined). Vitest: Messenger + communications suites 252 passed; 1 failure in
 `number-readiness.spec.ts` is unrelated (also on main).
 
-**Next:** with Jafar's yes and Chrome connected, send a reply to the test lead "Facebook user" in the live inbox;
-Jafar confirms it arrives on his tester account and opens it; check Delivered then Seen in the inbox; screenshot
-beside Pencil `np8WS`/`j93I8l`. The window runs 24 h from that customer's last message (2026-10-23 01:59 UTC).
+**Live proof (2026-10-23):** with Jafar's yes, "Test reply from Uplift CRM" sent from the live inbox; Facebook
+accepted it, our echo matched it (one row), Jafar received it on his tester account and opened it; the inbox showed
+Seen for it and for a second CRM reply. Seen circle re-centred after Jafar spotted it off-centre. Not yet seen live:
+a reply typed in Facebook's own Page inbox ("Sent from Facebook") — Jafar agreed the CRM shows every message.
+
+**Next:** Part 8.
