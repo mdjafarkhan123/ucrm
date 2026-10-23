@@ -29,7 +29,8 @@
 		label
 	}: {
 		channel: InboxChannel;
-		size?: 12 | 14 | 16;
+		/** 40 is a page heading's logo (Messenger only), drawn as a vector so it stays sharp. */
+		size?: 12 | 14 | 16 | 40;
 		inverse?: boolean;
 		/** Spoken name; leave out when words beside the mark already say the channel. */
 		label?: string;
@@ -47,7 +48,10 @@
 		sms: smsLogo,
 		website_chat: chatLogo
 	};
-	const logo = $derived(inverse ? undefined : logos[channel]);
+	// The logos are small images; Messenger's own vector mark stands in wherever it is drawn larger.
+	const logo = $derived(
+		inverse || (channel === 'messenger' && size > 16) ? undefined : logos[channel]
+	);
 </script>
 
 <span
@@ -99,6 +103,10 @@
 		&--16 {
 			width: 16px;
 			height: 16px;
+		}
+		&--40 {
+			width: 40px;
+			height: 40px;
 		}
 
 		&--messenger {
