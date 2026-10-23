@@ -12,4 +12,4 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Next part:** 5 Inbound webhook (no screens; can build now). Parts 4 (connect card) and 6 (inbox) need Pencil drawings approved by Jafar first — drawing happens in a design session, building in another.
 
-**Blockers (Jafar):** `META_APP_SECRET` in `.env` is still the old app's — paste the new app's secret (needed by Part 4).
+**Blockers:** none. `META_APP_SECRET` checked against Facebook 2026-10-23: matches the new app.
