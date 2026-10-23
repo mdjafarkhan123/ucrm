@@ -1,8 +1,8 @@
 # Stage 10 Part 5 — Sending rules per country
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 5
-**Stage:** 5a, 5b, 5b-2 (incl. Countries & prices, Part 6) and 5c built and **merged to main 2026-10-23**. 5d not
-started. Full-app type check still owed — only in a separate session after Jafar's yes (it crashes here).
+**Stage:** 5a, 5b, 5b-2 (incl. Countries & prices, Part 6) and 5c built and **merged to main 2026-10-23**. 5d built and merged
+2026-10-23. Full-app type check still owed — only in a separate session after Jafar's yes (it crashes here).
 **Done when:** a business texts only countries Uplift switched on, from a number that can text them; Uplift
 works the requests in Texting setup (`v6Jtu`); opt-out words are set per language; merged to main.
 
@@ -54,7 +54,7 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   when Uplift switched it on and a number can text it). Dialog `bare` header for the centred result.
   **Checked:** svelte-check clean for these files; `sms-destinations.spec.ts` 7 pass; live (Raad owner, Playwright,
   light + dark): every state, asked Canada → Setting up in the list (test row then removed).
-- **5d — built on branch `claude/stage10-part5d` (worktree `.worktrees/comms-5d`), NOT merged; live check owed.**
+- **5d — built, live-checked and merged to main 2026-10-23.**
   Quiet hours: migration `20270103090000_sms_recipient_quiet_hours` **applied** (libphonenumber v9.0.41 time zone
   map via `scripts/generate-phone-time-zones.mjs`; enqueue + claim pass the customer's number; rolled-back test:
   Dhaka 03:00 → 08:00 Dhaka). Opt-out words: `$lib/communications/sms-opt-out-words.ts` (30 Twilio languages, CLDR
@@ -62,8 +62,9 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   `20270103100000_sms_opt_out_languages` **applied**; queue route adds `opt_out_tasks`; `opt-out` route (Mark as done);
   switch-on refuses until the words are added; `OptOutTaskPanel`; Opt-out words step in `TaskPanel`; side card lists
   languages. Help words left out (not drawn). vitest 66 pass; changed TS files type-clean (scoped tsc).
-  **Next:** run worktree dev server (`npx vite dev --port 5199`), check Texting setup live (Raad LTD's BD task should
-  show "Add Bengali opt-out words") light + dark vs `v6Jtu`, fix differences, merge to main.
+  **Live 2026-10-23 (Playwright, Control Room, light + dark):** queue shows "Add Bengali opt-out words" for Raad's BD;
+  panel matches `DMO1v` in `v6Jtu`; Mark as done → "Bengali words are in"; BD turn-on step then reads Done (test
+  row then removed, task back). US task: Opt-out words step Done (English).
 
 ## Proof so far
 
