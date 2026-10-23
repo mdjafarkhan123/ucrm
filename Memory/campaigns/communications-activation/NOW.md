@@ -16,7 +16,7 @@ Parts 4a–4c built (`parts/stage10-part4.md`). Parts 5a and 5b (To do queue + b
 ## Next
 
 5b, 5b-2, Countries & prices (Part 6) and 5c (Text customers in another country) merged to main 2026-10-23;
-prices set (US $0.01, BD $0.70). Next: 5d (opt-out words per language, quiet hours) — its Opt-out task is drawn in board `v6Jtu`; check what else needs drawing. Later: Businesses tab, Show its history. Full type check owed, only after Jafar's yes in another session.
+prices set (US $0.01, BD $0.70). 5d built on branch `claude/stage10-part5d`, migrations applied, not merged — next: live check, then merge (part note). Later: Businesses tab, Show its history. Full type check owed, only after Jafar's yes in another session.
 
 ## Constraints
 

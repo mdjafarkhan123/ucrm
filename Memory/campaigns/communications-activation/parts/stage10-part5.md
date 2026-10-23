@@ -54,7 +54,16 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   when Uplift switched it on and a number can text it). Dialog `bare` header for the centred result.
   **Checked:** svelte-check clean for these files; `sms-destinations.spec.ts` 7 pass; live (Raad owner, Playwright,
   light + dark): every state, asked Canada → Setting up in the list (test row then removed).
-- **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
+- **5d — built on branch `claude/stage10-part5d` (worktree `.worktrees/comms-5d`), NOT merged; live check owed.**
+  Quiet hours: migration `20270103090000_sms_recipient_quiet_hours` **applied** (libphonenumber v9.0.41 time zone
+  map via `scripts/generate-phone-time-zones.mjs`; enqueue + claim pass the customer's number; rolled-back test:
+  Dhaka 03:00 → 08:00 Dhaka). Opt-out words: `$lib/communications/sms-opt-out-words.ts` (30 Twilio languages, CLDR
+  country → language + CA/BE/CH/LU second languages; reply classifier fallback); migration
+  `20270103100000_sms_opt_out_languages` **applied**; queue route adds `opt_out_tasks`; `opt-out` route (Mark as done);
+  switch-on refuses until the words are added; `OptOutTaskPanel`; Opt-out words step in `TaskPanel`; side card lists
+  languages. Help words left out (not drawn). vitest 66 pass; changed TS files type-clean (scoped tsc).
+  **Next:** run worktree dev server (`npx vite dev --port 5199`), check Texting setup live (Raad LTD's BD task should
+  show "Add Bengali opt-out words") light + dark vs `v6Jtu`, fix differences, merge to main.
 
 ## Proof so far
 
