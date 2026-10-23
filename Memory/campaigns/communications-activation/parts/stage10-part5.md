@@ -76,3 +76,9 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
 - 5a, rolled-back live-DB runs: 6,798/6,800 numbers match libphonenumber; every route state; enqueue → claim;
   a turned-off country cancels and releases the hold.
 - Twilio's GeoPermissions API answers 404 for our account, so switching on stays a dashboard step.
+- **Show its history — built, live-checked 2026-10-23.** Board `oCM6G` in `concept.pen` (Jafar approved; drawn on
+  the white countries list). ⋯ menu on a ready/off country in `TextingCountriesCard` → `CountryHistoryPopover`
+  (the approved History pop-over, `e18rX`; events already on the card, nothing new to load). Home country's first
+  request reads "Came with … first number". **Live (Playwright, light + dark):** temporary Canada row with 3
+  events showed newest first with who and reason (row then removed). Home wording not seen live (BD still Setting up).
+
