@@ -8,7 +8,7 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1709471683925717` (2nd Facebook account; old 1419027217062214 abandoned), development mode, portfolio Uplift Contractor 855656587107152, Business Verification **Verified** 2026-10-18. Webhook host `https://app.upliftcontractor.com`. Test Page **Uplift Contractor** (Random News is another account — never use it). Jafar logs in, types passwords and uploads; Claude drives Chrome.
 
-**Done:** Parts 1, 1b, 2, 3, 5 (2026-10-23). Webhook `/api/webhooks/messenger` live; test Page 1121199934412688 subscribed to messages, message_echoes, message_deliveries, message_reads, messaging_policy_enforcement. Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
+**Done:** Parts 1, 1b, 2, 3, 5 (2026-10-23). Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
 **Next part:** 4 Connect card — needs a Pencil drawing approved by Jafar first (design session), then building. Part 6 (inbox) also waits on a drawing. Parts 4 (connect card) and 6 (inbox) need Pencil drawings approved by Jafar first — drawing happens in a design session, building in another.
 
