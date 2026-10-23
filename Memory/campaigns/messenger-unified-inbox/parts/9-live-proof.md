@@ -1,6 +1,6 @@
 # Part 9 — Live proof
 
-**State:** In progress 2026-10-23 (branch `claude/messenger-part9`, merged to main as it goes).
+**State:** Done 2026-10-23 (branch `claude/messenger-part9`, merged). Evidence: `docs/evidence/messenger-part9/README.md`.
 
 **Proven live (Chrome, Raad LTD owner, 1440):**
 1. Tester "hi there" → saved once in 0.6 s, shown under Facebook user; CRM reply delivered → Seen.
@@ -14,7 +14,6 @@
   automated sends, forwards, chat system lines and auto-responders ignored. Tests in `inbox.spec.ts`.
 - C. Jafar's channel logos: `src/lib/assets/channels/*.png` (imported for hashed URLs); bubbles keep white mark.
 
-**Remaining:** 4 revoke access on Facebook → "reconnect needed" → reconnect (Jafar said yes); 5 Meta dashboard
-webhook check + recovery steps; evidence README `docs/evidence/messenger-part9/`; Pencil redraw of logos later.
-**Noted, waiting for Jafar:** Settings Pages table squashes the Page name ("U.."); Messenger settings header uses
+**Also proven:** 4 revoke → Reconnect needed → reconnect (same row); 5 Meta Page webhook fields subscribed.
+**Noted, waiting for Jafar:** Messenger settings header uses
 a phone icon; Text and Website chat logos look alike.
