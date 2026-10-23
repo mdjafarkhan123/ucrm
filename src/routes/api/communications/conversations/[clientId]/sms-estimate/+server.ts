@@ -69,13 +69,33 @@ export const POST: RequestHandler = async (event) => {
 		}
 		const route = (routes as SmsReplyRoute[] | null)?.[0];
 		if (!route?.ok || !route.sender_id || !route.sender_type || !route.recipient_country) {
+			// Part 7: a number that couldn't renew names itself, and only people who can add money are sent to
+			// Balance; everyone else is told to ask an admin.
+			let unpaid: { sender_name: string; can_add_money: boolean } | null = null;
+			if (route?.code === 'number_unpaid' && route.sender_id) {
+				const { data: unpaidSender } = await ownerClient
+					.from('communication_sms_sender_identities')
+					.select('display_name, phone_number')
+					.eq('organization_id', organizationId)
+					.eq('id', route.sender_id)
+					.maybeSingle();
+				unpaid = {
+					sender_name:
+						unpaidSender?.display_name?.trim() || unpaidSender?.phone_number || 'This number',
+					can_add_money:
+						(check.auth.organization.role === 'owner' ||
+							check.auth.organization.role === 'admin') &&
+						hasPermission(check.access, 'conversations.manage_connections')
+				};
+			}
 			return json(
 				{
 					ready: false,
 					reason: route?.message ?? 'No ready SMS number is available to send from.',
 					route_code: route?.code ?? 'no_sender',
 					recipient_country: route?.recipient_country ?? null,
-					mms_eligible: false
+					mms_eligible: false,
+					...(unpaid ?? {})
 				} as const,
 				{ headers: NO_STORE_HEADERS }
 			);

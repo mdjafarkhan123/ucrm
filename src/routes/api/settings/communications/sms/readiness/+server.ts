@@ -9,9 +9,13 @@ import {
 	SMS_REGISTRATION_USE_CASE
 } from '$lib/server/communications/sms-registration';
 import {
+	priceRenewals,
 	readinessNumbers,
 	type ReadinessTollFreeCheckRow
 } from '$lib/server/communications/sms-number-readiness';
+
+// A released number keeps its card this long, so the business sees what happened to it (Part 7).
+const RELEASED_CARD_DAYS = 30;
 
 // Whether each texting number can text yet (Stage 10 Part 4): every number the business owns or is still
 // connecting, each with its own order, paperwork, toll-free check and the US registration it may share. The page turns these
@@ -22,14 +26,15 @@ export const GET: RequestHandler = async (event) => {
 
 	const client = getOwnerSupabaseClient();
 	const organizationId = check.auth.organization.id;
-	const [senders, orders, paperwork, tollFree, registration] = await Promise.all([
+	const releasedSince = new Date(Date.now() - RELEASED_CARD_DAYS * 86_400_000).toISOString();
+	const [senders, orders, paperwork, tollFree, registration, account] = await Promise.all([
 		client
 			.from('communication_sms_sender_identities')
 			.select(
-				'id, phone_number, display_name, country_code, sender_type, number_type, lifecycle_state, capable_sms, capable_mms, capable_voice, is_default_sender, created_at'
+				'id, phone_number, display_name, country_code, sender_type, number_type, lifecycle_state, capable_sms, capable_mms, capable_voice, is_default_sender, created_at, renewal_state, renews_at, unpaid_since, grace_ends_at, released_at'
 			)
 			.eq('organization_id', organizationId)
-			.neq('lifecycle_state', 'released'),
+			.or(`lifecycle_state.neq.released,released_at.gte.${releasedSince}`),
 		client
 			.from('communication_sms_number_orders')
 			.select(
@@ -56,9 +61,14 @@ export const GET: RequestHandler = async (event) => {
 			.eq('country_code', SMS_REGISTRATION_COUNTRY_CODE)
 			.eq('sender_type', SMS_REGISTRATION_SENDER_TYPE)
 			.eq('use_case', SMS_REGISTRATION_USE_CASE)
+			.maybeSingle(),
+		client
+			.from('communication_sms_credit_accounts')
+			.select('currency_code, settled_balance_minor, reserved_balance_minor')
+			.eq('organization_id', organizationId)
 			.maybeSingle()
 	]);
-	const failed = [senders, orders, paperwork, tollFree, registration].find(
+	const failed = [senders, orders, paperwork, tollFree, registration, account].find(
 		(result) => result.error
 	);
 	if (failed) {
@@ -66,15 +76,33 @@ export const GET: RequestHandler = async (event) => {
 		return databaseError();
 	}
 
+	const currency = account.data?.currency_code ?? 'USD';
+	let renewals;
+	try {
+		renewals = await priceRenewals(client, senders.data ?? [], currency);
+	} catch (error) {
+		console.error('Could not price number renewals.', error);
+		return databaseError();
+	}
+
 	return json(
 		{
 			numbers: readinessNumbers(
-				senders.data ?? [],
+				(senders.data ?? []).map((sender) => ({
+					...sender,
+					renewal: renewals.get(sender.id) ?? null
+				})),
 				orders.data ?? [],
 				paperwork.data ?? [],
 				(tollFree.data ?? []) as ReadinessTollFreeCheckRow[]
 			),
-			us_registration: registration.data ?? null
+			us_registration: registration.data ?? null,
+			balance: {
+				available_minor: account.data
+					? account.data.settled_balance_minor - account.data.reserved_balance_minor
+					: 0,
+				currency
+			}
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

@@ -28,6 +28,7 @@
 	import windowClosedIcon from '@tabler/icons/outline/hourglass-off.svg?raw';
 	import unplugIcon from '@tabler/icons/outline/plug-connected-x.svg?raw';
 	import criticalIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import pausedIcon from '@tabler/icons/outline/player-pause.svg?raw';
 	import warningIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import informativeIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import type { InboxChannel } from '$lib/components/communications/inbox/ChannelMark.svelte';
@@ -109,8 +110,11 @@
 		text: string;
 		/** A shorter line for the empty writing area; the reason itself when left out. */
 		short?: string;
-		/** The way out, as a link at the line's right ("Reply by text", "Reconnect in Settings"). */
+		/** The way out, as a link at the line's right ("Reply by text", "Reconnect in Settings"); words alone
+		 * when there is nothing this person can press ("Ask an admin to add money"). */
 		action?: { label: string; href?: string; onclick?: () => void };
+		/** A more specific icon than the tone's own. */
+		icon?: string;
 	};
 
 	const queryClient = useQueryClient();
@@ -136,6 +140,9 @@
 	// Resolved from the sender alone (Stage 6D-2), independent of the cost estimate above, so the attach
 	// button's visibility doesn't wait on the user typing anything.
 	let mmsEligible = $state(false);
+	// Part 7: the number this reply would go from couldn't renew. Known from the sender alone, like MMS
+	// eligibility, so the reason line shows before anything is typed.
+	let unpaidNumber = $state<{ text: string; name: string; canAddMoney: boolean } | null>(null);
 	let bodyEl = $state<HTMLTextAreaElement | null>(null);
 
 	// Texts go to the customer's primary number. When staff have stopped texts to it, or the customer replied
@@ -164,7 +171,17 @@
 							? { label: 'See Messaging in Details', onclick: onOpenDetails }
 							: undefined
 					}
-				: null)
+				: unpaidNumber
+					? {
+							tone: 'critical',
+							icon: pausedIcon,
+							text: unpaidNumber.text,
+							short: `Sending starts again once ${unpaidNumber.name} is renewed`,
+							action: unpaidNumber.canAddMoney
+								? { label: 'Add money', href: '/settings/communications/balance' }
+								: { label: 'Ask an admin to add money' }
+						}
+					: null)
 	);
 	const reasonIcons = {
 		critical: criticalIcon,
@@ -218,6 +235,7 @@
 			estimate = null;
 			estimating = false;
 			mmsEligible = false;
+			unpaidNumber = null;
 			return;
 		}
 		const text = body.trim();
@@ -228,6 +246,14 @@
 				const result = await estimateSmsReply(clientId as string, text);
 				if (token !== estimateToken) return;
 				mmsEligible = result.mms_eligible;
+				unpaidNumber =
+					!result.ready && result.route_code === 'number_unpaid'
+						? {
+								text: result.reason,
+								name: result.sender_name ?? 'this number',
+								canAddMoney: result.can_add_money === true
+							}
+						: null;
 				estimate = text ? result : null;
 			} catch {
 				if (token === estimateToken) estimate = null;
@@ -670,7 +696,7 @@
 					role="status"
 				>
 					<span class="conversation-composer__reason-icon" aria-hidden="true"
-						>{@html reasonIcons[reason.tone]}</span
+						>{@html reason.icon ?? reasonIcons[reason.tone]}</span
 					>
 					<span class="conversation-composer__reason-text">{reason.text}</span>
 					{#if reason.action?.href}
@@ -684,6 +710,8 @@
 							onclick={reason.action.onclick}
 							>{reason.action.label}<span aria-hidden="true">{@html arrowRightIcon}</span></button
 						>
+					{:else if reason.action}
+						<span class="conversation-composer__reason-note">{reason.action.label}</span>
 					{/if}
 				</p>
 			</div>
@@ -1176,6 +1204,11 @@
 	.conversation-composer__reason-text {
 		min-width: 0;
 		flex: 1;
+	}
+
+	.conversation-composer__reason-note {
+		flex: 0 0 auto;
+		font-weight: 500;
 	}
 
 	.conversation-composer__reason-link {

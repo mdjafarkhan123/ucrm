@@ -43,6 +43,27 @@ export type OptOutTask = {
 	messaging_service_sid: string | null;
 };
 
+/** A number that couldn't renew (Part 7). Nothing to do unless the business asks; it closes by itself. */
+export type UnpaidNumberTask = {
+	/** `unpaid:<sender>`. */
+	id: string;
+	sender_id: string;
+	organization_id: string;
+	organization_name: string;
+	owner_name: string | null;
+	name: string;
+	phone_number: string;
+	country: string;
+	number_type: string;
+	/** The renewal day it couldn't pay, so it sorts with the other tasks. */
+	requested_at: string;
+	grace_ends_at: string;
+	amount_minor: number;
+	balance_minor: number;
+	currency: string;
+	history: { kind: 'renewed' | 'failed' | 'warned'; at: string; text: string }[];
+};
+
 export type TextingSetupQueue = {
 	summary: {
 		to_do: number;
@@ -56,6 +77,7 @@ export type TextingSetupQueue = {
 	recently_finished: { id: string; kind: string; at: string; who: string | null }[];
 	tasks: TextingTask[];
 	opt_out_tasks: OptOutTask[];
+	unpaid_number_tasks: UnpaidNumberTask[];
 };
 
 export type BusinessDestination = {

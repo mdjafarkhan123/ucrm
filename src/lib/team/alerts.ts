@@ -15,7 +15,11 @@ export const ALERT_GROUPS: { id: AlertGroupId; label: string; kinds: TeamNotific
 		label: 'Schedule',
 		kinds: ['schedule.assigned', 'schedule.removed', 'schedule.changed']
 	},
-	{ id: 'messages', label: 'Messages', kinds: ['communications.message_received'] },
+	{
+		id: 'messages',
+		label: 'Messages',
+		kinds: ['communications.message_received', 'communications.number_renewal']
+	},
 	{
 		id: 'sales',
 		label: 'Sales',
@@ -65,6 +69,11 @@ export const ALERT_KIND_INFO: Record<TeamNotificationKind, AlertKindInfo> = {
 	'communications.message_received': {
 		label: 'A customer sends a text or email',
 		description: 'Goes to the person who owns the conversation.'
+	},
+	'communications.number_renewal': {
+		label: 'A texting number can’t renew',
+		description:
+			'Your balance can’t cover its monthly price, it couldn’t renew, or it is about to be released. Owners only.'
 	},
 	'website_inquiry.received': {
 		label: 'A new website inquiry arrives',

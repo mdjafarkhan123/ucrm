@@ -103,6 +103,8 @@ function alertEmailFooter(alert: ClaimedAlertEmail) {
 			return `You get this because a timer you started at ${org} is still running.`;
 		case 'communications.message_received':
 			return `You get this because a customer wrote to ${org}.`;
+		case 'communications.number_renewal':
+			return `You get this because you own ${org} and its texting numbers renew from its balance.`;
 		case 'review.private_feedback':
 			return `You get this because you can see private review feedback at ${org}.`;
 		default:

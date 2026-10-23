@@ -1,5 +1,6 @@
 import { httpError } from '$lib/http-error';
 import { countryDisplayName } from '$lib/settings/country-names';
+import { formatMinor } from '$lib/communications/sms-number-shop';
 
 // Whether each texting number can text yet (Stage 10 Part 4). Owning a number, its paperwork and its texting
 // approval are separate facts (docs/global-sms-behavior-contract.md § Part 4), so the server sends each fact as
@@ -41,6 +42,25 @@ export type ReadinessRegistration = {
 	updated_at: string;
 };
 
+/**
+ * The number's monthly renewal (Part 7): the month it renews next (or the overdue one), its price on that day,
+ * and whether that month is paid. A released number keeps its card for a while so the business sees what
+ * happened.
+ */
+export type ReadinessRenewal = {
+	state: 'paid' | 'unpaid' | 'released';
+	renews_at: string;
+	/** The number price on the renewal day; null while Uplift has no price for this country and kind. */
+	price_minor: number | null;
+	currency: string;
+	unpaid_since: string | null;
+	grace_ends_at: string | null;
+	released_at: string | null;
+};
+
+/** What the bought texting balance has free to spend (settled minus held). */
+export type ReadinessBalance = { available_minor: number; currency: string };
+
 export type ReadinessNumber = {
 	/** The sender's id once it exists; an order still being connected has none yet. */
 	sender_id: string | null;
@@ -50,28 +70,34 @@ export type ReadinessNumber = {
 	country_code: string;
 	sender_type: 'long_code' | 'toll_free' | 'short_code' | 'alphanumeric';
 	number_type: 'local' | 'mobile' | 'national' | 'toll_free' | null;
-	lifecycle_state: 'pending_setup' | 'ready' | 'restricted' | 'suspended' | null;
+	lifecycle_state: 'pending_setup' | 'ready' | 'restricted' | 'suspended' | 'released' | null;
 	capabilities: { sms: boolean; mms: boolean; voice: boolean };
 	is_default_sender: boolean;
 	created_at: string;
 	order: ReadinessOrder | null;
 	paperwork: ReadinessPaperwork | null;
 	toll_free_check: ReadinessTollFreeCheck | null;
+	/** Absent while the number is still being connected. */
+	renewal?: ReadinessRenewal | null;
 };
 
 export type ReadinessHome = {
 	numbers: ReadinessNumber[];
+	balance?: ReadinessBalance | null;
 	/** The business's US texting registration (A2P 10DLC), which every US local number shares. */
 	us_registration: ReadinessRegistration | null;
 };
 
 export type StepKey = 'bought' | 'paperwork' | 'approval' | 'texting';
-export type StepState = 'done' | 'waiting' | 'connecting' | 'your_turn' | 'failed' | 'not_yet';
+export type StepState =
+	'done' | 'waiting' | 'connecting' | 'your_turn' | 'failed' | 'paused' | 'ended' | 'not_yet';
 export type ReadinessStep = { key: StepKey; label: string; state: StepState; hint: string };
 
 export type ReadinessStatus =
 	| 'getting_ready'
 	| 'texting_paused'
+	| 'sending_paused'
+	| 'released'
 	| 'action_needed'
 	| 'business_details_needed'
 	| 'under_review'
@@ -83,7 +109,26 @@ export type ReadinessAction =
 	| { kind: 'see_business_details'; label: string }
 	| { kind: 'toll_free_check'; label: string; sender_id: string }
 	| { kind: 'update_paperwork'; label: string; paperwork_id: string }
-	| { kind: 'see_paperwork'; label: string; paperwork_id: string };
+	| { kind: 'see_paperwork'; label: string; paperwork_id: string }
+	| { kind: 'add_number'; label: string };
+
+/**
+ * The renewal strip between a card's steps and its band (board `QiDBX`). The meter shows how much of the price
+ * the balance covers; after a failed renewal it becomes a 14-day countdown to release.
+ */
+export type RenewalStrip = {
+	tone: 'paid' | 'short' | 'unpaid' | 'released';
+	eyebrow: string;
+	headline: string;
+	/** Released only: the quiet line under the date. */
+	note: string | null;
+	meter:
+		| { kind: 'balance'; left: string; right: string; fraction: number }
+		| { kind: 'days'; left: string; right: string; days_left: number; total: number }
+		| null;
+	/** Add money's amount words, when the strip offers it. */
+	add_money: boolean;
+};
 
 export type NumberCard = {
 	key: string;
@@ -103,6 +148,8 @@ export type NumberCard = {
 	line: string;
 	action: ReadinessAction | null;
 	capabilities: { sms: boolean; mms: boolean; voice: boolean };
+	renewal: RenewalStrip | null;
+	released: boolean;
 };
 
 export type CountryReach = { code: string; name: string; ready: boolean };
@@ -123,17 +170,21 @@ export const STATUS_LABELS: Record<ReadinessStatus, string> = {
 	business_details_needed: 'Business details needed',
 	under_review: 'Under review',
 	getting_ready: 'Getting your number ready',
-	texting_paused: 'Texting paused'
+	texting_paused: 'Texting paused',
+	sending_paused: 'Sending paused',
+	released: 'Released'
 };
 
 /** The order the summary's bar and legend list statuses in. */
 export const STATUS_ORDER: ReadinessStatus[] = [
 	'ready_to_text',
+	'sending_paused',
 	'texting_paused',
 	'action_needed',
 	'business_details_needed',
 	'under_review',
-	'getting_ready'
+	'getting_ready',
+	'released'
 ];
 
 const NUMBER_TYPE_LABELS: Record<NonNullable<ReadinessNumber['number_type']>, string> = {
@@ -268,6 +319,10 @@ function approvalStep(
 
 function textingStep(number: ReadinessNumber): ReadinessStep {
 	const step = { key: 'texting' as const, label: 'Texting' };
+	if (number.lifecycle_state === 'released' || number.renewal?.state === 'released')
+		return { ...step, state: 'ended', hint: 'Ended' };
+	if (number.renewal?.state === 'unpaid' && number.lifecycle_state === 'ready')
+		return { ...step, state: 'paused', hint: 'Paused' };
 	if (number.lifecycle_state === 'ready' && number.capabilities.sms)
 		return { ...step, state: 'done', hint: countryPhrase(number) };
 	if (number.lifecycle_state === 'restricted' || number.lifecycle_state === 'suspended')
@@ -291,6 +346,22 @@ function band(
 				} as const)
 			: null;
 
+	if (steps.texting.state === 'ended') {
+		return {
+			status: 'released',
+			title: 'Number released',
+			line: 'Add a number to text again.',
+			action: { kind: 'add_number', label: 'Add number' }
+		};
+	}
+	if (steps.texting.state === 'paused') {
+		return {
+			status: 'sending_paused',
+			title: 'Sending paused',
+			line: 'Replies still arrive. Sending starts again as soon as the renewal is paid.',
+			action: null
+		};
+	}
 	if (steps.bought.state === 'connecting') {
 		return {
 			status: 'getting_ready',
@@ -413,10 +484,113 @@ function band(
 	};
 }
 
+const DAY_MS = 86_400_000;
+const GRACE_DAYS = 14;
+
+/** Whole days from now until a moment, counting a part day as a day. */
+function daysUntil(iso: string, now: Date) {
+	return Math.ceil((new Date(iso).getTime() - now.getTime()) / DAY_MS);
+}
+
+function renewsInWords(days: number) {
+	if (days <= 0) return 'RENEWS TODAY';
+	if (days === 1) return 'RENEWS TOMORROW';
+	return `RENEWS IN ${days} DAYS`;
+}
+
+/** The renewal strip, or null for a number still being connected. */
+export function renewalStrip(
+	renewal: ReadinessRenewal | null | undefined,
+	balance: ReadinessBalance | null | undefined,
+	now = new Date()
+): RenewalStrip | null {
+	if (!renewal) return null;
+	const money = (minor: number) => formatMinor(minor, renewal.currency);
+	const available = Math.max(0, balance?.available_minor ?? 0);
+
+	if (renewal.state === 'released') {
+		return {
+			tone: 'released',
+			eyebrow: 'RELEASED',
+			headline: `${shortDate(renewal.released_at)} · it no longer renews`,
+			note: 'Your conversations are kept.',
+			meter: null,
+			add_money: false
+		};
+	}
+
+	if (renewal.state === 'unpaid') {
+		const daysLeft = renewal.grace_ends_at
+			? Math.min(GRACE_DAYS, Math.max(0, daysUntil(renewal.grace_ends_at, now)))
+			: 0;
+		const short =
+			renewal.price_minor === null ? null : Math.max(0, renewal.price_minor - available);
+		return {
+			tone: 'unpaid',
+			eyebrow: `UNPAID SINCE ${shortDate(renewal.unpaid_since).toUpperCase()}`,
+			headline: short ? `Add ${money(short)}` : 'Add money to renew',
+			note: null,
+			meter: {
+				kind: 'days',
+				left: `${daysLeft} of ${GRACE_DAYS} days left`,
+				right: `released ${shortDate(renewal.grace_ends_at)}`,
+				days_left: daysLeft,
+				total: GRACE_DAYS
+			},
+			add_money: true
+		};
+	}
+
+	const date = shortDate(renewal.renews_at);
+	if (renewal.price_minor === null) {
+		return {
+			tone: 'paid',
+			eyebrow: 'RENEWS',
+			headline: date,
+			note: null,
+			meter: null,
+			add_money: false
+		};
+	}
+	const price = renewal.price_minor;
+	const days = daysUntil(renewal.renews_at, now);
+	if (available >= price) {
+		return {
+			tone: 'paid',
+			eyebrow: 'RENEWS',
+			headline: `${date} · ${money(price)}`,
+			note: null,
+			meter: {
+				kind: 'balance',
+				left: `Balance ${money(available)} covers it`,
+				right: 'from your texting balance',
+				fraction: 1
+			},
+			add_money: false
+		};
+	}
+	// Short, but warnings start 3 days ahead (plan § Part 7); until then the strip stays calm.
+	const soon = days <= 3;
+	return {
+		tone: soon ? 'short' : 'paid',
+		eyebrow: soon ? renewsInWords(days) : 'RENEWS',
+		headline: `${date} · ${money(price)}`,
+		note: null,
+		meter: {
+			kind: 'balance',
+			left: `${money(available)} of ${money(price)}`,
+			right: `short by ${money(price - available)}`,
+			fraction: price > 0 ? available / price : 1
+		},
+		add_money: true
+	};
+}
+
 export function numberCard(
 	number: ReadinessNumber,
 	registration: ReadinessRegistration | null,
-	now = new Date()
+	now = new Date(),
+	balance: ReadinessBalance | null = null
 ): NumberCard {
 	const steps = {
 		bought: boughtStep(number),
@@ -430,6 +604,7 @@ export function numberCard(
 	const name = number.display_name?.trim() || phone;
 	const detail = [name === phone ? null : phone, place, typeLabel].filter(Boolean).join(' · ');
 	const canText = steps.texting.state === 'done';
+	const released = steps.texting.state === 'ended';
 	return {
 		key: number.sender_id ?? `order:${number.order_id ?? number.phone_number}`,
 		sender_id: number.sender_id,
@@ -437,16 +612,23 @@ export function numberCard(
 		display_name: number.display_name?.trim() || null,
 		detail,
 		country_code: number.country_code,
-		is_default: number.is_default_sender,
+		is_default: number.is_default_sender && !released,
 		can_be_default: canText && number.sender_id !== null,
 		can_text: canText,
 		steps: [steps.bought, steps.paperwork, steps.approval, steps.texting],
 		capabilities: number.capabilities,
+		renewal: renewalStrip(number.renewal, balance, now),
+		released,
 		...band(number, steps, now)
 	};
 }
 
-const NEEDS_YOU: ReadinessStatus[] = ['action_needed', 'business_details_needed', 'texting_paused'];
+const NEEDS_YOU: ReadinessStatus[] = [
+	'action_needed',
+	'business_details_needed',
+	'texting_paused',
+	'sending_paused'
+];
 
 /**
  * A country the business asked Uplift to switch on (Part 5c). It is Ready once Uplift has switched it on and
@@ -459,10 +641,16 @@ const reachOf = (number: ReadinessNumber) =>
 	TOLL_FREE_COUNTRIES.includes(number.country_code) ? TOLL_FREE_COUNTRIES : [number.country_code];
 
 export function readinessSummary(
-	numbers: ReadinessNumber[],
-	cards: NumberCard[],
+	allNumbers: ReadinessNumber[],
+	allCards: NumberCard[],
 	destinations: SummaryDestination[] = []
 ): ReadinessSummary {
+	// A released number keeps its card for a while but no longer counts as one of the business's numbers.
+	const kept = allCards
+		.map((card, index) => ({ card, number: allNumbers[index] }))
+		.filter(({ card }) => !card.released);
+	const numbers = kept.map(({ number }) => number);
+	const cards = kept.map(({ card }) => card);
 	const counts: Partial<Record<ReadinessStatus, number>> = {};
 	for (const card of cards) {
 		if (card.status) counts[card.status] = (counts[card.status] ?? 0) + 1;

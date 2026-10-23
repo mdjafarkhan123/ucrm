@@ -350,3 +350,93 @@ describe('readinessSummary', () => {
 		);
 	});
 });
+
+describe('renewal strip (Part 7)', () => {
+	const ready = (renewal: ReadinessNumber['renewal']) =>
+		number({ lifecycle_state: 'ready', country_code: 'CA', renewal });
+	const paid = {
+		state: 'paid' as const,
+		renews_at: '2026-11-02T00:00:00Z',
+		price_minor: 115,
+		currency: 'USD',
+		unpaid_since: null,
+		grace_ends_at: null,
+		released_at: null
+	};
+
+	it('shows the next renewal and that the balance covers it', () => {
+		const card = numberCard(ready(paid), null, now, { available_minor: 460, currency: 'USD' });
+		expect(card.renewal).toMatchObject({
+			tone: 'paid',
+			eyebrow: 'RENEWS',
+			headline: 'Nov 2 · $1.15',
+			add_money: false,
+			meter: { kind: 'balance', left: 'Balance $4.60 covers it', fraction: 1 }
+		});
+		expect(card.status).toBe('ready_to_text');
+	});
+
+	it('warns 3 days ahead when the balance is short, and stays calm before that', () => {
+		const soon = numberCard(ready(paid), null, new Date('2026-10-30T09:00:00Z'), {
+			available_minor: 40,
+			currency: 'USD'
+		});
+		expect(soon.renewal).toMatchObject({
+			tone: 'short',
+			eyebrow: 'RENEWS IN 3 DAYS',
+			add_money: true,
+			meter: { left: '$0.40 of $1.15', right: 'short by $0.75' }
+		});
+		const early = numberCard(ready(paid), null, now, { available_minor: 40, currency: 'USD' });
+		expect(early.renewal?.tone).toBe('paid');
+		expect(early.renewal?.eyebrow).toBe('RENEWS');
+	});
+
+	it('counts down the 14-day grace and pauses sending after a failed renewal', () => {
+		const card = numberCard(
+			ready({
+				...paid,
+				state: 'unpaid',
+				unpaid_since: '2026-11-02T00:00:00Z',
+				grace_ends_at: '2026-11-16T00:00:00Z'
+			}),
+			null,
+			new Date('2026-11-07T00:00:00Z'),
+			{ available_minor: 40, currency: 'USD' }
+		);
+		expect(card.renewal).toMatchObject({
+			tone: 'unpaid',
+			eyebrow: 'UNPAID SINCE NOV 2',
+			headline: 'Add $0.75',
+			meter: { kind: 'days', left: '9 of 14 days left', right: 'released Nov 16', days_left: 9 }
+		});
+		expect(card.steps[3]).toMatchObject({ state: 'paused', hint: 'Paused' });
+		expect(card.status).toBe('sending_paused');
+		expect(card.can_text).toBe(false);
+	});
+
+	it('ends a released number and leaves it out of the summary', () => {
+		const released = number({
+			lifecycle_state: 'released',
+			is_default_sender: true,
+			renewal: { ...paid, state: 'released', released_at: '2026-11-16T00:00:00Z' }
+		});
+		const card = numberCard(released, null, now);
+		expect(card.renewal).toMatchObject({
+			tone: 'released',
+			headline: 'Nov 16 · it no longer renews',
+			note: 'Your conversations are kept.',
+			meter: null
+		});
+		expect(card.steps[3]).toMatchObject({ state: 'ended', hint: 'Ended' });
+		expect(card).toMatchObject({ status: 'released', released: true, is_default: false });
+		expect(card.action?.kind).toBe('add_number');
+		const other = number({ sender_id: 'sender-2', lifecycle_state: 'ready', country_code: 'CA' });
+		const summary = readinessSummary([released, other], [card, numberCard(other, null, now)]);
+		expect(summary.total).toBe(1);
+	});
+
+	it('has no strip while a number is still connecting', () => {
+		expect(numberCard(number({ renewal: undefined }), null, now).renewal).toBeNull();
+	});
+});

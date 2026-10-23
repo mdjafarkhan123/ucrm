@@ -97,7 +97,12 @@
 	}));
 	const cards = $derived(
 		(readinessQuery.data?.numbers ?? []).map((number) =>
-			numberCard(number, readinessQuery.data?.us_registration ?? null)
+			numberCard(
+				number,
+				readinessQuery.data?.us_registration ?? null,
+				new Date(),
+				readinessQuery.data?.balance ?? null
+			)
 		)
 	);
 	// The countries the business asked for (Part 5c) join Where you can text as Setting up until Uplift is done.
@@ -122,6 +127,9 @@
 
 	async function runAction(cardKey: string, action: ReadinessAction) {
 		switch (action.kind) {
+			case 'add_number':
+				addNumberOpen = true;
+				return;
 			case 'toll_free_check':
 				await goto(
 					resolve('/(app)/settings/communications/sms/toll-free/[senderId]', {

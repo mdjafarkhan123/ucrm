@@ -26,7 +26,8 @@ export type TeamNotificationKind =
 	| 'schedule.removed'
 	| 'schedule.changed'
 	| 'time.timer_running_long'
-	| 'communications.message_received';
+	| 'communications.message_received'
+	| 'communications.number_renewal';
 
 export type TeamNotification = {
 	id: string;
@@ -69,6 +70,8 @@ export function teamNotificationHref(
 	// below); a running timer is stopped or corrected on Timesheets.
 	if (subjectType === 'job') return `/jobs/${subjectId}`;
 	if (subjectType === 'running_timer') return '/timesheets';
+	// Part 7: a texting number's renewal opens Phone & SMS, where its card shows the renewal.
+	if (subjectType === 'sms_number') return '/settings/communications/sms';
 	if (subjectType === 'inbound_message') {
 		return link?.client_id
 			? `/communications?${new URLSearchParams({ client: link.client_id }).toString()}`

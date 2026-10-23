@@ -34,7 +34,7 @@ export function optOutTaskId(organizationId: string, language: string) {
 	return `opt-out:${organizationId}:${language}`;
 }
 
-type RawQueue = Omit<TextingSetupQueue, 'tasks' | 'opt_out_tasks'> & {
+type RawQueue = Omit<TextingSetupQueue, 'tasks' | 'opt_out_tasks' | 'unpaid_number_tasks'> & {
 	tasks: Omit<TextingSetupQueue['tasks'][number], 'opt_out_missing'>[];
 };
 
@@ -42,7 +42,10 @@ type RawQueue = Omit<TextingSetupQueue, 'tasks' | 'opt_out_tasks'> & {
  * The queue with each country task's missing languages, the opt-out word tasks they make, and the counts
  * that include them. Languages added in the last day join the recently finished, for "Sam already did this".
  */
-export async function withOptOutTasks(client: Client, queue: RawQueue): Promise<TextingSetupQueue> {
+export async function withOptOutTasks(
+	client: Client,
+	queue: RawQueue
+): Promise<Omit<TextingSetupQueue, 'unpaid_number_tasks'>> {
 	const organizationIds = [...new Set(queue.tasks.map((task) => task.organization_id))];
 	const added = await addedOptOutLanguages(client, organizationIds);
 

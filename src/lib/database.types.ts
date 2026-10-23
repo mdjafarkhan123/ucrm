@@ -4701,6 +4701,76 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			communication_sms_number_renewals: {
+				Row: {
+					amount_minor: number;
+					created_at: string;
+					currency_code: string;
+					id: string;
+					number_rate_id: string;
+					organization_id: string;
+					paid_at: string | null;
+					period_number: number;
+					released_at: string | null;
+					renews_at: string;
+					sender_identity_id: string;
+					state: string;
+					updated_at: string;
+				};
+				Insert: {
+					amount_minor: number;
+					created_at?: string;
+					currency_code: string;
+					id?: string;
+					number_rate_id: string;
+					organization_id: string;
+					paid_at?: string | null;
+					period_number: number;
+					released_at?: string | null;
+					renews_at: string;
+					sender_identity_id: string;
+					state: string;
+					updated_at?: string;
+				};
+				Update: {
+					amount_minor?: number;
+					created_at?: string;
+					currency_code?: string;
+					id?: string;
+					number_rate_id?: string;
+					organization_id?: string;
+					paid_at?: string | null;
+					period_number?: number;
+					released_at?: string | null;
+					renews_at?: string;
+					sender_identity_id?: string;
+					state?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_number_renewals_number_rate_id_fkey';
+						columns: ['number_rate_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_number_retail_rates';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_renewals_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'communication_sms_number_renewals_sender_fk';
+						columns: ['organization_id', 'sender_identity_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_sender_identities';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			communication_sms_opt_out_languages: {
 				Row: {
 					added_at: string;
@@ -5144,6 +5214,7 @@ export type Database = {
 					country_code: string | null;
 					created_at: string;
 					display_name: string | null;
+					grace_ends_at: string | null;
 					id: string;
 					is_default_sender: boolean;
 					lifecycle_state: string;
@@ -5152,7 +5223,13 @@ export type Database = {
 					phone_number: string;
 					provider_phone_number_sid: string | null;
 					registration_id: string | null;
+					released_at: string | null;
+					renewal_anchor_at: string;
+					renewal_period: number;
+					renewal_state: string;
+					renews_at: string;
 					sender_type: string | null;
+					unpaid_since: string | null;
 					updated_at: string;
 				};
 				Insert: {
@@ -5164,6 +5241,7 @@ export type Database = {
 					country_code?: string | null;
 					created_at?: string;
 					display_name?: string | null;
+					grace_ends_at?: string | null;
 					id?: string;
 					is_default_sender?: boolean;
 					lifecycle_state?: string;
@@ -5172,7 +5250,13 @@ export type Database = {
 					phone_number: string;
 					provider_phone_number_sid?: string | null;
 					registration_id?: string | null;
+					released_at?: string | null;
+					renewal_anchor_at: string;
+					renewal_period?: number;
+					renewal_state?: string;
+					renews_at: string;
 					sender_type?: string | null;
+					unpaid_since?: string | null;
 					updated_at?: string;
 				};
 				Update: {
@@ -5184,6 +5268,7 @@ export type Database = {
 					country_code?: string | null;
 					created_at?: string;
 					display_name?: string | null;
+					grace_ends_at?: string | null;
 					id?: string;
 					is_default_sender?: boolean;
 					lifecycle_state?: string;
@@ -5192,7 +5277,13 @@ export type Database = {
 					phone_number?: string;
 					provider_phone_number_sid?: string | null;
 					registration_id?: string | null;
+					released_at?: string | null;
+					renewal_anchor_at?: string;
+					renewal_period?: number;
+					renewal_state?: string;
+					renews_at?: string;
 					sender_type?: string | null;
+					unpaid_since?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
@@ -21926,6 +22017,15 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_due_number_releases: {
+				Args: { p_limit?: number };
+				Returns: {
+					organization_id: string;
+					phone_number: string;
+					provider_phone_number_sid: string;
+					sender_id: string;
+				}[];
+			};
 			communication_sms_confirm_credit_topup: {
 				Args: {
 					p_decided_by: string;
@@ -22444,6 +22544,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_record_number_released: {
+				Args: { p_sender_id: string };
+				Returns: string;
 			};
 			communication_sms_record_refund: {
 				Args: {

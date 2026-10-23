@@ -542,7 +542,8 @@ export function groupMessagesByContact(
 // A message a person wrote to another person. Auto-responders, automated sends, forwards and a chat's system
 // or automation lines are bookkeeping: they say nothing about whether the customer is still waiting.
 function isConversationalTurn(item: TimelineMessage): boolean {
-	if (isWebsiteChatMessage(item)) return item.sender_type === 'visitor' || item.sender_type === 'staff';
+	if (isWebsiteChatMessage(item))
+		return item.sender_type === 'visitor' || item.sender_type === 'staff';
 	if (item.direction === 'inbound') return item.message_kind !== 'auto_response';
 	return item.send_kind !== 'automated' && item.send_kind !== 'forward';
 }
@@ -797,6 +798,9 @@ export type SmsReplyEstimate =
 			route_code?: string;
 			recipient_country?: string | null;
 			mms_eligible: boolean;
+			/** number_unpaid (Part 7): the number that couldn't renew, and whether this person can add money. */
+			sender_name?: string;
+			can_add_money?: boolean;
 	  };
 
 // The composer's live impact line, plus (Stage 6D-2) whether the current sender can attach a photo --

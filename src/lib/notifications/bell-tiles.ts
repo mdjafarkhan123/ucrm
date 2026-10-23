@@ -13,6 +13,7 @@ import taskIcon from '@tabler/icons/outline/square-check.svg?raw';
 import mentionIcon from '@tabler/icons/outline/at.svg?raw';
 import organizationIcon from '@tabler/icons/outline/building-store.svg?raw';
 import bellIcon from '@tabler/icons/outline/bell.svg?raw';
+import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 
 // The bell's record tile for each alert (design skill `modals.md`, "Notification bell pop-up"): the colour says
 // the kind of record or part of the app, the icon says what happened.
@@ -42,7 +43,8 @@ const teamTiles: Record<TeamNotificationKind, NotificationBellTile> = {
 	'schedule.removed': { record: 'time', icon: calendarIcon },
 	'schedule.changed': { record: 'time', icon: calendarIcon },
 	'time.timer_running_long': { record: 'time', icon: timerIcon },
-	'communications.message_received': { record: 'conversation', icon: messageIcon }
+	'communications.message_received': { record: 'conversation', icon: messageIcon },
+	'communications.number_renewal': { record: 'conversation', icon: walletIcon }
 };
 
 const fallbackTile: NotificationBellTile = { record: 'growth', icon: bellIcon };

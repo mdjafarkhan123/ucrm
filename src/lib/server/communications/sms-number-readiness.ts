@@ -5,6 +5,7 @@ import type {
 	ReadinessNumber,
 	ReadinessOrder,
 	ReadinessPaperwork,
+	ReadinessRenewal,
 	ReadinessTollFreeCheck
 } from '$lib/communications/number-readiness';
 
@@ -26,6 +27,8 @@ export type ReadinessSenderRow = {
 	capable_voice: boolean;
 	is_default_sender: boolean;
 	created_at: string;
+	/** Part 7: the monthly renewal, already priced by the caller. */
+	renewal?: ReadinessRenewal | null;
 };
 
 export type ReadinessOrderRow = {
@@ -122,7 +125,8 @@ export function readinessNumbers(
 			created_at: sender.created_at,
 			order: bought ? order(bought) : null,
 			paperwork: paperworkFor(country, numberType),
-			toll_free_check: tollFreeCheckFor(sender.id)
+			toll_free_check: tollFreeCheckFor(sender.id),
+			renewal: sender.renewal ?? null
 		};
 	});
 
@@ -152,6 +156,63 @@ export function readinessNumbers(
 			Number(b.is_default_sender) - Number(a.is_default_sender) ||
 			a.created_at.localeCompare(b.created_at)
 	);
+}
+
+export type RenewalSenderRow = {
+	id: string;
+	country_code: string | null;
+	sender_type: string | null;
+	number_type: string | null;
+	renewal_state: string;
+	renews_at: string;
+	unpaid_since: string | null;
+	grace_ends_at: string | null;
+	released_at: string | null;
+};
+
+/** A number with no kind on record is priced as its sender type says (as the renewal charge does). */
+export function renewalNumberType(row: Pick<RenewalSenderRow, 'number_type' | 'sender_type'>) {
+	return row.number_type ?? (row.sender_type === 'toll_free' ? 'toll_free' : 'local');
+}
+
+/**
+ * Each number's renewal with its price on the renewal day, the same price the monthly charge will use
+ * (communication_sms_effective_number_rate). One small read per number; a business has a handful.
+ */
+export async function priceRenewals(
+	client: SupabaseClient<Database>,
+	senders: RenewalSenderRow[],
+	currency: string
+): Promise<Map<string, ReadinessRenewal>> {
+	const priced = await Promise.all(
+		senders.map(async (sender) => {
+			let price: number | null = null;
+			if (sender.renewal_state !== 'released' && sender.country_code) {
+				const { data, error } = await client.rpc('communication_sms_effective_number_rate', {
+					p_country_code: sender.country_code,
+					p_number_type: renewalNumberType(sender),
+					p_currency_code: currency,
+					p_at: sender.renews_at
+				});
+				if (error) throw error;
+				const monthly = (data as { id: string | null; monthly_rate_major: number | null } | null)
+					?.monthly_rate_major;
+				price =
+					monthly === null || monthly === undefined ? null : Math.round(Number(monthly) * 100);
+			}
+			const renewal: ReadinessRenewal = {
+				state: sender.renewal_state as ReadinessRenewal['state'],
+				renews_at: sender.renews_at,
+				price_minor: price,
+				currency,
+				unpaid_since: sender.unpaid_since,
+				grace_ends_at: sender.grace_ends_at,
+				released_at: sender.released_at
+			};
+			return [sender.id, renewal] as const;
+		})
+	);
+	return new Map(priced);
 }
 
 /**
