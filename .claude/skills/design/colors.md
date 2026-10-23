@@ -94,7 +94,7 @@ In `concept.pen`; add it to `_variables.scss` with the build.
 ## Channel Colours
 
 The marks that tell channels apart in the inbox (`inbox.md`), the same in light and dark. In `concept.pen`; add the
-tile colours and `--color-seen` to `_variables.scss` with the inbox build.
+three tile colours to `_variables.scss` with the inbox build.
 
 | Token | Value | Use |
 |---|---|---|
@@ -102,7 +102,6 @@ tile colours and `--color-seen` to `_variables.scss` with the inbox build.
 | `--color-channel-email` | `#E4702A` | Email tile |
 | `--color-channel-text` | `#118197` | Text tile |
 | `--color-channel-chat` | `#6B4BD8` | Website chat tile |
-| `--color-seen` | light `#7FD0FF`, dark `#0A4D8C` | The read ticks inside your chat bubble (`inbox.md`); blue reads as "seen" on the brand-green bubble |
 
 ## File Families
 

@@ -47,11 +47,11 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
   `--color-surface` text, at the right. Padding 8 12 7 14; corners `--radius-large`, with `--radius-small` on the
   corner where bubbles in a run touch; your last bubble in a run has a small tail. Bubbles 3 apart within a run, 5
   between runs. An email is a white card bubble (400 wide, 1px border) with its subject line.
-- **Inside each bubble**, bottom right: the channel mark 12, the time 12 (80% on green), and on yours the tick:
-  `clock-3` sending (bubble at 70%); `check` sent and `check-check` delivered, both white at 50%; `check-check` 18 in
-  `--color-seen` once read. Faint versus blue is the whole difference, as in WhatsApp.
-- **Under your last message:** delivered: `check-check` 14 quiet and "Delivered" 12/500 quiet. Read: the customer's
-  20 avatar (1.5px white ring) and "Seen 9:26 AM" 12/600 heading, as in Messenger. Only one such line per chat.
+- **Inside each bubble**, bottom right, all solid `--color-surface` on green: the channel mark 12, the time 12, and
+  on yours the tick: `clock-3` sending (bubble at 70%), `check` sent, `check-check` delivered, and once read a 16
+  filled `--color-surface` circle holding a green `check` (`--color-interactive`), so Seen stands apart from Delivered.
+- **Seen line:** only under your last message the customer has read: a 14 filled `--color-interactive` circle with a
+  white `check`, then "Seen 9:26 AM" 12/500 quiet. No line for the other ticks.
 - **Failed:** the bubble stays; under it `circle-alert` and the reason 12 `--color-critical`, then "Retry" 12/700
   `--color-interactive`.
 - **Internal comment in the timeline:** a centred yellow pill (`--color-warning-surface`, its edge, `lock`, words
