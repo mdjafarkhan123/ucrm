@@ -8,16 +8,19 @@
 		fetchCommunicationEmailTemplates,
 		type CommunicationEmailTemplateListItem
 	} from '$lib/communications/email-templates';
-	import templateIcon from '@tabler/icons/outline/template.svg?raw';
+	import templateIcon from '@tabler/icons/outline/file-text.svg?raw';
 
 	// The composer's template trigger. Unlike a snippet, a template carries both subject and body and is
 	// meant to seed the whole draft -- so this hands the caller the full template and lets the composer
 	// decide whether to confirm before overwriting text the user already started.
 	let {
 		disabled = false,
+		triggerVariant = 'secondary',
 		onApply
 	}: {
 		disabled?: boolean;
+		/** `quiet` in the inbox reply box's tool bar, where the tools sit on the box itself. */
+		triggerVariant?: 'secondary' | 'quiet';
 		onApply: (template: CommunicationEmailTemplateListItem) => void;
 	} = $props();
 
@@ -63,7 +66,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				variant="secondary"
+				variant={triggerVariant}
 				size="small"
 				iconOnly
 				label="Use an email template"

@@ -38,6 +38,7 @@
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import currencyIcon from '@tabler/icons/outline/currency-dollar.svg?raw';
+	import type { InboxChannel } from '$lib/components/communications/inbox/ChannelMark.svelte';
 
 	// The customer context beside a conversation: who this is, and what work the business has with them,
 	// one tab per kind of record. Every tab but Contact loads only when it is reached for -- hovering its
@@ -53,7 +54,7 @@
 	}: {
 		group: OpenConversation;
 		context: CreateQueryResult<ConversationContext, Error>;
-		channels: Array<'email' | 'sms' | 'website_chat'>;
+		channels: InboxChannel[];
 		onChooseChannel: (channel: 'email' | 'sms') => void;
 	} = $props();
 

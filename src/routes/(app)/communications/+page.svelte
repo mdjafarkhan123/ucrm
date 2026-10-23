@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import {
 		createInfiniteQuery,
 		createMutation,
@@ -27,13 +28,25 @@
 	import ConversationMessage from '$lib/components/communications/ConversationMessage.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
+	import LinkToClientDialog from '$lib/components/communications/inbox/LinkToClientDialog.svelte';
+	import userSearchIcon from '@tabler/icons/outline/user-search.svg?raw';
+	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+	import { mergeClients } from '$lib/clients/api';
 	import ChooseChannelDialog from '$lib/components/communications/ChooseChannelDialog.svelte';
+	import InboxList from '$lib/components/communications/inbox/InboxList.svelte';
+	import PaneResizer from '$lib/components/ui/PaneResizer.svelte';
+	import ChannelMark, {
+		type InboxChannel
+	} from '$lib/components/communications/inbox/ChannelMark.svelte';
+	import userRoundIcon from '@tabler/icons/outline/user.svg?raw';
+	import detailsIcon from '@tabler/icons/outline/layout-sidebar-right.svg?raw';
 	import {
 		cancelScheduledConversationReply,
 		clientCommunicationHistoryKey,
 		conversationContextKey,
 		conversationCustomerEmail,
 		conversationCustomerPhone,
+		conversationMessenger,
 		endWebsiteChatSession,
 		fetchClientCommunicationHistory,
 		fetchConversationContext,
@@ -44,8 +57,11 @@
 		followConversation,
 		groupMessagesByContact,
 		inboxMessagesKey,
+		isUnknownCustomer,
 		isWebsiteChatMessage,
 		markConversationRead,
+		messageRuns,
+		messengerReplyWindow,
 		outboundEmailStatus,
 		pendingSendStatus,
 		placeTimelineNotes,
@@ -67,19 +83,13 @@
 		type WebsiteChatInboxSession
 	} from '$lib/communications/inbox';
 	import { takeComposerDraft } from '$lib/communications/composer-draft';
-	import { initials, previewText } from '$lib/collaboration/format';
+	import { previewText } from '$lib/collaboration/format';
 	import { clientDetailKey, fetchClient, fetchClients } from '$lib/clients/api';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
-	import pencilIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
-	import emailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
-	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
-	import searchIcon from '@tabler/icons/outline/search.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import messageOffIcon from '@tabler/icons/outline/message-circle-off.svg?raw';
 	import messageCheckIcon from '@tabler/icons/outline/message-circle-check.svg?raw';
-	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import bellFilledIcon from '@tabler/icons/filled/bell.svg?raw';
 	import forwardIcon from '@tabler/icons/outline/arrow-forward-up.svg?raw';
@@ -89,9 +99,7 @@
 	const toast = getToastManager();
 
 	let search = $state('');
-	let searchDraft = $state('');
 	let view = $state<InboxView>('team');
-	let listTab = $state<'all' | 'unread'>('all');
 	// The client Communication tab's "Open conversation" link lands here with `?client=<id>`, which is
 	// exactly a linked group's own key -- a guarded (unresolved-sender) group is never linkable this way,
 	// since it has no client_id yet.
@@ -114,6 +122,9 @@
 	let linkTarget = $state<OpenConversation | null>(null);
 	let dismissTarget = $state<OpenConversation | null>(null);
 	let linkError = $state('');
+	// The Messenger lead being linked to a real client, and why the last try failed.
+	let leadLinkTarget = $state<{ leadId: string } | null>(null);
+	let leadLinkError = $state('');
 	let newConversationOpen = $state(false);
 	let newConversationClientId = $state<string | null>(null);
 	let timelineEl = $state<HTMLDivElement | null>(null);
@@ -123,16 +134,39 @@
 	let showJumpToLatest = $state(false);
 	// Which composer shows for the selected conversation, when more than one channel is eligible.
 	// Reset (below) only when the selected conversation itself changes, never on every background refetch.
-	let activeChannel = $state<'email' | 'sms' | 'website_chat'>('email');
+	let activeChannel = $state<InboxChannel>('email');
 	let composerExpanded = $state(false);
 	let composerGroupKey: string | null = null;
 	let endSessionTarget = $state<OpenConversation | null>(null);
 	let resolveIdentityTarget = $state<OpenConversation | null>(null);
 	let resolveIdentityError = $state('');
-	// The ≤1050px context-rail replacement (5F): the rail's own content relocates into this drawer below
-	// the breakpoint instead of being rebuilt. Closes on every conversation switch so it never reopens
-	// showing a stale customer.
-	let contextPanelOpen = $state(false);
+	// The customer's Details sit behind a button so the chat gets the room (design skill inbox.md); closed by
+	// default. Where the page is too narrow for a third card, the same content opens as a side drawer instead.
+	let detailsOpen = $state(false);
+	const narrowDetails = new MediaQuery('max-width: 1180px');
+
+	// The list and Details widths each person dragged to, kept in their own browser (design `inbox.md`, Layout).
+	const LIST_WIDTH = { min: 240, max: 420, default: 300, key: 'ucrm:inbox:list-width' };
+	const DETAILS_WIDTH = { min: 280, max: 420, default: 310, key: 'ucrm:inbox:details-width' };
+	function savedWidth(limits: typeof LIST_WIDTH) {
+		try {
+			const saved = Number(localStorage.getItem(limits.key));
+			if (saved >= limits.min && saved <= limits.max) return saved;
+		} catch {
+			// Storage can be blocked (private window); the default width is fine.
+		}
+		return limits.default;
+	}
+	function rememberWidth(limits: typeof LIST_WIDTH, width: number) {
+		try {
+			localStorage.setItem(limits.key, String(width));
+		} catch {
+			// Not remembered this time; nothing else depends on it.
+		}
+	}
+	let listWidth = $state(savedWidth(LIST_WIDTH));
+	let detailsWidth = $state(savedWidth(DETAILS_WIDTH));
+
 
 	const inboxQuery = createQuery(() => ({
 		queryKey: inboxMessagesKey(search, view),
@@ -154,25 +188,6 @@
 			inboxQuery.data?.website_chat_sessions ?? []
 		)
 	);
-
-	// The tab only filters which rows are listed. Selection stays keyed against the full `groups` array
-	// (below) so a conversation that was open when it dropped out of Unread -- because opening it just
-	// marked it read -- keeps its detail panel open instead of being yanked away mid-read.
-	const visibleGroups = $derived(
-		listTab === 'unread' ? groups.filter((group) => group.unreadCount > 0) : groups
-	);
-	const unreadGroupCount = $derived(groups.filter((group) => group.unreadCount > 0).length);
-
-	// The conversation list is one Tab stop, not one per row -- with hundreds of conversations a keyboard user
-	// would otherwise Tab through every one to reach the timeline. The stop is the row last focused, else the
-	// open conversation, else the first row; arrow keys move between the rest.
-	let focusedRowKey = $state<string | null>(null);
-	const rowTabStopKey = $derived.by(() => {
-		for (const key of [focusedRowKey, selectedGroup?.key]) {
-			if (key && visibleGroups.some((group) => group.key === key)) return key;
-		}
-		return visibleGroups[0]?.key ?? null;
-	});
 
 	// HighLevel opens an unread conversation scrolled to what needs attention rather than always the
 	// newest item overall -- the smallest version of that here is: default selection favors the first
@@ -241,6 +256,26 @@
 	);
 	const requestedGroupLoading = $derived(openingClientId !== null && requestedGroup === null);
 
+	// The chat never gets narrower than 400: the side cards give way first, Details before the list.
+	const CHAT_MIN_WIDTH = 400;
+	let workspaceWidth = $state(0);
+	const detailsShown = $derived(detailsOpen && !narrowDetails.current && selectedGroup !== null);
+	const sideRoom = $derived(workspaceWidth > 0 ? workspaceWidth - CHAT_MIN_WIDTH - 8 : Infinity);
+	const shownDetailsWidth = $derived(
+		Math.min(detailsWidth, Math.max(DETAILS_WIDTH.min, sideRoom - LIST_WIDTH.min))
+	);
+	const shownListWidth = $derived(
+		Math.min(listWidth, Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0)))
+	);
+	const listMax = $derived(
+		Math.min(
+			LIST_WIDTH.max,
+			Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0))
+		)
+	);
+	const detailsMax = $derived(
+		Math.min(DETAILS_WIDTH.max, Math.max(DETAILS_WIDTH.min, sideRoom - shownListWidth))
+	);
 	const emailAvailable = $derived(Boolean(selectedGroup?.clientId));
 	// SMS shares email's availability rule (both need only a known client) rather than a separate org
 	// readiness gate: the blueprint keeps a known SMS conversation visible even when it cannot send yet,
@@ -249,18 +284,83 @@
 	const smsAvailable = $derived(Boolean(selectedGroup?.clientId));
 	const chatAvailable = $derived(Boolean(selectedGroup?.chatSession));
 	const canSend = $derived(inboxQuery.data?.can_send ?? false);
-	type ComposerChannel = 'email' | 'sms' | 'website_chat';
+	// The Page this customer wrote to on Messenger, and how long Meta still lets the business answer there.
+	const messengerOrigin = $derived(selectedGroup ? conversationMessenger(selectedGroup) : null);
+	// Ticks twice a minute so the time left to reply counts down while the conversation is open.
+	let now = $state(Date.now());
+	$effect(() => {
+		const timer = setInterval(() => (now = Date.now()), 30_000);
+		return () => clearInterval(timer);
+	});
+	const messengerWindow = $derived.by(() => {
+		if (!messengerOrigin) return null;
+		return {
+			...messengerReplyWindow(messengerOrigin.last_inbound_at, now),
+			pageDisconnected: messengerOrigin.page_status !== 'active'
+		};
+	});
 	const composerChannels = $derived.by(() => {
-		const channels: ComposerChannel[] = [];
+		const channels: InboxChannel[] = [];
+		if (messengerOrigin) channels.push('messenger');
 		if (emailAvailable) channels.push('email');
 		if (smsAvailable) channels.push('sms');
 		if (chatAvailable) channels.push('website_chat');
 		return channels;
 	});
 
-	function latestMessageChannel(group: OpenConversation): 'email' | 'sms' | 'website_chat' {
+	// Messenger replies are sent from the inbox in Part 7; until then the reply box says where to answer. A closed
+	// reply window or a disconnected Page says so first, since those still apply once replies are built.
+	const messengerBlock = $derived.by(() => {
+		if (!messengerWindow) return null;
+		if (messengerWindow.pageDisconnected)
+			return {
+				tone: 'critical' as const,
+				text: 'The Facebook Page is disconnected, so Messenger replies can\'t be sent.',
+				short: 'Page disconnected',
+				action: {
+					label: 'Reconnect in Settings',
+					href: resolve('/(app)/settings/communications/messenger')
+				}
+			};
+		if (messengerWindow.state === 'closed')
+			return {
+				tone: 'critical' as const,
+				text: 'Meta allows replies only within 24 hours of their last message.',
+				short: 'Reply window closed',
+				action: smsAvailable
+					? { label: 'Reply by text', onclick: () => (activeChannel = 'sms') }
+					: undefined
+			};
+		return {
+			tone: 'informative' as const,
+			text: 'Replying on Messenger from here is coming soon. For now, answer from your Facebook Page.',
+			short: 'Messenger replies can\'t be sent from here yet'
+		};
+	});
+
+	// Where each reply channel goes, for the channel menu; a channel that can't send says why instead.
+	function composerChannelDetails(group: OpenConversation) {
+		const details: Partial<Record<InboxChannel, { address?: string; unavailable?: string | null }>> =
+			{};
+		if (messengerOrigin)
+			details.messenger = {
+				address: messengerOrigin.page_name,
+				unavailable: messengerWindow?.pageDisconnected
+					? 'Page disconnected'
+					: messengerWindow?.state === 'closed'
+						? 'Reply window closed'
+						: null
+			};
+		if (emailAvailable) details.email = { address: replyRecipient(group) || 'No email address yet' };
+		if (smsAvailable) details.sms = { address: replyPhone(group) || 'No phone number yet' };
+		if (chatAvailable) details.website_chat = { address: 'On your website' };
+		return details;
+	}
+
+	function latestMessageChannel(group: OpenConversation): InboxChannel {
 		if (!group.latest) return 'email';
 		if (isWebsiteChatMessage(group.latest)) return 'website_chat';
+		if (group.latest.channel === 'messenger') return 'messenger';
 		return group.latest.channel === 'sms' ? 'sms' : 'email';
 	}
 
@@ -355,6 +455,12 @@
 		staleTime: 30_000
 	}));
 
+	const runs = $derived(
+		selectedGroup
+			? messageRuns(selectedGroup.messages, (a, b) => calendarDay(a) === calendarDay(b))
+			: null
+	);
+
 	const notePlacement = $derived(
 		selectedGroup
 			? placeTimelineNotes(
@@ -412,8 +518,36 @@
 		activeChannel = channel;
 		composerExpanded = true;
 		showJumpToLatest = false;
-		contextPanelOpen = false;
+		detailsOpen = false;
 		cancelNewConversation();
+	}
+
+	const CHANNEL_ORDER: InboxChannel[] = ['messenger', 'sms', 'email', 'website_chat'];
+	const CHANNEL_WORDS: Record<InboxChannel, string> = {
+		messenger: 'Messenger',
+		sms: 'text',
+		email: 'email',
+		website_chat: 'website chat'
+	};
+
+	// Every channel this customer has written or been written to on, in a steady order.
+	function conversationChannels(group: OpenConversation): InboxChannel[] {
+		const used = new Set(group.messages.map((message) => message.channel));
+		return CHANNEL_ORDER.filter((channel) => used.has(channel));
+	}
+
+	// "Messenger, text and email" -- the header's plain-words list of channels.
+	function channelWords(channels: InboxChannel[]) {
+		const words = channels.map((channel) => CHANNEL_WORDS[channel]);
+		if (words.length < 2) return words.join('');
+		return `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`;
+	}
+
+	function recordKindLabel(group: OpenConversation, unknown: boolean) {
+		const client = contextQuery.data?.client;
+		if (!client || client.id !== group.clientId) return unknown ? 'New lead' : 'Client';
+		if (client.lifecycle_status === 'lead') return unknown ? 'New lead' : 'Lead';
+		return 'Client';
 	}
 
 	function outboundIn(group: OpenConversation, id: string) {
@@ -425,76 +559,13 @@
 		);
 	}
 
-	// A text has no subject, so its row is the preview alone; an email shows its subject and a chat says so.
-	function rowHeadline(group: ConversationGroup) {
-		if (isWebsiteChatMessage(group.latest)) return 'Website Chat';
-		return group.latest.channel === 'sms' ? '' : group.latest.subject;
-	}
-
-	function rowPreview(group: ConversationGroup) {
-		return previewText(
-			isWebsiteChatMessage(group.latest) ? group.latest.body : group.latest.text_content
-		);
-	}
-
-	// "You:" or "Auto:" ahead of the preview when the business spoke last, so the list says who is waiting.
-	function rowPrefix(group: ConversationGroup): string | null {
-		const latest = group.latest;
-		if (isWebsiteChatMessage(latest)) {
-			if (latest.sender_type === 'staff') return 'You:';
-			return latest.sender_type === 'automation' ? 'Auto:' : null;
-		}
-		if (latest.direction !== 'outbound') return null;
-		return latest.send_kind === 'automated' ? 'Auto:' : 'You:';
-	}
-
-	function rowChannel(group: ConversationGroup): {
-		label: string;
-		icon: string;
-		tone: 'email' | 'sms' | 'chat';
-	} {
-		if (isWebsiteChatMessage(group.latest))
-			return { label: 'Website chat', icon: messagesIcon, tone: 'chat' };
-		if (group.latest.channel === 'sms') return { label: 'SMS', icon: messageIcon, tone: 'sms' };
-		return { label: 'Email', icon: emailIcon, tone: 'email' };
-	}
-
-	// The list's own short time: the hour for today, then the day, so a glance tells how stale a row is.
-	function formatListTime(value: string) {
-		const date = new Date(value);
-		const now = new Date();
-		if (calendarDay(value) === calendarDay(now.toISOString())) {
-			return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
-				date
-			);
-		}
-		if (calendarDay(value) === calendarDay(new Date(Date.now() - 86_400_000).toISOString())) {
-			return 'Yesterday';
-		}
-		return new Intl.DateTimeFormat(undefined, {
-			month: 'short',
-			day: 'numeric',
-			year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric'
-		}).format(date);
-	}
-
-	// The row's own unread badge means the same "unread messages" count everywhere, but a guarded group has
-	// no client to hold a read position against -- opening it can never clear that count (see the mark-read
-	// route's own comment). This explains that in the reader's own words, tailored to why it is stuck, rather
-	// than leaving them to guess why the number never goes away.
-	function needsReviewHint(group: ConversationGroup): string {
-		return group.chatSession?.match_status === 'needs_review'
-			? 'This chat matched two different customers. Open it and choose which one to clear this.'
-			: "This message isn't linked to a customer yet. Link it to a customer or dismiss it to clear this.";
-	}
-
 	// The email composer's default subject reuses the conversation's most recent email-shaped message --
 	// neither a chat message nor an SMS has a subject line, so this skips backward past both the same way
 	// `conversationCustomerEmail` skips a channel with no email address.
 	function latestEmailSubject(group: OpenConversation): string {
 		for (let index = group.messages.length - 1; index >= 0; index -= 1) {
 			const message = group.messages[index];
-			if (!isWebsiteChatMessage(message) && message.channel !== 'sms') return message.subject;
+			if (!isWebsiteChatMessage(message) && message.channel === 'email') return message.subject;
 		}
 		return '';
 	}
@@ -540,9 +611,9 @@
 		selectedGroupKey = group.key;
 		requestedClientId = null;
 		showJumpToLatest = false;
-		// A stale rail from the previous conversation must not carry over -- the ≤1050px drawer is closed
-		// on every switch, same as if it had never been opened.
-		contextPanelOpen = false;
+		// The Details card stays open from one customer to the next, like a messaging app's info pane; the
+		// narrow-screen drawer covers the chat, so it closes on every switch instead.
+		if (narrowDetails.current) detailsOpen = false;
 		if (group.clientId && group.unreadCount > 0) {
 			markReadMutationState.mutate(group.clientId);
 		}
@@ -578,7 +649,7 @@
 			// The resolved conversation leaves this row behind either way, so drop the selection and let
 			// the default land on whatever needs attention next.
 			selectedGroupKey = null;
-			contextPanelOpen = false;
+			detailsOpen = false;
 			linkTarget = null;
 			dismissTarget = null;
 			linkError = '';
@@ -595,6 +666,28 @@
 			}
 			dismissTarget = null;
 			toast.error('Could not dismiss the conversation', error.message);
+		}
+	}));
+
+	// Links an unknown Messenger customer: their lead merges into the client the team picked (the same merge as
+	// Clients > Merge clients, which also moves the Messenger link), and the inbox opens on that client.
+	const linkLeadMutationState = createMutation(() => ({
+		mutationFn: (input: { leadId: string; clientId: string; clientName: string }) =>
+			mergeClients(input.clientId, input.leadId),
+		onSuccess: async (_result, input) => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
+				queryClient.invalidateQueries({ queryKey: ['clients'] }),
+				queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(input.clientId) }),
+				queryClient.invalidateQueries({ queryKey: conversationContextKey(input.clientId) })
+			]);
+			selectedGroupKey = input.clientId;
+			leadLinkTarget = null;
+			leadLinkError = '';
+			toast.success('Linked to ' + input.clientName, 'This Messenger conversation is now on their record.');
+		},
+		onError: (error: Error) => {
+			leadLinkError = error.message;
 		}
 	}));
 
@@ -628,7 +721,7 @@
 				queryClient.invalidateQueries({ queryKey: conversationContextKey(input.clientId) })
 			]);
 			selectedGroupKey = null;
-			contextPanelOpen = false;
+			detailsOpen = false;
 			resolveIdentityTarget = null;
 			resolveIdentityError = '';
 			toast.success('Conversation linked', 'Its messages now belong to that client.');
@@ -642,7 +735,7 @@
 	function chooseChannel(channel: 'email' | 'sms') {
 		activeChannel = channel;
 		composerExpanded = true;
-		contextPanelOpen = false;
+		if (narrowDetails.current) detailsOpen = false;
 	}
 
 	function scrollToMessage(id: string) {
@@ -743,29 +836,6 @@
 			el.scrollTop = el.scrollHeight;
 		});
 	});
-
-	// Arrow-key movement between conversation rows, matching listbox-style navigation -- Enter/Space still
-	// selects, since these stay real buttons rather than switching to a non-native widget role. Attached to
-	// each row button (an interactive element) rather than the `role="list"` container, which is not
-	// interactive and must not carry a key handler.
-	function handleRowKeydown(event: KeyboardEvent) {
-		if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-		const list = (event.currentTarget as HTMLElement).closest('.communications__rows');
-		if (!list) return;
-		const rows = Array.from(list.querySelectorAll<HTMLButtonElement>('.communications__row'));
-		const currentIndex = rows.indexOf(event.currentTarget as HTMLButtonElement);
-		if (currentIndex === -1) return;
-		event.preventDefault();
-		const nextIndex =
-			event.key === 'Home'
-				? 0
-				: event.key === 'End'
-					? rows.length - 1
-					: event.key === 'ArrowDown'
-						? Math.min(currentIndex + 1, rows.length - 1)
-						: Math.max(currentIndex - 1, 0);
-		rows[nextIndex]?.focus();
-	}
 
 	function reviewBadge(message: InboundInboxMessage) {
 		if (message.review_status === 'accepted') return null;
@@ -951,183 +1021,39 @@
 	{:else}
 		<div
 			class="communications__workspace"
+			class:communications__workspace--details={detailsOpen &&
+				!narrowDetails.current &&
+				selectedGroup !== null &&
+				!requestedGroupLoading}
 			class:communications__workspace--single={groups.length === 0 &&
 				!selectedGroup &&
 				!requestedGroupLoading}
+			style:--inbox-list-width="{shownListWidth}px"
+			style:--inbox-details-width="{shownDetailsWidth}px"
+			bind:clientWidth={workspaceWidth}
 		>
-			<aside class="communications__list" aria-label="Conversation history">
-				<div class="communications__list-header">
-					<div class="communications__scope-row">
-						{#if inboxQuery.data?.can_view_team}
-							<div class="communications__inbox-switcher" role="group" aria-label="Inbox view">
-								<button
-									type="button"
-									class:communications__inbox-switcher-button--active={view === 'team'}
-									class="communications__inbox-switcher-button"
-									aria-pressed={view === 'team'}
-									onclick={() => (view = 'team')}>Team Inbox</button
-								>
-								<button
-									type="button"
-									class:communications__inbox-switcher-button--active={view === 'mine'}
-									class="communications__inbox-switcher-button"
-									aria-pressed={view === 'mine'}
-									onclick={() => (view = 'mine')}>My Inbox</button
-								>
-							</div>
-						{:else}
-							<h2>My Inbox</h2>
-						{/if}
-						<!-- Pick a client, then a channel they actually have -- Continue lands directly on that
-						     conversation in the main pane, never in a popup composer. -->
-						<Button
-							size="small"
-							variant="secondary"
-							onhover={prefetchClientPicker}
-							onclick={() => (newConversationOpen = true)}
-						>
-							<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span
-							>
-							<span class="communications__new-label">New</span>
-						</Button>
-					</div>
-					<form
-						class="communications__search"
-						onsubmit={(event) => {
-							event.preventDefault();
-							search = searchDraft;
-						}}
-					>
-						<label class="sr-only" for="communications-search">Search email or subject</label>
-						<button
-							class="communications__search-submit"
-							type="submit"
-							aria-label="Search email or subject"
-						>
-							<span aria-hidden="true">{@html searchIcon}</span>
-						</button>
-						<input
-							id="communications-search"
-							type="search"
-							bind:value={searchDraft}
-							placeholder="Search email or subject"
-						/>
-					</form>
-					<div class="communications__list-tabs-row">
-						<div class="communications__list-tabs" role="group" aria-label="Conversation status">
-							<button
-								type="button"
-								class:communications__list-tab--active={listTab === 'unread'}
-								class="communications__list-tab"
-								aria-pressed={listTab === 'unread'}
-								onclick={() => (listTab = 'unread')}
-							>
-								Unread{#if unreadGroupCount > 0}
-									<span>{unreadGroupCount}</span>
-								{/if}
-							</button>
-							<button
-								type="button"
-								class:communications__list-tab--active={listTab === 'all'}
-								class="communications__list-tab"
-								aria-pressed={listTab === 'all'}
-								onclick={() => (listTab = 'all')}>All</button
-							>
-						</div>
-						<p class="communications__list-count">
-							{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}
-						</p>
-					</div>
-				</div>
-				{#if visibleGroups.length === 0}
-					<EmptyState
-						title={listTab === 'unread'
-							? 'No unread conversations'
-							: inboxQuery.data?.view === 'mine'
-								? 'Nothing assigned to you yet'
-								: 'No conversations yet'}
-						description={listTab === 'unread'
-							? 'Conversations you have not read or replied to will appear here.'
-							: inboxQuery.data?.view === 'mine'
-								? 'Conversations assigned to you or that you follow will appear here.'
-								: 'Queued, sent, and received operational emails will appear here when they exist.'}
-						icon={inboxIcon}
-					/>
-				{:else}
-					<div class="communications__rows" role="list" aria-label="Conversations">
-						{#each visibleGroups as group (group.key)}
-							{@const channel = rowChannel(group)}
-							{@const preview = rowPreview(group)}
-							{@const headline = rowHeadline(group)}
-							{@const prefix = rowPrefix(group)}
-							<div role="listitem">
-								<button
-									class:communications__row--selected={selectedGroup?.key === group.key}
-									class:communications__row--unread={group.unreadCount > 0}
-									class="communications__row"
-									type="button"
-									aria-current={selectedGroup?.key === group.key ? 'true' : undefined}
-									tabindex={rowTabStopKey === group.key ? 0 : -1}
-									onfocus={() => (focusedRowKey = group.key)}
-									onclick={() => selectGroup(group)}
-									onkeydown={handleRowKeydown}
-								>
-									<span class="communications__row-avatar">
-										<Avatar id={group.avatarId} name={group.name} size="medium" />
-										<span
-											class="communications__row-channel communications__row-channel--{channel.tone}"
-											title={channel.label}
-											aria-hidden="true">{@html channel.icon}</span
-										>
-									</span>
-									<span class="communications__row-copy">
-										<span class="communications__row-line">
-											<strong>{group.name}</strong>
-											<time datetime={group.latest.created_at}
-												>{formatListTime(group.latest.created_at)}</time
-											>
-										</span>
-										{#if headline}
-											<span class="communications__row-subject">{headline}</span>
-										{/if}
-										<span class="communications__row-line communications__row-line--preview">
-											<small class="communications__row-preview"
-												>{#if prefix}<b>{prefix}</b>{/if}{preview}</small
-											>
-											{#if group.assignedToName}
-												<span
-													class="communications__row-assigned"
-													title={`Assigned to ${group.assignedToName}`}
-													aria-hidden="true">{initials(group.assignedToName)}</span
-												>
-											{/if}
-											{#if group.guarded}
-												{@const hint = needsReviewHint(group)}
-												<span class="communications__attention" title={hint}>
-													<span class="communications__attention-icon" aria-hidden="true"
-														>{@html alertTriangleIcon}</span
-													>
-													{#if group.unreadCount > 0}
-														<span class="communications__attention-count" aria-hidden="true"
-															>{group.unreadCount}</span
-														>
-													{/if}
-													<span class="sr-only">{hint}</span>
-												</span>
-											{:else if group.unreadCount > 0}
-												<span class="communications__unread-count">
-													<span class="sr-only">{group.unreadCount} unread</span>
-													<span aria-hidden="true">{group.unreadCount}</span>
-												</span>
-											{/if}
-										</span>
-									</span>
-								</button>
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</aside>
+			<InboxList
+				{groups}
+				selectedKey={selectedGroup?.key ?? null}
+				bind:view
+				bind:search
+				canViewTeam={inboxQuery.data?.can_view_team ?? false}
+				emptyView={inboxQuery.data?.view ?? view}
+				onSelect={selectGroup}
+				onNew={() => (newConversationOpen = true)}
+				onNewHover={prefetchClientPicker}
+			/>
+			{#if groups.length > 0 || selectedGroup || requestedGroupLoading}
+				<PaneResizer
+					width={shownListWidth}
+					min={LIST_WIDTH.min}
+					max={listMax}
+					defaultWidth={LIST_WIDTH.default}
+					label="Resize the conversation list"
+					onResize={(width) => (listWidth = width)}
+					onCommit={(width) => rememberWidth(LIST_WIDTH, width)}
+				/>
+			{/if}
 
 			{#if requestedGroupLoading}
 				<main class="communications__message" aria-label="Conversation timeline" aria-busy="true">
@@ -1147,24 +1073,28 @@
 				</main>
 			{:else if selectedGroup}
 				{@const group = selectedGroup}
-				{@const channel = group.latest ? rowChannel({ ...group, latest: group.latest }) : null}
+				{@const unknown = isUnknownCustomer(group)}
+				{@const channels = conversationChannels(group)}
 				<main class="communications__message" aria-label="Conversation timeline">
 					<header class="communications__thread-header">
 						<div class="communications__recipient">
-							<Avatar id={group.avatarId} name={group.name} size="large" />
+							{#if unknown}
+								<span class="communications__unknown-avatar" aria-hidden="true"
+									>{@html userRoundIcon}</span
+								>
+							{:else}
+								<Avatar id={group.avatarId} name={group.name} size="medium" />
+							{/if}
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<span
-										class="communications__conversation-type communications__conversation-type--{channel?.tone ??
-											'email'}"
-									>
-										{#if channel}
-											<span class="communications__conversation-icon" aria-hidden="true"
-												>{@html channel.icon}</span
-											>
-										{/if}
-										{channel ? `${channel.label} conversation` : 'New conversation'}
+									<span class="communications__conversation-type">
+										{#each channels as channel (channel)}<ChannelMark {channel} size={12} />{/each}
+										<span
+											>{recordKindLabel(group, unknown)}{channels.length
+												? ` · ${channelWords(channels)}`
+												: ''}</span
+										>
 									</span>
 								{:else}
 									<span class="communications__unresolved-sender"
@@ -1174,19 +1104,8 @@
 							</div>
 						</div>
 						<div class="communications__thread-actions">
-							<!-- ≤1050px only (CSS-gated): the inline context rail is hidden there, so this is
-							     the only way to reach the customer's details below that width. -->
-							<Button
-								size="small"
-								variant="secondary"
-								class="communications__info-trigger"
-								onclick={() => (contextPanelOpen = true)}
-							>
-								<span class="communications__info-icon" aria-hidden="true">{@html infoIcon}</span>
-								Info
-							</Button>
-							<!-- The name's own subtitle line already says "Needs review" in words (below), so the
-							     header does not repeat it as a pill too -- only the actions that clear it show here. -->
+							<!-- The name's own subtitle line already says "Needs review" in words, so the header does not
+							     repeat it as a pill too -- only the actions that clear it show here. -->
 							{#if group.guarded && group.senderEmail && inboxQuery.data?.can_manage_assignment}
 								<Button size="small" variant="primary" onclick={() => (linkTarget = group)}
 									>Link to a client</Button
@@ -1221,8 +1140,45 @@
 									{@html group.isFollowing ? bellFilledIcon : bellIcon}
 								</Button>
 							{/if}
+							<Button
+								variant="secondary"
+								size="small"
+								pressed={detailsOpen}
+								aria-expanded={detailsOpen}
+								aria-controls="conversation-details"
+								onclick={() => (detailsOpen = !detailsOpen)}
+							>
+								{@html detailsIcon}
+								<span class="communications__details-label">Details</span>
+							</Button>
 						</div>
 					</header>
+					{#if unknown && !group.guarded && group.clientId && messengerOrigin && inboxQuery.data?.can_merge}
+						{@const leadId = group.clientId}
+						<!-- A Messenger lead the team may already know (design `inbox.md`, Unknown customer). -->
+						<div class="communications__unknown-strip">
+							<span class="communications__unknown-strip-icon" aria-hidden="true"
+								>{@html userSearchIcon}</span
+							>
+							<div class="communications__unknown-strip-text">
+								<strong>Is this someone you already know?</strong>
+								<span
+									>Meta doesn't share their name yet. Link them to a client to keep everything in one place.</span
+								>
+							</div>
+							<Button
+								variant="secondary"
+								size="small"
+								onclick={() => {
+									leadLinkError = '';
+									leadLinkTarget = { leadId };
+								}}
+							>
+								{@html linkIcon}
+								Link to a client
+							</Button>
+						</div>
+					{/if}
 					<!-- A scrolling area has to be reachable by keyboard so the arrow and Page keys can scroll it. -->
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
@@ -1239,6 +1195,7 @@
 							</p>
 						{/if}
 						{#each group.messages as message, index (message.id)}
+							{@const run = runs?.get(message.id) ?? 'single'}
 							{#each notePlacement?.before.get(message.id) ?? [] as slot (slot.note.id)}
 								{@render textStopNote(slot)}
 							{/each}
@@ -1270,161 +1227,65 @@
 									<ConversationMessage
 										id={message.id}
 										channel="website_chat"
+										{run}
 										outbound={message.direction === 'outbound'}
-										senderId={group.avatarId}
-										senderName={chatSenderLabel(message)}
 										who={chatSenderLabel(message)}
 										when={message.created_at}
-										unread={message.direction === 'inbound' && message.unread}
 									>
 										<p class="communications__text">{message.body}</p>
 									</ConversationMessage>
 								{/if}
-							{:else if message.channel === 'sms'}
-								<!-- SMS reads as a text message, not a mail: no subject line, no Forward (an
-								     email-only feature -- communication_forward_events has no channel of its
-								     own). An outbound picture (Stage 6D-2) reuses the same AttachmentList as
-								     email; an inbound picture isn't fetched yet (Stage 6D-1 descoped display),
-								     so it shows as a plain notice instead of silently vanishing. -->
-								{#if message.direction === 'outbound'}
-									{@const delivery = outboundEmailStatus(message)}
-									<ConversationMessage
-										id={message.id}
-										channel="sms"
-										outbound
-										who={sentByName(message)}
-										when={message.created_at}
-										status={delivery.label}
-										statusTone={delivery.tone}
-									>
-										{#snippet badges()}
-											{#if message.can_resend}
-												<Button
-													size="small"
-													variant="secondary"
-													onclick={() => (resendTarget = message)}>Resend</Button
-												>
-											{/if}
-										{/snippet}
-										<p class="communications__text">{message.text_content}</p>
-										{#if message.resent_from_intent_id}<p
-												class="communications__notice"
-												role="status"
-											>
-												This is a resend of an earlier attempt.
-											</p>{/if}
-										{#if message.resent_into_intent_id}
-											{@const newerAttempt = outboundIn(group, message.resent_into_intent_id)}
-											{#if newerAttempt}
-												<p class="communications__notice" role="status">
-													This message was resent.
-													<button
-														type="button"
-														class="communications__notice-action"
-														onclick={() => scrollToMessage(newerAttempt.id)}
-														>View the newer attempt</button
-													>
-												</p>
-											{/if}
-										{/if}
-										{#if message.failure_message}<p class="communications__notice" role="status">
-												{message.failure_message}
-											</p>{/if}
-										{#if message.quote_id}
-											<p class="communications__notice communications__notice--quiet">
-												Related work: <a
-													href={resolve('/(app)/quotes/[id=uuid]', { id: message.quote_id })}
-													>View quote</a
-												>
-											</p>
-										{/if}
-										{#if message.attachments.length > 0}
-											<div class="communications__attachments">
-												<AttachmentList
-													attachments={message.attachments}
-													fetchDownloadUrl={fetchOutboundAttachmentDownloadUrl}
-												/>
-											</div>
-										{/if}
-									</ConversationMessage>
-								{:else}
-									{@const kind = kindBadge(message)}
-									{@const review = reviewBadge(message)}
-									<ConversationMessage
-										id={message.id}
-										channel="sms"
-										senderId={group.avatarId}
-										senderName={message.sender_name ?? group.name}
-										when={message.created_at}
-										unread={message.unread}
-									>
-										{#snippet badges()}
-											{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
-											{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
-										{/snippet}
-										{#snippet actions()}
-											<Button
-												variant="secondary"
-												size="small"
-												iconOnly
-												label="Message details"
-												onclick={() => (detailsMessage = message)}
-											>
-												{@html infoIcon}
-											</Button>
-										{/snippet}
-										<p class="communications__text">{message.text_content}</p>
-										{#if message.in_reply_to_intent_id}
-											{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
-											{@render replyQuote(replyTarget)}
-										{/if}
-										{#if message.attachment_count > 0}
-											<p class="communications__notice communications__notice--quiet">
-												This text included a picture. Picture messages aren't shown yet.
-											</p>
-										{/if}
-										{#if message.automation_suppressed}
-											<p class="communications__notice communications__notice--quiet">
-												Automation is suppressed for this message.
-											</p>
-										{/if}
-									</ConversationMessage>
-								{/if}
 							{:else if message.direction === 'outbound'}
+								<!-- A text reads as a text message: no subject line, no Forward (an email-only feature). An
+								     email is a white card with its subject. Either way a failure turns the bubble red with
+								     the reason and Resend under it. -->
 								{@const delivery = outboundEmailStatus(message)}
+								{@const isEmail = message.channel === 'email'}
+								{@const failed = delivery.tone === 'critical'}
 								<ConversationMessage
 									id={message.id}
-									channel="email"
+									channel={message.channel}
+									card={isEmail}
+									{run}
 									outbound
 									who={sentByName(message)}
 									when={message.created_at}
 									status={delivery.label}
 									statusTone={delivery.tone}
+									{failed}
+									failureReason={failed && message.failure_message
+										? `${delivery.label} · ${message.failure_message}`
+										: delivery.label}
+									retryLabel="Resend"
+									onRetry={message.can_resend ? () => (resendTarget = message) : undefined}
+									scheduledFor={message.can_cancel_scheduled ? message.scheduled_at : null}
 								>
 									{#snippet badges()}
-										{#if message.can_resend}
+										{#if message.can_resend && !failed}
 											<Button
 												size="small"
 												variant="secondary"
 												onclick={() => (resendTarget = message)}>Resend</Button
 											>
 										{/if}
+									{/snippet}
+									{#snippet footer()}
 										{#if message.can_cancel_scheduled}
-											<Button
-												size="small"
-												variant="secondary"
-												onclick={() => (cancelScheduledTarget = message)}>Cancel</Button
+											Scheduled by email ·
+											<button
+												type="button"
+												class="communications__inline-action"
+												onclick={() => (cancelScheduledTarget = message)}>Cancel</button
 											>
 										{/if}
 									{/snippet}
-									<h3 class="communications__subject">
-										<span aria-hidden="true">{@html emailIcon}</span>{message.subject}
-									</h3>
+									{#if isEmail}
+										<h3 class="communications__subject">
+											<ChannelMark channel="email" size={16} />{message.subject}
+										</h3>
+									{/if}
 									<p class="communications__text">{message.text_content}</p>
-									{#if message.resent_from_intent_id}<p
-											class="communications__notice"
-											role="status"
-										>
+									{#if message.resent_from_intent_id}<p class="communications__notice" role="status">
 											This is a resend of an earlier attempt.
 										</p>{/if}
 									{#if message.resent_into_intent_id}
@@ -1441,7 +1302,10 @@
 											</p>
 										{/if}
 									{/if}
-									{#if message.failure_message}<p class="communications__notice" role="status">
+									{#if message.failure_message && !failed}<p
+											class="communications__notice"
+											role="status"
+										>
 											{message.failure_message}
 										</p>{/if}
 									{#if message.failure_code === 'email_balance_insufficient'}
@@ -1470,13 +1334,13 @@
 							{:else}
 								{@const kind = kindBadge(message)}
 								{@const review = reviewBadge(message)}
+								{@const isEmail = message.channel === 'email'}
 								<ConversationMessage
 									id={message.id}
-									channel="email"
-									senderId={group.avatarId}
-									senderName={message.sender_name ?? message.sender_email}
+									channel={message.channel}
+									card={isEmail}
+									{run}
 									when={message.created_at}
-									unread={message.unread}
 								>
 									{#snippet badges()}
 										{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
@@ -1492,7 +1356,7 @@
 										>
 											{@html infoIcon}
 										</Button>
-										{#if inboxQuery.data?.can_forward && message.client_id !== null}
+										{#if isEmail && inboxQuery.data?.can_forward && message.client_id !== null}
 											<Button
 												variant="secondary"
 												size="small"
@@ -1508,17 +1372,27 @@
 										{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
 										{@render replyQuote(replyTarget)}
 									{/if}
-									<h3 class="communications__subject">
-										<span aria-hidden="true">{@html emailIcon}</span>{message.subject}
-									</h3>
+									{#if isEmail}
+										<h3 class="communications__subject">
+											<ChannelMark channel="email" size={16} />{message.subject}
+										</h3>
+									{/if}
 									<p class="communications__text">{message.text_content}</p>
 									{#if message.attachment_count > 0}
-										<div class="communications__attachments">
-											<AttachmentList
-												attachments={message.attachments}
-												fetchDownloadUrl={fetchInboundAttachmentDownloadUrl}
-											/>
-										</div>
+										{#if isEmail}
+											<div class="communications__attachments">
+												<AttachmentList
+													attachments={message.attachments}
+													fetchDownloadUrl={fetchInboundAttachmentDownloadUrl}
+												/>
+											</div>
+										{:else}
+											<p class="communications__notice communications__notice--quiet">
+												{message.channel === 'messenger'
+													? "This message included a photo or file. They aren't shown yet."
+													: "This text included a picture. Picture messages aren't shown yet."}
+											</p>
+										{/if}
 									{/if}
 									{#if message.automation_suppressed}
 										<p class="communications__notice communications__notice--quiet">
@@ -1537,28 +1411,23 @@
 							<ConversationMessage
 								id={send.id}
 								channel={send.channel}
+								card={send.channel === 'email'}
 								outbound
 								who="You"
 								when={send.created_at}
 								pending={send.state === 'sending'}
 								failed={send.state === 'failed'}
+								failureReason={send.error || 'Not sent'}
+								onRetry={send.retry}
 								status={mark?.label ?? null}
 								statusTone={mark?.tone ?? 'inactive'}
 							>
-								{#snippet badges()}
-									{#if send.state === 'failed'}
-										<Button size="small" variant="secondary" onclick={send.retry}>Retry</Button>
-									{/if}
-								{/snippet}
 								{#if send.subject}
 									<h3 class="communications__subject">
-										<span aria-hidden="true">{@html emailIcon}</span>{send.subject}
+										<ChannelMark channel="email" size={16} />{send.subject}
 									</h3>
 								{/if}
 								<p class="communications__text">{send.body}</p>
-								{#if send.state === 'failed' && send.error}
-									<p class="communications__notice" role="alert">{send.error}</p>
-								{/if}
 							</ConversationMessage>
 						{/if}
 						{#if showJumpToLatest}
@@ -1590,7 +1459,20 @@
 										>
 									</div>
 								{/if}
-								{#if activeChannel === 'website_chat' && group.chatSession}
+								{#if activeChannel === 'messenger' && messengerOrigin}
+									<ConversationComposer
+										clientId={group.clientId}
+										channel="messenger"
+										customerName={unknown ? '' : group.name}
+										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
+										pageName={messengerOrigin.page_name}
+										replyWindow={messengerWindow}
+										blocked={messengerBlock}
+										onChannelChange={(channel) => (activeChannel = channel)}
+										bind:expanded={composerExpanded}
+									/>
+								{:else if activeChannel === 'website_chat' && group.chatSession}
 									{#if group.chatSession.closed_at}
 										<p class="communications__chat-ended">{endedStateLabel(group.chatSession)}</p>
 									{:else}
@@ -1598,8 +1480,11 @@
 											sessionId={group.chatSession.id}
 											clientId={group.clientId}
 											channel="website_chat"
+											customerName={unknown ? '' : group.name}
 											channels={composerChannels}
+											channelDetails={composerChannelDetails(group)}
 											onChannelChange={(channel) => (activeChannel = channel)}
+											onOpenDetails={() => (detailsOpen = true)}
 											bind:expanded={composerExpanded}
 											onPendingChange={(send) => handlePendingChange(group.key, send)}
 										/>
@@ -1611,8 +1496,11 @@
 										defaultSubject=""
 										initialBody={draftFor(group, 'sms')?.body ?? ''}
 										recipientLabel={replyPhone(group)}
+										customerName={unknown ? '' : group.name}
 										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
+										onOpenDetails={() => (detailsOpen = true)}
 										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>
@@ -1624,8 +1512,11 @@
 											replySubject(latestEmailSubject(group))}
 										initialBody={draftFor(group, 'email')?.body ?? ''}
 										recipientLabel={replyRecipient(group)}
+										customerName={unknown ? '' : group.name}
 										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
+										onOpenDetails={() => (detailsOpen = true)}
 										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>
@@ -1634,9 +1525,22 @@
 						{/key}
 					{/if}
 				</main>
-				<aside class="communications__context" aria-label="Customer context">
-					{@render contextPanel(group)}
-				</aside>
+				{#if detailsOpen && !narrowDetails.current}
+					<PaneResizer
+						width={shownDetailsWidth}
+						min={DETAILS_WIDTH.min}
+						max={detailsMax}
+						defaultWidth={DETAILS_WIDTH.default}
+						pane="after"
+						label="Resize Details"
+						controls="conversation-details"
+						onResize={(width) => (detailsWidth = width)}
+						onCommit={(width) => rememberWidth(DETAILS_WIDTH, width)}
+					/>
+					<aside class="communications__context" id="conversation-details" aria-label="Details">
+						{@render contextPanel(group)}
+					</aside>
+				{/if}
 			{/if}
 		</div>
 	{/if}
@@ -1656,12 +1560,12 @@
 
 {#if selectedGroup}
 	<SidePanel
-		open={contextPanelOpen}
+		open={detailsOpen && narrowDetails.current}
 		title={selectedGroup.name}
-		subtitle="Customer context"
+		subtitle="Details"
 		icon={userIcon}
 		iconTone="client"
-		onClose={() => (contextPanelOpen = false)}
+		onClose={() => (detailsOpen = false)}
 	>
 		{@render contextPanel(selectedGroup)}
 	</SidePanel>
@@ -1721,6 +1625,26 @@
 				senderEmail: target.senderEmail ?? '',
 				resolution: 'link',
 				clientId
+			})}
+	/>
+{/if}
+
+{#if leadLinkTarget}
+	{@const target = leadLinkTarget}
+	<LinkToClientDialog
+		open
+		leadId={target.leadId}
+		pending={linkLeadMutationState.isPending}
+		errorMessage={leadLinkError}
+		onCancel={() => {
+			leadLinkTarget = null;
+			leadLinkError = '';
+		}}
+		onConfirm={(client) =>
+			linkLeadMutationState.mutate({
+				leadId: target.leadId,
+				clientId: client.id,
+				clientName: client.name
 			})}
 	/>
 {/if}
@@ -1848,430 +1772,62 @@
 	}
 	.communications__loading {
 		display: grid;
-		grid-template-columns: 320px 1fr 344px;
-		gap: var(--space-base);
+		grid-template-columns: 300px 1fr;
+		gap: var(--space-slim);
 	}
 	.communications__loading :global(.skeleton) {
 		min-height: 520px;
 	}
 
-	/* Three separate cards on the page background, the way the approved Inbox is drawn: the conversation
-	   list, the conversation itself, and the customer. The workspace is pinned to the window so the thread
-	   scrolls inside its own card and the reply box stays at the bottom of it.
-	   100px is everything around it: the shell's padding, the top bar, and the gap above the cards. */
+	/* Three white cards on the page colour (design skill inbox.md, Layout): the list, the chat, and the
+	   customer's Details when they are open. The workspace is pinned to the window so the thread scrolls
+	   inside its own card and the reply box stays at the bottom of it. 100px is everything around it: the
+	   shell's padding, the top bar, and the gap above the cards. */
+	/* Between two cards sits a zero-wide track holding the drag line, so with a 2px gap either side the cards
+	   end up 4 apart. */
 	.communications__workspace {
 		display: grid;
-		grid-template-columns: minmax(280px, 320px) minmax(0, 1fr) 344px;
-		gap: var(--space-base);
+		grid-template-columns: var(--inbox-list-width, 300px) 0 minmax(0, 1fr);
+		gap: var(--space-smallest);
 		height: calc(100dvh - 100px);
 		min-height: 420px;
 		padding-bottom: var(--space-smaller);
 	}
+	.communications__workspace--details {
+		grid-template-columns:
+			var(--inbox-list-width, 300px) 0 minmax(0, 1fr) 0
+			var(--inbox-details-width, 310px);
+	}
 	.communications__workspace--single {
 		grid-template-columns: 1fr;
 	}
-	.communications__list,
 	.communications__message,
 	.communications__context {
 		min-width: 0;
 		min-height: 0;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		overflow: hidden;
-	}
-	.communications__list {
-		display: flex;
-		flex-direction: column;
-	}
-	.communications__list-header {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		padding: 18px var(--space-base) 0;
-		border-bottom: var(--border-base) solid var(--color-border);
-	}
-	.communications__scope-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-	}
-	.communications__scope-row h2 {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
-	}
-	.communications__inbox-switcher {
-		display: inline-flex;
-		align-items: center;
-		gap: 2px;
-		padding: 2px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
-	}
-	.communications__inbox-switcher-button {
-		min-height: 30px;
-		padding: 0 var(--space-slim);
-		border: 0;
-		border-radius: 6px;
-		color: var(--color-text--secondary);
-		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		background: transparent;
-		cursor: pointer;
-		transition:
-			background var(--timing-quick) ease-out,
-			color var(--timing-quick) ease-out;
-	}
-	.communications__inbox-switcher-button:hover {
-		color: var(--color-heading);
-	}
-	.communications__inbox-switcher-button--active {
-		color: var(--color-heading);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-base);
-	}
-	.communications__inbox-switcher-button:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__compose-icon {
-		display: inline-flex;
-	}
-	.communications__compose-icon :global(svg) {
-		width: 16px;
-		height: 16px;
-	}
-	.communications__search {
-		display: flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		height: 40px;
-		padding: 0 var(--space-small) 0 var(--space-smaller);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: var(--color-surface);
-	}
-	.communications__search:focus-within {
-		border-color: var(--color-border--interactive);
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__search input {
-		width: 100%;
-		min-height: 32px;
-		border: 0;
-		outline: 0;
-		box-shadow: none;
-		color: var(--color-text);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-	}
-	.communications__search-submit {
-		display: inline-flex;
-		width: 28px;
-		height: 28px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-icon--secondary);
-		background: transparent;
-		cursor: pointer;
-	}
-	.communications__search-submit:hover,
-	.communications__search-submit:focus-visible {
-		color: var(--color-heading);
-		background: var(--color-surface--hover);
-	}
-	.communications__search-submit:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__search-submit :global(svg) {
-		width: 17px;
-		height: 17px;
-	}
-	.communications__list-tabs-row {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: var(--space-small);
-	}
-	.communications__list-tabs {
-		display: flex;
-		gap: var(--space-smaller);
-	}
-	.communications__list-tab {
-		position: relative;
-		display: inline-flex;
-		height: 38px;
-		align-items: center;
-		gap: 6px;
-		padding: 0 var(--space-small);
-		border: 0;
-		color: var(--color-text--secondary);
-		font: inherit;
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		background: transparent;
-		cursor: pointer;
-	}
-	.communications__list-tab:hover,
-	.communications__list-tab--active {
-		color: var(--color-heading);
-	}
-	.communications__list-tab:focus-visible {
-		outline: none;
-		border-radius: var(--radius-small);
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__list-tab--active::after {
-		position: absolute;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		height: 2px;
-		border-radius: 2px;
-		background: var(--color-interactive);
-		content: '';
-	}
-	.communications__list-tab span {
-		display: inline-flex;
-		min-width: 18px;
-		height: 18px;
-		align-items: center;
-		justify-content: center;
-		padding: 0 6px;
 		border-radius: var(--radius-large);
-		color: #fff;
-		background: var(--color-base-lightBlue--700);
-		font-size: var(--typography--fontSize-overline);
-		font-weight: 700;
-	}
-	.communications__list-count {
-		margin: 0 var(--space-smallest) 10px 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-		white-space: nowrap;
-	}
-	.communications__rows {
-		display: flex;
-		flex: 1;
-		min-height: 0;
-		flex-direction: column;
-		gap: 2px;
-		padding: var(--space-small);
-		overflow-y: auto;
-	}
-	.communications__row {
-		position: relative;
-		display: flex;
-		width: 100%;
-		gap: 10px;
-		padding: var(--space-slim);
-		border: 0;
-		border-radius: 14px;
-		color: var(--color-text);
-		background: transparent;
-		text-align: left;
-		cursor: pointer;
-		transition: background var(--timing-quick) ease-out;
-	}
-	.communications__row:hover,
-	.communications__row--selected {
-		background: var(--color-surface--background--subtle);
-	}
-	.communications__row--selected::before {
-		position: absolute;
-		top: 50%;
-		left: 0;
-		width: 3px;
-		height: 36px;
-		border-radius: 2px;
-		background: var(--color-interactive);
-		content: '';
-		transform: translateY(-50%);
-	}
-	.communications__row:focus-visible {
-		outline: none;
-		box-shadow: inset 0 0 0 2px var(--color-focus);
-	}
-	.communications__row-avatar {
-		position: relative;
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-self: flex-start;
-	}
-	.communications__row-avatar :global(.avatar--medium) {
-		width: 40px;
-		height: 40px;
-		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
-	}
-	/* The channel the last message came in on, on the avatar's corner, in that channel's own colour. */
-	.communications__row-channel {
-		position: absolute;
-		right: -4px;
-		bottom: -4px;
-		display: inline-flex;
-		width: 20px;
-		height: 20px;
-		align-items: center;
-		justify-content: center;
-		border: var(--border-thick) solid var(--color-surface);
-		border-radius: var(--radius-circle);
-		color: #fff;
-	}
-	.communications__row--selected .communications__row-channel,
-	.communications__row:hover .communications__row-channel {
-		border-color: var(--color-surface--background--subtle);
-	}
-	.communications__row-channel :global(svg) {
-		width: 11px;
-		height: 11px;
-	}
-	.communications__row-channel--email {
-		background: var(--color-base-lightBlue--700);
-	}
-	.communications__row-channel--sms {
-		background: var(--color-base-green--700);
-	}
-	.communications__row-channel--chat {
-		background: var(--color-base-teal--600);
-	}
-	.communications__row-copy {
-		display: flex;
-		min-width: 0;
-		flex: 1;
-		flex-direction: column;
-		gap: 3px;
-	}
-	.communications__row-line {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		min-width: 0;
-	}
-	.communications__row-line strong {
-		min-width: 0;
-		flex: 1;
+		background: var(--color-surface);
 		overflow: hidden;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.communications__row--unread .communications__row-line strong {
-		font-weight: 700;
-	}
-	.communications__row-line time {
-		flex: 0 0 auto;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-		white-space: nowrap;
-	}
-	.communications__row--unread .communications__row-line time {
-		color: var(--color-text);
-		font-weight: 600;
-	}
-	.communications__row-subject {
-		overflow: hidden;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.communications__row--unread .communications__row-subject {
-		font-weight: 600;
-	}
-	.communications__row-preview {
-		min-width: 0;
-		flex: 1;
-		overflow: hidden;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		line-height: 1.35;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.communications__row-preview b {
-		margin-right: 5px;
-		color: var(--color-text);
-		font-weight: 600;
-	}
-	.communications__row-assigned {
-		display: inline-flex;
-		width: 20px;
-		height: 20px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		border-radius: var(--radius-circle);
-		color: #fff;
-		background: var(--color-base-blue--900);
-		font-size: var(--typography--fontSize-overline);
-		font-weight: 700;
-	}
-	/* A real unread count: bold and blue, the way an unread badge reads in any messaging app -- distinct
-	   from the "needs review" indicator below, which is never just a plain number. */
-	.communications__unread-count {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 19px;
-		height: 18px;
-		padding: 0 6px;
-		border-radius: 10px;
-		background: var(--color-base-lightBlue--700);
-		color: #fff;
-		font-size: var(--typography--fontSize-overline);
-		font-weight: 700;
-		line-height: 1;
-	}
-	/* A guarded conversation's count can never clear by opening it -- there is no client yet to hold a read
-	   position against (see needsReviewHint). A plain unread-style number would promise otherwise, so this
-	   is its own warm pill with the "why" in its title -- one glance says review, not read. */
-	.communications__attention {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		gap: 3px;
-		padding: 2px 7px 2px 6px;
-		border-radius: 10px;
-		color: var(--color-warning--onSurface);
-		background: var(--color-warning--surface);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-		line-height: 1.3;
-	}
-	.communications__attention-icon {
-		display: inline-flex;
-	}
-	.communications__attention-icon :global(svg) {
-		width: 11px;
-		height: 11px;
 	}
 	.communications__message {
 		display: flex;
 		flex-direction: column;
+		/* Its parts shorten by the chat card's own width (design `inbox.md`, Narrow widths). */
+		container: inbox-chat / inline-size;
+	}
+	@container inbox-chat (max-width: 640px) {
+		.communications__details-label {
+			display: none;
+		}
 	}
 	.communications__thread-header {
 		display: flex;
+		min-height: 68px;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--space-slim);
-		padding: var(--space-slim) var(--space-base) var(--space-slim) 20px;
+		gap: var(--space-base);
+		padding: 0 var(--space-base) 0 var(--space-medium);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 	.communications__recipient {
@@ -2281,66 +1837,95 @@
 		gap: var(--space-slim);
 	}
 	.communications__recipient > div {
+		display: flex;
 		min-width: 0;
-	}
-	.communications__recipient :global(.avatar--large) {
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
+		flex-direction: column;
+		gap: 2px;
 	}
 	.communications__recipient h2 {
 		margin: 0;
 		overflow: hidden;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
+		font-weight: 600;
 		line-height: 1.25;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	// Under the header of an unknown Messenger customer: a full-width informative strip with Link to a client.
+	.communications__unknown-strip {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-medium);
+		border-bottom: var(--border-base) solid var(--color-informative--surface-edge);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+	}
+
+	.communications__unknown-strip-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+
+		:global(svg) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	.communications__unknown-strip-text {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		span {
+			font-size: var(--typography--fontSize-overline);
+		}
+	}
+
+	.communications__unknown-avatar {
+		display: inline-grid;
+		width: 40px;
+		height: 40px;
+		flex: 0 0 auto;
+		place-items: center;
+		border-radius: var(--radius-circle);
+		color: var(--color-inactive);
+		background: var(--color-inactive--surface);
+	}
+	.communications__unknown-avatar :global(svg) {
+		width: 20px;
+		height: 20px;
+	}
 	.communications__unresolved-sender,
 	.communications__conversation-type {
 		display: inline-flex;
+		min-width: 0;
 		align-items: center;
-		gap: 6px;
+		gap: 4px;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 500;
 		white-space: nowrap;
 	}
-	.communications__conversation-icon {
-		display: inline-flex;
-	}
-	.communications__conversation-icon :global(svg) {
-		width: 13px;
-		height: 13px;
-	}
-	.communications__conversation-type--email .communications__conversation-icon {
-		color: var(--color-informative--onSurface);
-	}
-	.communications__conversation-type--sms .communications__conversation-icon {
-		color: var(--color-interactive);
-	}
-	.communications__conversation-type--chat .communications__conversation-icon {
-		color: var(--color-dataViz--categorical--2);
+	.communications__conversation-type > span:last-child {
+		overflow: hidden;
+		margin-left: 2px;
+		text-overflow: ellipsis;
 	}
 	.communications__thread-actions {
 		display: flex;
 		flex: 0 0 auto;
 		align-items: center;
 		gap: var(--space-small);
-	}
-	/* Only reachable below 1050px, where the inline context rail is hidden -- see the width media query.
-	   Doubled selector for specificity over Button's own base `.button { display: inline-flex }` rule,
-	   which otherwise wins the cascade tie since both are single-class scoped/global selectors. */
-	:global(.button.communications__info-trigger) {
-		display: none;
-	}
-	.communications__info-icon {
-		display: inline-flex;
-	}
-	.communications__info-icon :global(svg) {
-		width: 16px;
-		height: 16px;
 	}
 	.communications__timeline:focus-visible {
 		outline: none;
@@ -2353,9 +1938,8 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: 14px;
-		padding: var(--space-slim) var(--space-large) var(--space-base);
-		background: var(--color-surface--background--subtle);
+		gap: 3px;
+		padding: var(--space-slim) var(--space-large);
 		overflow-y: auto;
 	}
 	.communications__timeline::before {
@@ -2369,20 +1953,29 @@
 	.communications__subject {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: 8px;
 		margin: 0;
 		color: var(--message-heading, var(--color-heading));
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
 		line-height: 1.4;
 	}
-	.communications__subject > span {
-		display: inline-flex;
-		color: var(--message-accent, var(--color-informative--onSurface));
+	.communications__inline-action {
+		padding: 0;
+		border: 0;
+		color: var(--color-interactive);
+		background: none;
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
 	}
-	.communications__subject > span :global(svg) {
-		width: 13px;
-		height: 13px;
+	.communications__inline-action:hover {
+		text-decoration: underline;
+	}
+	.communications__inline-action:focus-visible {
+		border-radius: var(--radius-small);
+		outline: none;
+		box-shadow: var(--shadow-focus);
 	}
 	.communications__quote {
 		display: flex;
@@ -2446,40 +2039,35 @@
 		display: flex;
 		align-self: center;
 	}
+	/* Date chips sit centred between days, as in a messaging app. */
 	.communications__date-divider {
 		display: flex;
-		align-items: center;
-		gap: var(--space-slim);
-		width: 100%;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-overline);
-		font-weight: 700;
-		text-align: center;
-	}
-	.communications__date-divider::before,
-	.communications__date-divider::after {
-		flex: 1;
-		height: var(--border-base);
-		background: var(--color-border);
-		content: '';
+		justify-content: center;
+		margin: var(--space-small) 0;
 	}
 	.communications__date-divider span {
-		padding: 3px 10px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 999px;
-		background: var(--color-surface);
+		padding: 5px var(--space-slim);
+		border-radius: var(--radius-circle);
+		color: var(--color-text--secondary);
+		background: var(--color-surface--active);
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
 	}
-	/* Everything since the last visit: the same line, in the unread blue. */
+	/* Everything since the last visit: a green line with its chip. */
 	.communications__date-divider--new {
-		color: #fff;
+		align-items: center;
+		gap: var(--space-slim);
 	}
 	.communications__date-divider--new::before,
 	.communications__date-divider--new::after {
-		background: color-mix(in srgb, var(--color-base-lightBlue--500) 30%, transparent);
+		flex: 1;
+		height: var(--border-base);
+		background: var(--color-interactive);
+		content: '';
 	}
 	.communications__date-divider--new span {
-		border-color: transparent;
-		background: var(--color-base-lightBlue--700);
+		color: var(--color-surface);
+		background: var(--color-interactive);
 	}
 	.communications__attachments {
 		padding: var(--space-smaller);
@@ -2604,17 +2192,10 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 	}
-	/* Below about 1100px of room the customer panel moves behind the Info button, so the conversation keeps
-	   a readable width. */
-	@container (max-width: 1100px) {
+	/* Without room for a third card, Details opens as a drawer over the chat instead (narrowDetails). */
+	@container (max-width: 900px) {
 		.communications__workspace {
-			grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-		}
-		.communications__context {
-			display: none;
-		}
-		:global(.button.communications__info-trigger) {
-			display: inline-flex;
+			grid-template-columns: min(var(--inbox-list-width, 300px), 260px) 0 minmax(0, 1fr);
 		}
 	}
 	@container (max-width: 720px) {
@@ -2627,7 +2208,11 @@
 		.communications__workspace {
 			height: auto;
 		}
-		.communications__list {
+		/* Stacked, there is nothing to resize. */
+		.communications__workspace > :global(.pane-resizer) {
+			display: none;
+		}
+		.communications__workspace > :global(.inbox-list) {
 			max-height: 330px;
 		}
 		.communications__message {

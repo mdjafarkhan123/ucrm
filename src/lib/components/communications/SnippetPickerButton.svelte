@@ -8,13 +8,21 @@
 		fetchCommunicationSnippets,
 		type CommunicationSnippet
 	} from '$lib/communications/snippets';
-	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
+	import notesIcon from '@tabler/icons/outline/bolt.svg?raw';
 
 	// The composer's snippet trigger, shared by every channel ConversationComposer renders so reusable text
 	// inserts the same way everywhere. Snippets stay editable after insert (contract requirement) -- this
 	// only ever appends to the caller's draft, never owns it.
-	let { disabled = false, onInsert }: { disabled?: boolean; onInsert: (body: string) => void } =
-		$props();
+	let {
+		disabled = false,
+		triggerVariant = 'secondary',
+		onInsert
+	}: {
+		disabled?: boolean;
+		/** `quiet` in the inbox reply box's tool bar, where the tools sit on the box itself. */
+		triggerVariant?: 'secondary' | 'quiet';
+		onInsert: (body: string) => void;
+	} = $props();
 
 	let open = $state(false);
 	let search = $state('');
@@ -58,7 +66,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				variant="secondary"
+				variant={triggerVariant}
 				size="small"
 				iconOnly
 				label="Insert a snippet"

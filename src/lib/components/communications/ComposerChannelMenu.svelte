@@ -1,62 +1,94 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import ChannelMark, {
+		CHANNEL_LABELS,
+		type InboxChannel
+	} from '$lib/components/communications/inbox/ChannelMark.svelte';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
-	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
-	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 
-	type ComposerChannel = 'email' | 'sms' | 'website_chat';
+	type ComposerChannel = InboxChannel;
+	type ChannelDetail = {
+		/** Where the reply goes: the customer's email or number, or the Page for Messenger. */
+		address?: string;
+		/** Why this channel can't send right now; the line is greyed and can't be picked. */
+		unavailable?: string | null;
+	};
 
 	let {
 		channel,
 		channels,
+		details = {},
+		pageName = null,
 		onSelect
 	}: {
 		channel: ComposerChannel;
 		channels: ComposerChannel[];
+		details?: Partial<Record<ComposerChannel, ChannelDetail>>;
+		/** Messenger's pill names the Page it answers from. */
+		pageName?: string | null;
 		onSelect: (channel: ComposerChannel) => void;
 	} = $props();
 
-	function channelDetails(value: ComposerChannel) {
-		if (value === 'sms') return { label: 'Text', icon: messageIcon };
-		if (value === 'website_chat') return { label: 'Website chat', icon: messagesIcon };
-		return { label: 'Email', icon: mailIcon };
-	}
-
-	const current = $derived(channelDetails(channel));
+	const marks: Record<ComposerChannel, Snippet> = {
+		messenger: messengerMark,
+		email: emailMark,
+		sms: smsMark,
+		website_chat: chatMark
+	};
+	const label = $derived(CHANNEL_LABELS[channel]);
 	const items = $derived(
-		channels.map((value) => ({
-			label: channelDetails(value).label,
-			icon: channelDetails(value).icon,
-			current: value === channel,
-			onSelect: () => onSelect(value)
-		}))
+		channels.map((value) => {
+			const detail = details[value];
+			return {
+				key: value,
+				label: CHANNEL_LABELS[value],
+				leading: marks[value],
+				hint: detail?.unavailable ?? detail?.address,
+				hintCritical: Boolean(detail?.unavailable),
+				disabled: Boolean(detail?.unavailable) && value !== channel,
+				current: value === channel,
+				onSelect: () => onSelect(value)
+			};
+		})
 	);
+	const detailed = $derived(channels.some((value) => details[value]));
 </script>
 
-<!-- The channel pill (design `chips.md`): white and raised when it opens a menu, a teal look-only pill when the
+<!-- The channel pill (design `chips.md`, Channel pill): the channel's mark and name, for Messenger the Page, and a
+     chevron when it opens the channel menu (`inbox.md`, Channel menu); a tinted look-only pill when the
      conversation has one channel. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#snippet trigger()}
-	<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
-	<span>{current.label}</span>
-	<span class="composer-channel-menu__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+{#snippet messengerMark()}<ChannelMark channel="messenger" size={16} />{/snippet}
+{#snippet emailMark()}<ChannelMark channel="email" size={16} />{/snippet}
+{#snippet smsMark()}<ChannelMark channel="sms" size={16} />{/snippet}
+{#snippet chatMark()}<ChannelMark channel="website_chat" size={16} />{/snippet}
+
+{#snippet pillBody()}
+	<ChannelMark {channel} size={16} />
+	<span>{label}</span>
+	{#if channel === 'messenger' && pageName}
+		<span class="composer-channel-menu__page">· {pageName} Page</span>
+	{/if}
 {/snippet}
 
 {#if channels.length > 1}
 	<DropdownMenu
 		{items}
-		triggerLabel={`Change message channel, current: ${current.label}`}
+		triggerLabel={`Change message channel, current: ${label}`}
 		triggerClass="composer-channel-menu__trigger"
-		contentClass="composer-channel-menu__content"
-		{trigger}
+		contentClass={detailed
+			? 'composer-channel-menu__content composer-channel-menu__content--detailed'
+			: 'composer-channel-menu__content'}
 		align="start"
-	/>
+	>
+		{#snippet trigger()}
+			{@render pillBody()}
+			<span class="composer-channel-menu__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+		{/snippet}
+	</DropdownMenu>
 {:else}
-	<span class="composer-channel-menu__static">
-		<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
-		<span>{current.label}</span>
-	</span>
+	<span class="composer-channel-menu__static">{@render pillBody()}</span>
 {/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -112,19 +144,18 @@
 		background: var(--color-conversation--surface);
 	}
 
-	.composer-channel-menu__icon,
 	.composer-channel-menu__chevron {
 		display: inline-grid;
 		place-items: center;
 	}
 
-	.composer-channel-menu__icon {
-		color: var(--color-conversation);
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
+	// Messenger's pill names the Page it answers from; it gives way first when the reply box is narrow.
+	.composer-channel-menu__page {
+		min-width: 0;
+		overflow: hidden;
+		color: var(--color-text--secondary);
+		font-weight: 400;
+		text-overflow: ellipsis;
 	}
 
 	.composer-channel-menu__chevron {
@@ -141,7 +172,14 @@
 		width: 216px;
 	}
 
-	:global(.composer-channel-menu__content .dropdown-menu__item-icon:first-child) {
-		color: var(--color-conversation);
+	@container inbox-chat (max-width: 640px) {
+		.composer-channel-menu__page {
+			display: none;
+		}
+	}
+
+	// The inbox's channel menu lists where each channel goes, so it is wider (`inbox.md`, Channel menu).
+	:global(.composer-channel-menu__content--detailed.dropdown-menu__content) {
+		width: 300px;
 	}
 </style>

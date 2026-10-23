@@ -71,11 +71,21 @@ export type InboxAttachment = {
 	failure_reason: string | null;
 };
 
+// Where a Messenger message came from: the business's Facebook Page and the customer's own Messenger identity.
+export type InboxMessengerOrigin = {
+	page_name: string;
+	page_status: 'active' | 'needs_reconnect' | 'disconnected';
+	/** The customer's name once Meta lets us read it; until then the lead is "Facebook user". */
+	display_name: string | null;
+	/** When this customer last wrote on Messenger -- Meta's 24-hour reply window runs from here. */
+	last_inbound_at: string | null;
+};
+
 export type InboundInboxMessage = {
 	direction: 'inbound';
 	id: string;
 	client_id: string | null;
-	channel: 'email' | 'sms';
+	channel: 'email' | 'sms' | 'messenger';
 	client_name: string | null;
 	sender_email: string | null;
 	sender_phone: string | null;
@@ -93,6 +103,8 @@ export type InboundInboxMessage = {
 	unread: boolean;
 	provider: string;
 	provider_message_id: string | null;
+	/** Set on Messenger messages only. */
+	messenger?: InboxMessengerOrigin | null;
 	assigned_to: string | null;
 	assigned_to_name: string | null;
 	is_following: boolean;
@@ -281,6 +293,8 @@ export type InboxMessagePage = {
 	can_manage_assignment: boolean;
 	can_forward: boolean;
 	can_send: boolean;
+	/** May link an unknown Messenger customer to a client, which merges the lead into it (customers.merge). */
+	can_merge?: boolean;
 };
 
 // One item in a conversation's merged timeline -- an email-shaped message or a Website Chat one. Kept as
@@ -290,6 +304,86 @@ export type TimelineMessage = InboxMessage | WebsiteChatInboxMessage;
 
 export function isWebsiteChatMessage(item: TimelineMessage): item is WebsiteChatInboxMessage {
 	return 'channel' in item && item.channel === 'website_chat';
+}
+
+export type TimelineChannel = 'email' | 'sms' | 'messenger' | 'website_chat';
+
+/** The newest Messenger origin in a conversation: which Page it runs through and when the customer last wrote. */
+export function conversationMessenger(
+	group: Pick<ConversationGroup, 'messages'>
+): InboxMessengerOrigin | null {
+	for (let index = group.messages.length - 1; index >= 0; index -= 1) {
+		const message = group.messages[index];
+		if (message.channel === 'messenger' && message.direction === 'inbound' && message.messenger)
+			return message.messenger;
+	}
+	return null;
+}
+
+export type MessageRunPosition = 'single' | 'first' | 'middle' | 'last';
+
+// Bubbles from the same side within a few minutes join into one run, the way a messaging app draws them. A new
+// day, a long pause, a narration line or an email (drawn as its own card) starts a new run.
+const RUN_GAP_MS = 10 * 60 * 1000;
+
+function runsTogether(a: TimelineMessage, b: TimelineMessage, sameDay: (a: string, b: string) => boolean) {
+	if (a.direction !== b.direction) return false;
+	if (a.channel === 'email' || b.channel === 'email') return false;
+	if (isWebsiteChatMessage(a) && a.sender_type === 'system') return false;
+	if (isWebsiteChatMessage(b) && b.sender_type === 'system') return false;
+	if (!sameDay(a.created_at, b.created_at)) return false;
+	return Math.abs(Date.parse(b.created_at) - Date.parse(a.created_at)) <= RUN_GAP_MS;
+}
+
+/** Each message's place in its run, for an oldest-first timeline. */
+export function messageRuns(
+	messages: TimelineMessage[],
+	sameDay: (a: string, b: string) => boolean
+): Map<string, MessageRunPosition> {
+	const runs = new Map<string, MessageRunPosition>();
+	messages.forEach((message, index) => {
+		const before = index > 0 && runsTogether(messages[index - 1], message, sameDay);
+		const after =
+			index < messages.length - 1 && runsTogether(message, messages[index + 1], sameDay);
+		runs.set(message.id, before ? (after ? 'middle' : 'last') : after ? 'first' : 'single');
+	});
+	return runs;
+}
+
+// The name a Messenger lead gets until Meta shares the customer's own (20261227090000_messenger_foundation.sql).
+export const MESSENGER_UNKNOWN_NAME = 'Facebook user';
+
+/** Someone the business does not know yet: an unlinked sender, or a Messenger lead still called "Facebook user". */
+export function isUnknownCustomer(group: Pick<ConversationGroup, 'guarded' | 'name' | 'messages'>) {
+	if (group.guarded) return true;
+	return group.name === MESSENGER_UNKNOWN_NAME && conversationMessenger(group) !== null;
+}
+
+export const MESSENGER_REPLY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+export type MessengerReplyWindow =
+	| { state: 'open' | 'closing'; msLeft: number }
+	| { state: 'closed'; msLeft: 0 };
+
+// Meta lets a Page answer freely for 24 hours after the customer's last message (docs/messenger-behavior-
+// contract.md). Under an hour left reads as a warning; after that the window is closed until they write again.
+export function messengerReplyWindow(
+	lastInboundAt: string | null,
+	now: number = Date.now()
+): MessengerReplyWindow {
+	const since = lastInboundAt ? Date.parse(lastInboundAt) : Number.NaN;
+	const msLeft = Number.isNaN(since) ? 0 : since + MESSENGER_REPLY_WINDOW_MS - now;
+	if (msLeft <= 0) return { state: 'closed', msLeft: 0 };
+	return { state: msLeft < 60 * 60 * 1000 ? 'closing' : 'open', msLeft };
+}
+
+/** "23 h 17 min", "42 min" -- the time left in words, rounded down to the minute. */
+export function formatTimeLeft(msLeft: number): string {
+	const minutes = Math.max(0, Math.floor(msLeft / 60_000));
+	const hours = Math.floor(minutes / 60);
+	const rest = minutes % 60;
+	if (hours === 0) return `${rest} min`;
+	return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
 
 export type ConversationGroup = {
@@ -825,6 +919,7 @@ export type ConversationContext = {
 		display_name: string;
 		company_name: string | null;
 		client_type: string;
+		lifecycle_status: 'lead' | 'customer';
 		email: string | null;
 		phone: string | null;
 	};

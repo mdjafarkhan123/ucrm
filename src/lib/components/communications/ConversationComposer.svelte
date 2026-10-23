@@ -15,17 +15,29 @@
 	import { tick } from 'svelte';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 	import { browser } from '$app/environment';
-	import sendIcon from '@tabler/icons/outline/send-2.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import minusIcon from '@tabler/icons/outline/minus.svg?raw';
 	import maximizeIcon from '@tabler/icons/outline/arrows-maximize.svg?raw';
 	import minimizeIcon from '@tabler/icons/outline/arrows-minimize.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import chevronUpIcon from '@tabler/icons/outline/chevron-up.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
+	import replyIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
+	import windowOpenIcon from '@tabler/icons/outline/hourglass-high.svg?raw';
+	import windowClosingIcon from '@tabler/icons/outline/alarm.svg?raw';
+	import windowClosedIcon from '@tabler/icons/outline/hourglass-off.svg?raw';
+	import unplugIcon from '@tabler/icons/outline/plug-connected-x.svg?raw';
+	import criticalIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import warningIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import informativeIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import type { InboxChannel } from '$lib/components/communications/inbox/ChannelMark.svelte';
 	import {
 		clientCommunicationHistoryKey,
 		conversationMessagingKey,
 		estimateSmsReply,
 		fetchConversationMessaging,
+		formatTimeLeft,
+		type MessengerReplyWindow,
 		sendConversationReply,
 		sendConversationReplySms,
 		sendWebsiteChatStaffMessage,
@@ -53,23 +65,50 @@
 		defaultSubject = '',
 		initialBody = '',
 		recipientLabel = '',
+		customerName = '',
 		channels,
+		channelDetails = {},
+		pageName = null,
+		replyWindow = null,
+		blocked = null,
 		onChannelChange,
+		onOpenDetails,
 		expanded = $bindable(false),
 		onPendingChange
 	}: {
 		clientId: string | null;
-		channel: 'email' | 'sms' | 'website_chat';
+		channel: InboxChannel;
 		sessionId?: string | null;
 		defaultSubject?: string;
 		/** A message written elsewhere for staff to review here, such as a file share's link. */
 		initialBody?: string;
 		recipientLabel?: string;
-		channels: Array<'email' | 'sms' | 'website_chat'>;
-		onChannelChange: (channel: 'email' | 'sms' | 'website_chat') => void;
+		/** Who the reply is to, for the placeholder ("Write your reply to Daniel…"). */
+		customerName?: string;
+		channels: InboxChannel[];
+		/** Where each channel goes, or why it can't send now, for the channel menu. */
+		channelDetails?: Partial<Record<InboxChannel, { address?: string; unavailable?: string | null }>>;
+		/** Messenger: the Page the reply goes from, named in the channel pill. */
+		pageName?: string | null;
+		/** Messenger: the time Meta still allows a reply, shown as a chip on the tab strip. */
+		replyWindow?: (MessengerReplyWindow & { pageDisconnected?: boolean }) | null;
+		/** Why sending is blocked on this channel: a reason line above the words, and Send held. */
+		blocked?: ComposerBlock | null;
+		onChannelChange: (channel: InboxChannel) => void;
+		/** Opens the Details panel, where Messaging (texts stopped) is managed. */
+		onOpenDetails?: () => void;
 		expanded?: boolean;
 		onPendingChange?: (pending: PendingOutboundSend | null) => void;
 	} = $props();
+
+	type ComposerBlock = {
+		tone: 'critical' | 'warning' | 'informative';
+		text: string;
+		/** A shorter line for the empty writing area; the reason itself when left out. */
+		short?: string;
+		/** The way out, as a link at the line's right ("Reply by text", "Reconnect in Settings"). */
+		action?: { label: string; href?: string; onclick?: () => void };
+	};
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -110,6 +149,46 @@
 		const phones = messaging.data?.phones ?? [];
 		return (phones.find((phone) => phone.is_primary) ?? phones[0])?.state === 'opted_out';
 	});
+
+	// The one reason this box can't send right now, drawn as the reason line (design `inputs.md`, Reason line).
+	const reason = $derived<ComposerBlock | null>(
+		blocked ??
+			(smsStopped
+				? {
+						tone: 'critical',
+						text: 'Texts to this customer are stopped.',
+						action: onOpenDetails
+							? { label: 'See Messaging in Details', onclick: onOpenDetails }
+							: undefined
+					}
+				: null)
+	);
+	const reasonIcons = { critical: criticalIcon, warning: warningIcon, informative: informativeIcon };
+
+	// Messenger's reply window, in words (design `inbox.md`, Reply-window chip).
+	const windowChip = $derived.by(() => {
+		if (channel !== 'messenger' || !replyWindow) return null;
+		if (replyWindow.pageDisconnected)
+			return { tone: 'critical', icon: unplugIcon, text: 'Page disconnected', short: 'Disconnected' };
+		if (replyWindow.state === 'closed')
+			return { tone: 'critical', icon: windowClosedIcon, text: 'Reply window closed', short: 'Closed' };
+		// On a narrow chat the words shorten: "23 h 17 min left to reply on Messenger", "23 h left", "23 h".
+		const hours = Math.floor(replyWindow.msLeft / 3_600_000);
+		const roughly = hours > 0 ? `${hours} h` : formatTimeLeft(replyWindow.msLeft);
+		return {
+			tone: replyWindow.state === 'closing' ? 'warning' : 'informative',
+			icon: replyWindow.state === 'closing' ? windowClosingIcon : windowOpenIcon,
+			text: `${formatTimeLeft(replyWindow.msLeft)} left to reply on Messenger`,
+			mid: `${roughly} left`,
+			short: roughly
+		};
+	});
+
+	const writePrompt = $derived(
+		customerName ? `Write your reply to ${customerName.split(' ')[0]}…` : 'Write your reply…'
+	);
+	// When sending is held, the empty box says why instead.
+	const placeholder = $derived(reason ? (reason.short ?? reason.text) : writePrompt);
 
 	// The composer's live impact line (blueprint: "live characters, estimated segments and estimated
 	// retail cost"), plus MMS eligibility for the attach-photo button. Debounced so every keystroke does not
@@ -207,7 +286,7 @@
 	) {
 		onPendingChange?.({
 			id: attempt.id,
-			channel,
+			channel: channel as PendingOutboundSend['channel'],
 			subject: channel === 'email' ? attempt.subject : null,
 			body: attempt.body,
 			created_at: new Date().toISOString(),
@@ -297,7 +376,7 @@
 
 	function submit(event?: SubmitEvent) {
 		event?.preventDefault();
-		if (sending || uploading || smsStopped) return;
+		if (sending || uploading || reason) return;
 
 		if (channel === 'website_chat') {
 			const text = body.trim();
@@ -410,8 +489,12 @@
 	// it never fires by accident while typing. Chat also sends on plain Enter (Shift+Enter for a newline),
 	// matching the visitor's own widget; email/SMS keep plain Enter as a newline. Enter that only confirms an
 	// IME composition (Japanese, Chinese, Korean input) is not a send.
-	const sendChord =
-		browser && /Mac|iPhone|iPad/.test(navigator.platform) ? '\u2318 Enter' : 'Ctrl+Enter';
+	const onMac = browser && /Mac|iPhone|iPad/.test(navigator.platform);
+	const sendChord = onMac ? '\u2318 Enter' : 'Ctrl+Enter';
+	// The shortcut hint beside Send: Enter alone in a chat, the modifier chord elsewhere.
+	const sendHint = $derived(
+		channel === 'website_chat' ? '\u21b5' : onMac ? '\u2318 \u21b5' : 'Ctrl \u21b5'
+	);
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key !== 'Enter' || event.isComposing) return;
@@ -455,65 +538,92 @@
 		label={channel === 'website_chat' ? 'Send' : `Send (${sendChord})`}
 		aria-keyshortcuts={channel === 'website_chat' ? undefined : 'Control+Enter Meta+Enter'}
 		loading={sending}
-		disabled={uploading || smsStopped}
+		disabled={uploading || Boolean(reason) || !body.trim()}
 	>
 		Send
 		{@html sendIcon}
 	</Button>
 {/snippet}
 
+{#snippet channelPill()}
+	<ComposerChannelMenu
+		{channel}
+		{channels}
+		details={channelDetails}
+		{pageName}
+		onSelect={onChannelChange}
+	/>
+{/snippet}
+
+<!-- The reply box (design `inbox.md`, Reply box): a tab strip, the email's From and Subject, the reason line when
+     sending is held, the words with their files, and a tool bar with the channel pill and Send. -->
 {#snippet composerForm()}
 	<form
 		id="conversation-composer-expanded"
-		class="conversation-composer__form"
+		class="conversation-composer__box conversation-composer__form"
 		class:conversation-composer__form--popped={popped}
 		onsubmit={submit}
 	>
-		<header class="conversation-composer__header">
-			{#if channel !== 'website_chat'}
-				<p class="conversation-composer__route">
-					<span class="conversation-composer__route-from">
-						{#if channel === 'sms'}
-							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
-						{:else}
-							<EmailSenderLabel kind="manual" />
-						{/if}
-					</span>
-					<span class="conversation-composer__route-arrow" aria-hidden="true"
-						>{@html arrowRightIcon}</span
+		<div class="conversation-composer__strip">
+			<span class="conversation-composer__tab conversation-composer__tab--current">
+				<span class="conversation-composer__tab-icon" aria-hidden="true">{@html replyIcon}</span>
+				Reply
+			</span>
+			{#if windowChip}
+				<span
+					class="conversation-composer__chip conversation-composer__chip--{windowChip.tone}"
+					title={windowChip.text}
+				>
+					<span class="conversation-composer__chip-icon" aria-hidden="true"
+						>{@html windowChip.icon}</span
 					>
-					<span class="conversation-composer__route-to">{recipientLabel}</span>
-				</p>
-			{:else}
-				<span class="conversation-composer__route-from">Replying in website chat</span>
+					<span class="conversation-composer__chip-full">{windowChip.text}</span>
+					<span class="conversation-composer__chip-mid" aria-hidden="true"
+						>{windowChip.mid ?? windowChip.text}</span
+					>
+					<span class="conversation-composer__chip-short" aria-hidden="true">{windowChip.short}</span>
+				</span>
 			{/if}
-			<Button
-				variant="secondary"
-				size="small"
-				iconOnly
-				label="Minimize composer"
-				onclick={collapse}
-			>
+			<Button variant="quiet" size="small" iconOnly label="Minimize reply box" onclick={collapse}>
 				{@html minusIcon}
 			</Button>
 			<Button
-				variant="secondary"
+				variant="quiet"
 				size="small"
 				iconOnly
-				label={popped ? 'Exit full screen' : 'Expand to full screen'}
+				label={popped ? 'Exit full screen' : 'Full screen'}
 				onclick={() => setPopped(!popped)}
 			>
 				{@html popped ? minimizeIcon : maximizeIcon}
 			</Button>
-		</header>
+		</div>
+		{#if channel === 'email' || channel === 'sms'}
+			<p class="conversation-composer__row">
+				<span class="conversation-composer__row-label">From</span>
+				<span class="conversation-composer__route-from">
+					{#if channel === 'sms'}
+						{estimate?.ready ? estimate.sender_phone : 'Your business number'}
+					{:else}
+						<EmailSenderLabel kind="manual" />
+					{/if}
+				</span>
+				<span class="conversation-composer__route-arrow" aria-hidden="true"
+					>{@html arrowRightIcon}</span
+				>
+				<span class="conversation-composer__route-to">{recipientLabel}</span>
+			</p>
+		{/if}
 		{#if channel === 'email'}
 			<div
-				class="conversation-composer__subject"
-				class:conversation-composer__subject--invalid={Boolean(fieldErrors.subject)}
+				class="conversation-composer__row"
+				class:conversation-composer__row--invalid={Boolean(fieldErrors.subject)}
 			>
-				<label for="conversation-composer-subject">Subject</label>
+				<label class="conversation-composer__row-label" for="conversation-composer-subject"
+					>Subject</label
+				>
 				<input
 					id="conversation-composer-subject"
+					class="conversation-composer__subject"
 					bind:value={subject}
 					maxlength={998}
 					aria-required="true"
@@ -530,6 +640,28 @@
 					{fieldErrors.subject}
 				</p>{/if}
 		{/if}
+		{#if reason}
+			<div class="conversation-composer__reason-wrap">
+				<p class="conversation-composer__reason conversation-composer__reason--{reason.tone}" role="status">
+					<span class="conversation-composer__reason-icon" aria-hidden="true"
+						>{@html reasonIcons[reason.tone]}</span
+					>
+					<span class="conversation-composer__reason-text">{reason.text}</span>
+					{#if reason.action?.href}
+						<a class="conversation-composer__reason-link" href={reason.action.href}
+							>{reason.action.label}<span aria-hidden="true">{@html arrowRightIcon}</span></a
+						>
+					{:else if reason.action?.onclick}
+						<button
+							type="button"
+							class="conversation-composer__reason-link"
+							onclick={reason.action.onclick}
+							>{reason.action.label}<span aria-hidden="true">{@html arrowRightIcon}</span></button
+						>
+					{/if}
+				</p>
+			</div>
+		{/if}
 		<div
 			class="conversation-composer__editor"
 			class:conversation-composer__editor--invalid={Boolean(fieldErrors.body)}
@@ -539,9 +671,10 @@
 				bind:this={bodyEl}
 				id="conversation-composer-body"
 				bind:value={body}
-				placeholder={channel === 'website_chat' ? 'Write a reply…' : 'Type a message'}
+				{placeholder}
+				disabled={Boolean(blocked)}
 				maxlength={channel === 'sms' ? 1600 : channel === 'website_chat' ? 5000 : 20_000}
-				rows={channel === 'website_chat' ? 3 : 5}
+				rows="3"
 				aria-required="true"
 				aria-invalid={Boolean(fieldErrors.body)}
 				aria-describedby={fieldErrors.body ? 'conversation-composer-body-error' : undefined}
@@ -556,11 +689,6 @@
 			>
 				{fieldErrors.body}
 			</p>{/if}
-		{#if smsStopped}
-			<p class="conversation-composer__error" role="alert">
-				Texts to this customer are stopped. See Messaging in the Contact tab.
-			</p>
-		{/if}
 		{#if channel === 'sms'}
 			<p class="conversation-composer__impact">
 				{mmsEligible
@@ -569,115 +697,119 @@
 			</p>
 		{/if}
 		{#if formError}<p class="conversation-composer__error" role="alert">{formError}</p>{/if}
-		<footer class="conversation-composer__footer">
-			<div class="conversation-composer__tools">
-				<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
-				{#if channel === 'email'}
-					<EmailTemplatePickerButton disabled={sending} onApply={requestTemplate} />
-				{/if}
-				<SnippetPickerButton disabled={sending} onInsert={insertSnippet} />
-				{#if channel === 'email'}
-					<ConversationAttachments
-						bind:this={attachmentsField}
-						cardsTarget={filesEl}
-						disabled={sending}
-						onUploadingChange={(value) => (uploading = value)}
-					/>
-					<ConversationLibraryAttachments
-						files={libraryFiles}
-						onChange={(next) => (libraryFiles = next)}
-						disabled={sending}
-						{clientId}
-						clientLabel="This client's files"
-					/>
-				{:else if channel === 'sms'}
-					<ConversationAttachments
-						bind:this={attachmentsField}
-						variant="sms"
-						cardsTarget={filesEl}
-						disabled={sending}
-						onUploadingChange={(value) => (uploading = value)}
-					/>
-					<ConversationLibraryAttachments
-						files={libraryFiles}
-						onChange={(next) => (libraryFiles = next)}
-						variant="sms"
-						disabled={sending}
-						{clientId}
-						clientLabel="This client's files"
-					/>
-				{/if}
-			</div>
-			{#if channel === 'sms'}
-				<p class="conversation-composer__estimate">
-					{#if estimating}
-						Estimating…
-					{:else if estimate?.ready}
-						{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
-						1
-							? ''
-							: 's'} · {formatEstimateCost(estimate)}
-					{:else if estimate && !estimate.ready}
-						{estimate.reason}
-					{:else}
-						{body.length} character{body.length === 1 ? '' : 's'}
-					{/if}
-				</p>
-			{/if}
-			{#if channel === 'email'}
-				<div class="conversation-composer__send-group" bind:this={sendLaterAnchor}>
-					{@render sendButton()}
-					<Button
-						class="conversation-composer__send-later-trigger"
-						iconOnly
-						label="More send options"
-						disabled={sending || uploading}
-						onclick={openSendLater}
-					>
-						{@html chevronDownIcon}
-					</Button>
-				</div>
-				<Popover
-					open={sendLaterOpen}
-					anchor={sendLaterAnchor}
-					title="Send later"
-					icon={sendLaterIcon}
-					iconTone="conversation"
-					onClose={() => (sendLaterOpen = false)}
-				>
-					<div class="conversation-composer__send-later">
-						<label for="conversation-composer-schedule">Send at</label>
-						<input
-							id="conversation-composer-schedule"
-							type="datetime-local"
-							bind:value={scheduledAtInput}
-							min={earliestScheduleValue()}
+		<footer class="conversation-composer__toolbar">
+			{@render channelPill()}
+			{#if channel === 'email' || channel === 'sms' || channel === 'website_chat'}
+				<span class="conversation-composer__divider" aria-hidden="true"></span>
+				<div class="conversation-composer__tools">
+					{#if channel === 'email' || channel === 'sms'}
+						<ConversationAttachments
+							bind:this={attachmentsField}
+							variant={channel}
+							triggerVariant="quiet"
+							cardsTarget={filesEl}
+							disabled={sending}
+							onUploadingChange={(value) => (uploading = value)}
 						/>
-						<Button type="button" variant="primary" loading={scheduling} onclick={scheduleSend}
-							>Schedule send</Button
-						>
-					</div>
-				</Popover>
-			{:else}
-				{@render sendButton()}
+						<ConversationLibraryAttachments
+							files={libraryFiles}
+							onChange={(next) => (libraryFiles = next)}
+							variant={channel}
+							triggerVariant="quiet"
+							disabled={sending}
+							{clientId}
+							clientLabel="This client's files"
+						/>
+					{/if}
+					{#if channel === 'email'}
+						<EmailTemplatePickerButton
+							triggerVariant="quiet"
+							disabled={sending}
+							onApply={requestTemplate}
+						/>
+					{/if}
+					<SnippetPickerButton triggerVariant="quiet" disabled={sending} onInsert={insertSnippet} />
+				</div>
 			{/if}
+			<span class="conversation-composer__toolbar-end">
+				{#if channel === 'sms'}
+					<span class="conversation-composer__estimate">
+						{#if estimating}
+							Estimating…
+						{:else if estimate?.ready}
+							{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
+							1
+								? ''
+								: 's'} · {formatEstimateCost(estimate)}
+						{:else if estimate && !estimate.ready}
+							{estimate.reason}
+						{:else}
+							{body.length} character{body.length === 1 ? '' : 's'}
+						{/if}
+					</span>
+				{/if}
+				{#if !reason}
+					<kbd class="conversation-composer__hint" aria-hidden="true">{sendHint}</kbd>
+				{/if}
+				{#if channel === 'email'}
+					<div class="conversation-composer__send-group" bind:this={sendLaterAnchor}>
+						{@render sendButton()}
+						<Button
+							class="conversation-composer__send-later-trigger"
+							iconOnly
+							label="More send options"
+							disabled={sending || uploading}
+							onclick={openSendLater}
+						>
+							{@html chevronDownIcon}
+						</Button>
+					</div>
+					<Popover
+						open={sendLaterOpen}
+						anchor={sendLaterAnchor}
+						title="Send later"
+						icon={sendLaterIcon}
+						iconTone="conversation"
+						onClose={() => (sendLaterOpen = false)}
+					>
+						<div class="conversation-composer__send-later">
+							<label for="conversation-composer-schedule">Send at</label>
+							<input
+								id="conversation-composer-schedule"
+								type="datetime-local"
+								bind:value={scheduledAtInput}
+								min={earliestScheduleValue()}
+							/>
+							<Button type="button" variant="primary" loading={scheduling} onclick={scheduleSend}
+								>Schedule send</Button
+							>
+						</div>
+					</Popover>
+				{:else}
+					{@render sendButton()}
+				{/if}
+			</span>
 		</footer>
 	</form>
 {/snippet}
 
-<div class="conversation-composer" class:conversation-composer--expanded={expanded && !popped}>
+<div class="conversation-composer">
 	{#if !expanded}
-		<div class="conversation-composer__collapsed">
-			<ComposerChannelMenu {channel} {channels} onSelect={onChannelChange} />
+		<!-- Minimized: one line in the same box, so the chat gets the room back. -->
+		<div class="conversation-composer__box conversation-composer__collapsed">
+			{@render channelPill()}
 			<button
 				type="button"
 				bind:this={collapsedInputEl}
 				class="conversation-composer__collapsed-input"
 				aria-expanded="false"
 				aria-controls="conversation-composer-expanded"
-				onclick={expand}>Type a message</button
+				onclick={expand}>{writePrompt}</button
 			>
-			<Button iconOnly label="Send" disabled>
+			<Button variant="quiet" size="small" iconOnly label="Open the reply box" onclick={expand}>
+				{@html chevronUpIcon}
+			</Button>
+			<Button class="conversation-composer__collapsed-send" iconOnly label="Send" disabled>
 				{@html sendIcon}
 			</Button>
 		</div>
@@ -701,7 +833,9 @@
 						? 'Email'
 						: channel === 'sms'
 							? 'Text message'
-							: 'Chat message') + ' composer, full screen'}
+							: channel === 'messenger'
+								? 'Messenger reply'
+								: 'Chat message') + ' composer, full screen'}
 				>
 					{@render composerForm()}
 				</DialogPrimitive.Content>
@@ -728,29 +862,43 @@
 {/if}
 
 <style lang="scss">
-	/* The reply area sits on the thread's own background, with the box itself as a rounded card floating in
-	   it, the way the approved Inbox is drawn. */
+	// The reply box sits in the chat card's foot (design `inbox.md`, Reply box).
 	.conversation-composer {
-		padding: var(--space-smaller) var(--space-base) var(--space-base);
-		background: var(--color-surface--background--subtle);
+		padding: var(--space-smaller) var(--space-medium) var(--space-medium);
+	}
+
+	.conversation-composer__box {
+		display: flex;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: 12px;
+		background: var(--color-surface);
+		overflow: hidden;
+		transition:
+			border-color var(--timing-quick),
+			box-shadow var(--timing-quick);
+	}
+
+	// While typing: a 1.5px green edge and a soft green glow.
+	.conversation-composer__form:focus-within {
+		border-color: var(--color-interactive);
+		box-shadow:
+			0 0 0 0.5px var(--color-interactive),
+			0 0 0 4px color-mix(in srgb, var(--color-interactive) 12%, transparent);
 	}
 
 	.conversation-composer__collapsed {
-		display: flex;
-		width: 100%;
+		min-height: 52px;
 		align-items: center;
 		gap: var(--space-small);
-		padding: var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 18px;
-		background: var(--color-surface);
+		padding: 0 var(--space-small) 0 10px;
 	}
 
 	.conversation-composer__collapsed-input {
 		min-width: 0;
 		min-height: 36px;
 		flex: 1;
-		padding: 0 var(--space-small);
+		padding: 0 var(--space-smaller);
+		overflow: hidden;
 		border: 0;
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
@@ -758,26 +906,24 @@
 		font: inherit;
 		font-size: var(--typography--fontSize-base);
 		text-align: left;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		cursor: text;
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
 	}
 
-	.conversation-composer__collapsed-input:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
+	// The minimized line's send is a 36 square, held until the box is open and has words.
+	.conversation-composer__collapsed :global(.conversation-composer__collapsed-send) {
+		width: 36px;
+		height: 36px;
 	}
 
 	.conversation-composer__form {
-		display: flex;
 		flex-direction: column;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 18px;
-		background: var(--color-surface);
-		overflow: hidden;
-
-		&:focus-within {
-			border-color: var(--color-border--interactive);
-			box-shadow: 0 0 0 1px var(--color-border--interactive);
-		}
 	}
 
 	.conversation-composer__form--popped {
@@ -792,7 +938,7 @@
 			textarea {
 				height: 100%;
 				min-height: 100%;
-				resize: none;
+				max-height: none;
 			}
 		}
 	}
@@ -812,39 +958,122 @@
 		outline: none;
 	}
 
-	.conversation-composer__header {
+	// Tab strip: Reply, then the reply-window chip, Minimize and Full screen at the right.
+	.conversation-composer__strip {
 		display: flex;
-		align-items: center;
-		gap: var(--space-smallest);
-		padding: 10px 10px 0 var(--space-slim);
+		min-height: 40px;
+		align-items: stretch;
+		gap: var(--space-smaller);
+		padding: 0 var(--space-smaller) 0 var(--space-small);
+		border-bottom: var(--border-base) solid var(--color-border);
+
+		> :global(.button) {
+			align-self: center;
+		}
 	}
 
-	.conversation-composer__route {
-		display: flex;
-		min-width: 0;
-		flex: 1;
+	.conversation-composer__tab {
+		display: inline-flex;
 		align-items: center;
 		gap: 6px;
+		margin-right: auto;
+		padding: 0 10px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.conversation-composer__tab--current {
+		box-shadow: inset 0 -2px 0 var(--color-interactive);
+		color: var(--color-heading);
+
+		.conversation-composer__tab-icon {
+			color: var(--color-interactive);
+		}
+	}
+
+	.conversation-composer__tab-icon {
+		display: inline-grid;
+		place-items: center;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.conversation-composer__chip {
+		display: inline-flex;
+		min-width: 0;
+		height: 24px;
+		align-self: center;
+		align-items: center;
+		gap: var(--space-smaller);
+		margin-right: var(--space-smaller);
+		padding: 0 var(--space-small);
+		overflow: hidden;
+		border: var(--border-base) solid var(--chip-edge);
+		border-radius: var(--radius-circle);
+		color: var(--chip-text);
+		background: var(--chip-surface);
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	.conversation-composer__chip-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+	}
+
+	@each $tone in informative, warning, critical {
+		.conversation-composer__chip--#{$tone} {
+			--chip-surface: var(--color-#{$tone}--surface);
+			--chip-edge: var(--color-#{$tone}--surface-edge);
+			--chip-text: var(--color-#{$tone}--onSurface);
+		}
+	}
+
+	// From and Subject: two 44-high lines under the tabs, each with a hairline.
+	.conversation-composer__row {
+		display: flex;
+		min-height: 44px;
+		align-items: center;
+		gap: var(--space-small);
 		margin: 0;
+		padding: 0 var(--space-base);
+		border-bottom: var(--border-base) solid var(--color-border);
+		font-size: var(--typography--fontSize-base);
+	}
+
+	.conversation-composer__row--invalid {
+		box-shadow: inset 0 -1px 0 var(--color-critical);
+	}
+
+	.conversation-composer__row-label {
+		flex: 0 0 auto;
+		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
-		line-height: 1.3;
+		font-weight: 600;
 	}
 
 	.conversation-composer__route-from {
 		display: inline-flex;
-		flex: 0 0 auto;
-		max-width: 70%;
 		min-width: 0;
+		flex: 0 1 auto;
 		overflow: hidden;
-		color: var(--color-text--secondary);
+		color: var(--color-text);
 		font-weight: 500;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-
-	.conversation-composer__header > .conversation-composer__route-from {
-		flex: 1;
-		max-width: none;
 	}
 
 	.conversation-composer__route-arrow {
@@ -853,63 +1082,115 @@
 		color: var(--color-icon--secondary);
 
 		:global(svg) {
-			width: 12px;
-			height: 12px;
+			width: 14px;
+			height: 14px;
 		}
 	}
 
 	.conversation-composer__route-to {
 		min-width: 0;
 		overflow: hidden;
-		color: var(--color-text);
+		color: var(--color-heading);
 		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+
 	.conversation-composer__subject {
+		min-width: 0;
+		flex: 1;
+		padding: 0;
+		border: 0;
+		outline: none;
+		box-shadow: none;
+		color: var(--color-heading);
+		background: transparent;
+		font: inherit;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+	}
+
+	// Why sending is held, with the way out at its right (design `inputs.md`, Reason line).
+	.conversation-composer__reason-wrap {
+		padding: 10px var(--space-slim) 0;
+	}
+
+	.conversation-composer__reason {
 		display: flex;
-		min-height: 36px;
 		align-items: center;
 		gap: var(--space-small);
-		margin: var(--space-small) var(--space-slim) 0;
-		padding: 0 var(--space-slim);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 10px;
+		margin: 0;
+		padding: var(--space-small) var(--space-slim);
+		border-radius: var(--radius-base);
+		color: var(--reason-text);
+		background: var(--reason-surface);
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
+	}
 
-		label {
-			flex: 0 0 auto;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+	@each $tone in informative, warning, critical {
+		.conversation-composer__reason--#{$tone} {
+			--reason-surface: var(--color-#{$tone}--surface);
+			--reason-text: var(--color-#{$tone}--onSurface);
+		}
+	}
+
+	.conversation-composer__reason-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	.conversation-composer__reason-text {
+		min-width: 0;
+		flex: 1;
+	}
+
+	.conversation-composer__reason-link {
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		gap: 2px;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-small);
+		color: var(--color-interactive);
+		background: none;
+		font: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+
+		span {
+			display: inline-grid;
+			place-items: center;
 		}
 
-		input {
-			min-width: 0;
-			flex: 1;
-			padding: 0;
-			border: 0;
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+
+		&:focus-visible {
 			outline: none;
-			box-shadow: none;
-			color: var(--color-heading);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+			box-shadow: var(--shadow-focus);
 		}
 	}
 
-	.conversation-composer__subject--invalid {
-		border-color: var(--color-critical);
-	}
-
+	// The words: three lines tall when empty, growing as you type.
 	.conversation-composer__editor {
-		min-height: 64px;
-		padding: var(--space-slim) var(--space-base) var(--space-smaller);
+		padding: var(--space-slim) var(--space-base) var(--space-small);
 
 		textarea {
 			display: block;
 			width: 100%;
-			min-height: 44px;
+			min-height: calc(3lh);
+			max-height: 40vh;
 			padding: 0;
 			border: 0;
 			outline: none;
@@ -919,10 +1200,19 @@
 			font: inherit;
 			font-size: var(--typography--fontSize-base);
 			line-height: 1.5;
-			resize: vertical;
+			field-sizing: content;
+			resize: none;
 
 			&::placeholder {
 				color: var(--color-text--secondary);
+			}
+
+			&:disabled {
+				cursor: not-allowed;
+
+				&::placeholder {
+					color: var(--color-disabled);
+				}
 			}
 		}
 	}
@@ -935,7 +1225,7 @@
 		margin: 0;
 		padding: 0 var(--space-base) var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-overline);
 	}
 
 	.conversation-composer__field-error,
@@ -943,31 +1233,57 @@
 		margin: 0;
 		padding: var(--space-smaller) var(--space-base) 0;
 		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-overline);
 	}
 
-	.conversation-composer__footer {
+	// Tool bar: the channel pill, a divider, the quiet tools, then the shortcut hint and Send.
+	.conversation-composer__toolbar {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-		padding: 6px 10px 10px;
+		gap: var(--space-smaller);
+		padding: var(--space-small) var(--space-small) var(--space-small) 10px;
+	}
+
+	.conversation-composer__divider {
+		width: var(--border-base);
+		height: 20px;
+		flex: 0 0 auto;
+		margin: 0 var(--space-smaller);
+		background: var(--color-border);
 	}
 
 	.conversation-composer__tools {
 		display: flex;
 		min-width: 0;
-		flex: 1;
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-smaller);
 	}
 
+	.conversation-composer__toolbar-end {
+		display: flex;
+		min-width: 0;
+		flex: 0 0 auto;
+		align-items: center;
+		gap: var(--space-small);
+		margin-left: auto;
+	}
+
 	.conversation-composer__estimate {
-		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.conversation-composer__hint {
+		padding: 2px 6px;
+		border-radius: var(--radius-small);
+		color: var(--color-text--secondary);
+		background: var(--color-surface--background);
+		font: inherit;
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
 		white-space: nowrap;
 	}
 
@@ -998,7 +1314,7 @@
 
 		label {
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 600;
 		}
 
@@ -1022,17 +1338,53 @@
 		white-space: nowrap;
 	}
 
+	.conversation-composer__files:not(:empty) {
+		padding: var(--space-small) 0 0;
+	}
+
+	// On a narrow chat card the words go first (design `inbox.md`, Narrow widths): the chip shortens, the
+	// shortcut hint goes, then the tabs drop their icons.
+	.conversation-composer__chip-mid,
+	.conversation-composer__chip-short {
+		display: none;
+	}
+
+	@container inbox-chat (max-width: 640px) {
+		.conversation-composer__chip-full {
+			display: none;
+		}
+
+		.conversation-composer__chip-mid {
+			display: inline;
+		}
+
+		.conversation-composer__hint {
+			display: none;
+		}
+	}
+
+	@container inbox-chat (max-width: 480px) {
+		.conversation-composer__chip-mid {
+			display: none;
+		}
+
+		.conversation-composer__chip-short {
+			display: inline;
+		}
+
+		.conversation-composer__tab-icon {
+			display: none;
+		}
+	}
+
 	@media (max-width: 560px) {
 		.conversation-composer {
 			padding-inline: var(--space-small);
 		}
 
-		.conversation-composer__estimate {
+		.conversation-composer__estimate,
+		.conversation-composer__hint {
 			display: none;
 		}
-	}
-
-	.conversation-composer__files:not(:empty) {
-		padding: var(--space-small) 0;
 	}
 </style>
