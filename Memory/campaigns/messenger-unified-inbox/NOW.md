@@ -10,6 +10,6 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Done:** Parts 1, 1b, 2, 3, 5 (2026-10-23). Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
-**Next part:** 4 Connect card — design B approved 2026-10-23 (`parts/4-connect-card.md`); pop-ups and states await Jafar's check, then a build session builds it. Part 6 (inbox) waits on a drawing.
+**Next part:** 4 Connect card — whole design (B, pop-ups, states) approved 2026-10-23 (`parts/4-connect-card.md`); next a build session builds it. Part 6 (inbox) waits on a drawing.
 
 **Blockers:** none.
