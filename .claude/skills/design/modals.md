@@ -455,3 +455,28 @@ Buying a texting number in three steps (`concept.pen` board `qaFQf`, "Add number
   connection dropped, an informative notice strip with a spinner tile at the top and "Checking…"; bought, a 40
   success tile, "<number> is yours" 24/700, the charge line, a warning notice strip that it can't text yet, and
   "Register your business" as the main button beside Done.
+
+## Text another country pop-up
+
+A business asks Uplift to switch on texting to another country, from "Text customers in another country" under
+WHERE YOU CAN TEXT (`concept.pen` board `xGLYB`, "Text customers in another country · Approved A", Jafar
+2026-10-23, with every state). Texting parts use `--color-conversation`.
+
+- Default form pop-up (600). Header: 40 conversation `globe` tile, "Text customers in another country", a 12 quiet
+  hint. Footer: Cancel, then the main button with `send`; at 45% until a country is picked.
+- Body, blocks 20 apart, each under a 12/600 uppercase quiet head. **Country box** (44 high): a 24 round flag, the
+  name 14/600, the dialling code 12/600 quiet, `chevron-down`. Its open list (radius 12, padding 6, soft shadow) has
+  a focused search box (1.5px `--color-interactive` edge) above two groups: already on or asked for (rows at 60%,
+  each with its status pill) and new countries (20 flag, name, price 14/600 with "a text" 12 quiet; the chosen row
+  `--color-surface--active` with a green `check`).
+- **What it costs:** three equal subtle boxes (radius 12, 1px border, padding 12 14): a 14 conversation icon and
+  12/500 quiet label over the value 16/700 with a 12 quiet unit. Not set yet reads "Price coming" in quiet.
+- **Which number texts them:** a band (radius 12, padding 12 14) with a 32 white tile, title 14/600 over a 12/500
+  line, all in the status `--onSurface`: warning `smartphone` when a number is needed, success `circle-check` when
+  one already can.
+- **What happens next:** three steps in a row, `chevron-right` between: a 28 round status tile (informative `send`,
+  warning `hourglass`, success `circle-check`), title 12/600 over a 12 quiet line.
+- **States:** loading, the box on subtle with "Loading countries…" and a spinner; asking, the button's spinner
+  with Cancel, × and the box at 45%; couldn't ask, a critical notice strip at the top of the body; asked, a
+  centred result (40 success tile, the title 24/700, a Setting up pill, a 14 quiet line, the number band, Done);
+  no match, a centred empty state in the list (32 subtle `search-x` tile, 14/600 title, 12 quiet line).

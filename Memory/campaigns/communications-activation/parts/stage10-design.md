@@ -32,6 +32,8 @@
 - [x] Toll-free business details — Jafar approved option A 2026-10-23 ("A is approved"), board `SCpaW`.
   Guided Business → Texting → Proof of consent → Check and send, with upload, submission and rejection states.
   Option B deleted. Rules in `.claude/skills/design/layout.md` § Toll-free business details.
+- [x] Text customers in another country pop-up (Part 5c) — Jafar approved A 2026-10-23 ("then A"), board `xGLYB`;
+  option B deleted; every state approved the same day ("saved, approved"), light only.
 
 ## Next
 

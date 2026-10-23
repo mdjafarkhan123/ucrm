@@ -47,8 +47,11 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   date beside switch; "None to rent". Save price proven live 2026-10-23 (Jafar: "save what you think
   good"): BD $0.70 a segment (15%), US $0.01 a segment (17%) + $2.00 a number month; new rate rows keep Twilio cost,
   old US $0.0079 row kept. Merged to main.
-- **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
-  pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
+- **5c — Jafar approved A 2026-10-23 ("then A")**, board `xGLYB` "Text customers in another country · Approved
+  A": 600 pop-up — country box, What it costs (text, pictures, number a month), Which number texts them band,
+  What happens next; opened list greys countries already on/asked with their pill, hides Off ones. Option B
+  deleted. Every state drawn under "Every state · drawn on A" (nothing picked, loading, no price yet, a +1 number
+  already texts it, asking, couldn't ask, asked, no country matches); Jafar approved them 2026-10-23 ("saved, approved"). **Next: build** (request route over `communication_sms_request_destination`; WHERE YOU CAN TEXT link opens it).
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
 
 ## Proof so far

@@ -61,7 +61,7 @@ Jafar 2026-10-17).
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
-- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over, email preview pop-up, communication settings pop-up, customer group pop-up, profile photo pop-up, merge clients pop-up, collect payment pop-up, notification bell pop-up, edit visit pop-up, billing setup pop-up, payment schedule pop-up, add an invoice reminder pop-up, plan details pop-up and plan price, mark as lost pop-up, add number pop-up
+- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over, email preview pop-up, communication settings pop-up, customer group pop-up, profile photo pop-up, merge clients pop-up, collect payment pop-up, notification bell pop-up, edit visit pop-up, billing setup pop-up, payment schedule pop-up, add an invoice reminder pop-up, plan details pop-up and plan price, mark as lost pop-up, add number pop-up, text another country pop-up
 - [page-states.md](page-states.md) — Loading, empty, couldn't load, page loading
 - [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line

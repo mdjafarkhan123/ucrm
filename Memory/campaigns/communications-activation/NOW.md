@@ -15,8 +15,7 @@ Parts 4a–4c built (`parts/stage10-part4.md`). Parts 5a and 5b (To do queue + b
 
 ## Next
 
-5b, 5b-2 and Countries & prices (Part 6) merged to main 2026-10-23; prices set (US $0.01, BD $0.70). Next: 5c needs a
-Pencil drawing of the contractor's "Text customers in another country" pop-up first, then 5d (opt-out words, quiet
+5b, 5b-2 and Countries & prices (Part 6) merged to main 2026-10-23; prices set (US $0.01, BD $0.70). Next: 5c — Jafar approved A (board `xGLYB`); states approved too; next build it (part note), then 5d (opt-out words, quiet
 hours). Later: Businesses tab, Show its history. Full type check owed, only after Jafar's yes in another session.
 
 ## Constraints
@@ -25,4 +24,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `read memory and continue communications-activation` — check and prove the Countries & prices draft (part note), then merge.
+Resume: `read memory and continue communications-activation` — build 5c against board `xGLYB` (part note).
