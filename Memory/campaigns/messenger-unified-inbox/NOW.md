@@ -10,6 +10,6 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Done:** Parts 1, 1b, 2, 3, 4, 5 (2026-10-23). Uplift Contractor connected to Raad LTD in the live app. Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
-**Active part:** 6 Inbox shows Messenger — two new inbox options on board `yjdF0`, review with Jafar next session; button fold-up idea recorded (`parts/6-inbox-shows-messenger.md`). Then 7 Reply.
+**Active part:** 6 Inbox shows Messenger — look chosen 2026-10-23 (WhatsApp Desktop mix, board `yjdF0`); next draw fold-up and states (`parts/6-inbox-shows-messenger.md`). Then 7 Reply.
 
 **Blockers:** none.
