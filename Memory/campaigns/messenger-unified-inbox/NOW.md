@@ -10,6 +10,6 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Done:** Parts 1, 1b, 2, 3, 4, 5 (2026-10-23). Uplift Contractor connected to Raad LTD in the live app. Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
-**Active part:** 6 Inbox shows Messenger — whole inbox design approved 2026-10-23 (board `yjdF0`, `inbox.md`); next build it (`parts/6-inbox-shows-messenger.md`). Then 7 Reply.
+**Active part:** 6 Inbox shows Messenger — building on branch `claude/messenger-part6` (worktree `.worktrees/messenger-part6`); slices 1–4 done, 5 (bubbles) in progress — see `parts/6-inbox-shows-messenger.md`. Then 7 Reply.
 
 **Blockers:** none.

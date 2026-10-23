@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
 	conversationCustomerPhone,
+	conversationMessenger,
+	formatTimeLeft,
+	messageRuns,
+	messengerReplyWindow,
 	groupMessagesByContact,
 	outboundEmailStatus,
 	placeTimelineNotes,
@@ -389,5 +393,94 @@ describe('placeTimelineNotes', () => {
 		expect(placed.trailing).toEqual([]);
 		expect(placed.messageShowsDay.get('m1')).toBe(true);
 		expect(placed.messageShowsDay.get('m2')).toBe(true);
+	});
+});
+
+describe('Messenger in the inbox', () => {
+	const origin = {
+		page_name: 'Uplift Contractor',
+		page_status: 'active' as const,
+		display_name: null,
+		last_inbound_at: '2026-10-23T02:00:00.000Z'
+	};
+
+	it('groups a Messenger lead under its client and finds the newest Page it wrote through', () => {
+		const older = inbound({
+			id: 'm-1',
+			channel: 'messenger',
+			sender_email: null,
+			client_name: 'Facebook user',
+			created_at: '2026-10-23T01:53:00.000Z',
+			messenger: { ...origin, page_name: 'Old Page' }
+		});
+		const newer = inbound({
+			id: 'm-2',
+			channel: 'messenger',
+			sender_email: null,
+			client_name: 'Facebook user',
+			created_at: '2026-10-23T02:00:00.000Z',
+			messenger: origin
+		});
+		const groups = groupMessagesByContact([newer, older]);
+		expect(groups).toHaveLength(1);
+		expect(groups[0].name).toBe('Facebook user');
+		expect(groups[0].guarded).toBe(false);
+		expect(conversationMessenger(groups[0])?.page_name).toBe('Uplift Contractor');
+	});
+
+	it('has no Messenger origin for an email-only conversation', () => {
+		expect(conversationMessenger({ messages: [inbound()] })).toBeNull();
+	});
+
+	it('keeps the reply window open for 24 hours after the last message, warning in the final hour', () => {
+		const last = '2026-10-23T02:00:00.000Z';
+		const at = (iso: string) => Date.parse(iso);
+		expect(messengerReplyWindow(last, at('2026-10-23T02:43:00.000Z'))).toEqual({
+			state: 'open',
+			msLeft: (23 * 60 + 17) * 60_000
+		});
+		expect(messengerReplyWindow(last, at('2026-10-24T01:30:00.000Z')).state).toBe('closing');
+		expect(messengerReplyWindow(last, at('2026-10-24T02:00:00.000Z')).state).toBe('closed');
+		expect(messengerReplyWindow(null).state).toBe('closed');
+	});
+
+	it('says the time left in words', () => {
+		expect(formatTimeLeft((23 * 60 + 17) * 60_000 + 30_000)).toBe('23 h 17 min');
+		expect(formatTimeLeft(42 * 60_000)).toBe('42 min');
+		expect(formatTimeLeft(5 * 60 * 60_000)).toBe('5 h');
+	});
+});
+
+describe('messageRuns', () => {
+	const sameDay = (a: string, b: string) => a.slice(0, 10) === b.slice(0, 10);
+	const text = (id: string, at: string, direction: 'inbound' | 'outbound' = 'inbound') =>
+		direction === 'inbound'
+			? inbound({ id, channel: 'sms', created_at: at })
+			: outbound({ id, channel: 'sms', created_at: at });
+
+	it('joins bubbles from the same side a few minutes apart', () => {
+		const runs = messageRuns(
+			[
+				text('a', '2026-10-23T09:00:00.000Z'),
+				text('b', '2026-10-23T09:02:00.000Z'),
+				text('c', '2026-10-23T09:03:00.000Z'),
+				text('d', '2026-10-23T09:04:00.000Z', 'outbound')
+			],
+			sameDay
+		);
+		expect([...runs.values()]).toEqual(['first', 'middle', 'last', 'single']);
+	});
+
+	it('starts a new run after a long pause, on a new day, or around an email', () => {
+		const runs = messageRuns(
+			[
+				text('a', '2026-10-23T09:00:00.000Z'),
+				text('b', '2026-10-23T09:30:00.000Z'),
+				text('c', '2026-10-24T09:31:00.000Z'),
+				inbound({ id: 'd', created_at: '2026-10-24T09:32:00.000Z' })
+			],
+			sameDay
+		);
+		expect([...runs.values()]).toEqual(['single', 'single', 'single', 'single']);
 	});
 });

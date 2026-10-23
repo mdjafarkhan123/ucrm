@@ -185,6 +185,10 @@
 	--color-photo-studio: #032b3a;
 	// Facebook Messenger's own blue, the same in light and dark, for the Messenger mark and badges only.
 	--color-messenger: #0866ff;
+	// The inbox's channel tiles (design skill inbox.md), the same in light and dark.
+	--color-channel-email: #e4702a;
+	--color-channel-text: #118197;
+	--color-channel-chat: #6b4bd8;
 	--color-white: rgba(var(--color-white--rgb), 1);
 	--color-black: rgba(var(--color-black--rgb), 1);
 	--color-greyBlue: var(--color-base-blue--600);

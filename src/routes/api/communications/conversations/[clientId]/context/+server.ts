@@ -74,7 +74,7 @@ export const GET: RequestHandler = async (event) => {
 	const [clientResult, contactMethodsResult] = await Promise.all([
 		supabase
 			.from('clients')
-			.select('id, display_name, company_name, client_type')
+			.select('id, display_name, company_name, client_type, lifecycle_status')
 			.eq('id', clientId)
 			.eq('organization_id', organizationId)
 			.is('deleted_at', null)

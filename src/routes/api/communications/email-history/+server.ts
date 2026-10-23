@@ -228,7 +228,7 @@ export const GET: RequestHandler = async (event) => {
 		? ownerClient
 				.from('communication_inbound_messages')
 				.select(
-					'id, client_id, channel, sender_email, sender_phone, sender_name, subject, text_content, created_at, in_reply_to_intent_id, message_kind, review_status, review_reason, automation_suppressed, attachment_count, provider, provider_message_id'
+					'id, client_id, channel, sender_email, sender_phone, sender_name, subject, text_content, created_at, in_reply_to_intent_id, message_kind, review_status, review_reason, automation_suppressed, attachment_count, provider, provider_message_id, messenger_identity_id'
 				)
 				.eq('organization_id', organizationId)
 				// A dismissed guarded message is triaged away, not deleted -- it keeps its audit row but
@@ -397,6 +397,13 @@ export const GET: RequestHandler = async (event) => {
 	];
 	const outboundIds = outboundPage.map((row) => row.id);
 	const inboundIds = inboundPage.map((row) => row.id);
+	const messengerIdentityIds = [
+		...new Set(
+			inboundPage
+				.map((row) => row.messenger_identity_id)
+				.filter((id): id is string => Boolean(id))
+		)
+	];
 	// 'failed'/'cancelled' need available_at for canResend below; 'queued' needs it too, to tell an
 	// ordinary near-instant queue from a genuine "Send Later" pick. Still a small, filtered lookup even on
 	// a full page of otherwise-settled messages.
@@ -415,7 +422,8 @@ export const GET: RequestHandler = async (event) => {
 		readMarksResult,
 		assignmentsResult,
 		myFollowsResult,
-		chatSessionsResult
+		chatSessionsResult,
+		messengerIdentitiesResult
 	] = await Promise.all([
 		clientIds.length
 			? ownerClient
@@ -500,6 +508,17 @@ export const GET: RequestHandler = async (event) => {
 					)
 					.eq('organization_id', organizationId)
 					.in('id', chatSessionIds)
+			: Promise.resolve({ data: [], error: null }),
+		// Which Facebook Page a Messenger message came through, the customer's name when Meta shares it, and
+		// when they last wrote -- Meta's 24-hour reply window runs from that moment, not from this page's rows.
+		messengerIdentityIds.length
+			? ownerClient
+					.from('communication_messenger_identities')
+					.select(
+						'id, display_name, last_inbound_at, connection:communication_messenger_connections!communication_messenger_identities_connection_fkey(page_name, status)'
+					)
+					.eq('organization_id', organizationId)
+					.in('id', messengerIdentityIds)
 			: Promise.resolve({ data: [], error: null })
 	]);
 	if (
@@ -512,7 +531,8 @@ export const GET: RequestHandler = async (event) => {
 		readMarksResult.error ||
 		assignmentsResult.error ||
 		myFollowsResult.error ||
-		chatSessionsResult.error
+		chatSessionsResult.error ||
+		messengerIdentitiesResult.error
 	) {
 		return databaseError();
 	}
@@ -647,10 +667,22 @@ export const GET: RequestHandler = async (event) => {
 		resent_into_intent_id: resentIntoByOriginal.get(row.id) ?? null,
 		...conversationOwnership(row.client_id)
 	}));
-	const inboundMessages = inboundPage.map(({ direction: _direction, ...row }) => {
+	const messengerById = new Map(
+		(messengerIdentitiesResult.data ?? []).map((identity) => [
+			identity.id,
+			{
+				page_name: identity.connection?.page_name ?? '',
+				page_status: identity.connection?.status ?? 'disconnected',
+				display_name: identity.display_name,
+				last_inbound_at: identity.last_inbound_at
+			}
+		])
+	);
+	const inboundMessages = inboundPage.map(({ direction: _direction, messenger_identity_id, ...row }) => {
 		const lastReadAt = row.client_id ? (lastReadAtByClient.get(row.client_id) ?? null) : null;
 		return {
 			...row,
+			messenger: messenger_identity_id ? (messengerById.get(messenger_identity_id) ?? null) : null,
 			client_name: row.client_id ? (namesById.get(row.client_id) ?? 'Client unavailable') : null,
 			attachments: attachmentsByMessage.get(row.id) ?? [],
 			unread: !lastReadAt || row.created_at > lastReadAt,

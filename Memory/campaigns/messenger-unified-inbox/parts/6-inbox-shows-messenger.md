@@ -1,6 +1,6 @@
 # Part 6 — Inbox shows Messenger
 
-**State:** Design — look chosen 2026-10-23; reply box B approved; fold-up and states approved 2026-10-23. Design done; next: build.
+**State:** Building (2026-10-23) on branch `claude/messenger-part6`, worktree `.worktrees/messenger-part6`, claim `part-6-inbox-build`. Not merged yet.
 
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
@@ -37,6 +37,23 @@ message (hover tip + Message details show times); failed message = whole bubble 
 
 **Design skill updated 2026-10-23:** `.claude/skills/design/inbox.md` (whole inbox look), channel colours in
 `colors.md`, channel pill in `chips.md`, brand-mark exception in `icon-shapes.md`.
+
+**Build slices** (look for everything the inbox does today + Messenger; Star, Archive, Mark as unread, Internal
+comment and emoji need database work → a later part, no dead buttons meanwhile; tell Jafar):
+1. ✅ Messenger data: feed returns `messenger` (Page, status, last_inbound_at); context returns `lifecycle_status`;
+   helpers `conversationMessenger`, `messengerReplyWindow`, `messageRuns`, `isUnknownCustomer` (tests pass).
+2. ✅ Tokens `--color-channel-*`; `inbox/ChannelMark.svelte` (Messenger logo path from Pencil `NVZqT`).
+3. ✅ List card `inbox/InboxList.svelte` (Team/Mine, search + Unread filter menu, lanes, Needs reply/Earlier).
+4. ✅ Chat header (channel marks, "New lead · Messenger", Details toggle; Details card ≥1180, drawer below).
+5. 🔶 Bubbles: `ConversationMessage.svelte` rewritten (runs, ticks, red failed, email card, scheduled). Next:
+   single-line bubbles measure 44 high, the drawing's are ~36 — find the extra height, then compare with `c9nFLE`.
+6. ⬜ Reply box restyle (`ConversationComposer`, `inbox.md` Reply box): tabs strip, tool bar, channel pill; Messenger
+   in the channel menu with the reply-window chip, sending disabled "Replies arrive in Part 7".
+7. ⬜ Unknown-customer strip + Link to a client (merge lead into client; check existing merge API).
+8. ⬜ Drag lines + narrow widths (`jU783`), dark mode check, then screen check vs Pencil, merge, live proof.
+
+**Checking screens:** Chrome extension was off; Playwright scripts in the session scratchpad (`shot.mjs`, `zoom.mjs`)
+log in once as the Raad LTD owner (Login.md) against `npx vite dev --port 5210` in the worktree.
 
 **Next:** a build session builds the inbox look from `inbox.md` and board `yjdF0` (Svelte, live inbox), then
 live screenshots beside the Pencil frames. Then Part 7 Reply.
