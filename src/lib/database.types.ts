@@ -5156,50 +5156,6 @@ export type Database = {
 					}
 				];
 			};
-			communication_sms_tollfree_proof_images: {
-				Row: {
-					id: string;
-					organization_id: string;
-					verification_id: string;
-					public_token: string;
-					object_key: string;
-					mime_type: string;
-					file_name: string;
-					size_bytes: number;
-					created_at: string;
-				};
-				Insert: {
-					id?: string;
-					organization_id: string;
-					verification_id: string;
-					public_token?: string;
-					object_key: string;
-					mime_type: string;
-					file_name: string;
-					size_bytes: number;
-					created_at?: string;
-				};
-				Update: {
-					id?: string;
-					organization_id?: string;
-					verification_id?: string;
-					public_token?: string;
-					object_key?: string;
-					mime_type?: string;
-					file_name?: string;
-					size_bytes?: number;
-					created_at?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'communication_sms_tollfree_proof_images_check_fkey';
-						columns: ['organization_id', 'verification_id'];
-						isOneToOne: false;
-						referencedRelation: 'communication_sms_tollfree_verifications';
-						referencedColumns: ['organization_id', 'id'];
-					}
-				];
-			};
 			communication_sms_tollfree_verifications: {
 				Row: {
 					answers: Json;
@@ -20916,6 +20872,26 @@ export type Database = {
 					isSetofReturn: true;
 				};
 			};
+			claim_communication_messenger_webhook_events: {
+				Args: { p_limit: number; p_stale_seconds?: number };
+				Returns: {
+					body_sha256: string;
+					claim_token: string | null;
+					claimed_at: string | null;
+					id: string;
+					payload: Json;
+					processed_at: string | null;
+					processing_attempts: number;
+					processing_error: string | null;
+					received_at: string;
+				}[];
+				SetofOptions: {
+					from: '*';
+					to: 'communication_messenger_webhook_events';
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
 			claim_communication_outbox_event: {
 				Args: never;
 				Returns: {
@@ -23865,6 +23841,10 @@ export type Database = {
 				Returns: undefined;
 			};
 			dispatch_communication_marketing_worker_wake: {
+				Args: never;
+				Returns: undefined;
+			};
+			dispatch_communication_messenger_worker_wake: {
 				Args: never;
 				Returns: undefined;
 			};
