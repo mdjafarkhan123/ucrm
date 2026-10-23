@@ -15,9 +15,9 @@ Parts 4a–4c built (`parts/stage10-part4.md`). Parts 5a and 5b (To do queue + b
 
 ## Next
 
-5b and the first 5b-2 pieces (business Texting view, Waiting on Twilio) are built on `claude/stage10-part5b`, **waiting
-to merge** once main is free. Next: plan Countries & prices with Part 6. Jafar must decide the undrawn Businesses
-tab, Add a country and Show its history. 5c needs a Pencil drawing.
+5b, 5b-2 and Countries & prices (Part 6) merged to main 2026-10-23; prices set (US $0.01, BD $0.70). Next: 5c needs a
+Pencil drawing of the contractor's "Text customers in another country" pop-up first, then 5d (opt-out words, quiet
+hours). Later: Businesses tab, Show its history. Full type check owed, only after Jafar's yes in another session.
 
 ## Constraints
 

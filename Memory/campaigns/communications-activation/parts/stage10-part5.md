@@ -1,8 +1,8 @@
 # Stage 10 Part 5 — Sending rules per country
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 5
-**Stage:** 5a built. 5b and 5b-2's first two pieces built 2026-10-23, **Waiting to merge** on branch
-`claude/stage10-part5b` (main held by the Pencil tidy session, `19503cc6bd58`). Rest of 5b-2, 5c, 5d not started.
+**Stage:** 5a, 5b and 5b-2 (incl. Countries & prices, Part 6) built and **merged to main 2026-10-23**. 5c, 5d not
+started. Full-app type check still owed — only in a separate session after Jafar's yes (it crashes here).
 **Done when:** a business texts only countries Uplift switched on, from a number that can text them; Uplift
 works the requests in Texting setup (`v6Jtu`); opt-out words are set per language; merged to main.
 
@@ -46,7 +46,7 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   line works. Fixed: missing icon crashed the page; hidden Actions header; losing margin red; Now/On a date icons;
   date beside switch; "None to rent". Save price proven live 2026-10-23 (Jafar: "save what you think
   good"): BD $0.70 a segment (15%), US $0.01 a segment (17%) + $2.00 a number month; new rate rows keep Twilio cost,
-  old US $0.0079 row kept. **Next:** merge to main.
+  old US $0.0079 row kept. Merged to main.
 - **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
   pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
