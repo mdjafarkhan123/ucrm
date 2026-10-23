@@ -311,6 +311,8 @@
 
 	// Read by the customer: a filled circle in the bubble's text colour holding green ticks.
 	.message__tick--seen {
+		flex-shrink: 0;
+		align-items: center;
 		justify-content: center;
 		width: 18px;
 		height: 18px;
@@ -318,7 +320,9 @@
 		color: var(--color-interactive);
 		background: var(--color-surface);
 
+		// A block, so no text line under the icon pushes it off the circle's centre.
 		:global(svg) {
+			display: block;
 			width: 12px;
 			height: 12px;
 		}
