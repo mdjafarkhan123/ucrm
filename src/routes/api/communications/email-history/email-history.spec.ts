@@ -94,7 +94,8 @@ describe('reading Communications history', () => {
 			can_view_team: false,
 			can_manage_assignment: false,
 			can_forward: false,
-			can_send: false
+			can_send: false,
+			can_merge: false
 		});
 		expect(from).toHaveBeenCalledTimes(2);
 	});
