@@ -1,7 +1,7 @@
 # Stage 10 Part 5 — Sending rules per country
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 5
-**Stage:** 5a built 2026-10-23. 5b's To do queue and the business's countries card built 2026-10-23 (branch
+**Stage:** 5a built 2026-10-23. 5b built 2026-10-23, **Waiting to merge** (main was owned by the Pencil tidy session; branch
 `claude/stage10-part5b`). 5b-2, 5c, 5d not started.
 **Done when:** a business texts only countries Uplift switched on, from a number that can text them; Uplift
 works the requests in Texting setup (`v6Jtu`); opt-out words are set per language; merged to main.
