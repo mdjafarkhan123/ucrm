@@ -88,7 +88,7 @@ glow.
 - **Reason line** when sending is blocked: under the tab strip, padding 10 12 0, the reason line from `inputs.md`;
   the placeholder says why in `--color-disabled`. Reply window closed: critical with "Reply by text". Page
   disconnected: critical with "Reconnect in Settings". Texts stopped: critical with "See Messaging in Details". No
-  permission yet: warning, same link.
+  permission yet: warning, same link. Number couldn't renew: critical, `circle-pause`, with "Add money" (`wallet`) → Balance, or "Ask an admin to add money" (`QiDBX`).
 - **Channel menu** (dropdown list, 300 wide): each line its mark, the name and the address 12 quiet; the current one
   600 with a green check; a channel that can't send right now is greyed with its reason 12 `--color-critical-on-surface`.
 - **Minimized:** one 52-high line in the same box: channel pill, "Write your reply to Daniel…", a 32 `chevron-up`

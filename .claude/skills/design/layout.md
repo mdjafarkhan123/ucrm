@@ -476,6 +476,20 @@ B", `NbWfA`, Jafar 2026-10-22). Texting parts use `--color-conversation`.
   small secondary button at the right. Statuses: Business details needed `informative` (`building-2`), Under
   review `warning` (`hourglass`), Action needed `critical` (`file-x`), Ready to text `success`
   (`circle-check`), Getting your number ready `warning` (`loader`), Texting paused `critical` (`circle-pause`).
+- **Renewal strip** (Pencil: "Communications · Monthly number renewal · Approved B", `QiDBX`, Jafar 2026-10-23):
+  between the card's top and its status band, full width, a 1px line on top, padding 14 20, gap 12. A head row
+  (gap 16): a 32 white tile (16 icon), an uppercase 12/600 eyebrow over the date and price 14/600, and at most one
+  small secondary button (Add money, `wallet`) at the right. Under it a meter: 12/600 words at the left and 12/500
+  at the right over an 8-high round bar. Paid: `--color-surface--background--subtle` with a `--color-border`
+  line, conversation `refresh-cw`, "RENEWS", the bar full in `--color-success` ("Balance $4.60 covers it"). Balance
+  too low: the warning family (`wallet`, "RENEWS IN 3 DAYS"), the bar filled in `--color-warning` as far as the
+  balance covers the price ("$0.40 of $1.15 · short by $0.75"). Couldn't renew: the critical family
+  (`calendar-x`, "UNPAID SINCE NOV 2", "Add $0.75"), the bar becomes 14 day blocks 4 apart, used days in
+  `--color-critical` ("9 of 14 days left · released Nov 16"); the card takes the 1.5px critical edge, the Texting
+  step a critical `pause` circle with "Paused", and the band reads Sending paused (`circle-pause`). Released: the
+  subtle strip with `phone-off`, "RELEASED", the date and a quiet "Your conversations are kept." line, no meter; the
+  journey at 45%, no ability chips or Default tag, the Texting step an inactive `x` with "Ended", and an
+  `inactive` band "Number released" with Add number (`plus`).
 - **Card actions:** the ⋯ opens the action menu (276) with Rename and Make default; Make default is disabled
   (`--color-disabled`) with a 12 quiet hint until the number can text. Renaming puts a 36 field with a 1.5px
   `--color-interactive` edge in place of the name, with Cancel and Save name (small main, `check`).
@@ -526,6 +540,10 @@ Approved mix (B + A's table)", `v6Jtu`, Jafar 2026-10-22, with every state). Tex
   HISTORY block (12/600 uppercase quiet; rows with a 24 tile, 13/500 text, 12 quiet time). Foot (subtle, 1px line on
   top, padding 16 24): Can't turn on (danger, `ban`) at the left, a 12 quiet hint and the main button at the right,
   at 45% until the box is ticked; saving shows its spinner ("Marking…") with the rest at 45%.
+- **Unpaid number task** (`QiDBX`): a queue row with the `wallet` kind chip "Unpaid number"; the panel head takes a
+  critical pill ("Unpaid · released in 9 days"). The body (padding 24, gap 20): a subtle facts box (12/500 quiet
+  labels over 14/600 values, 24 apart; the amount short in `--color-critical--onSurface`), the HISTORY block, and
+  an informative notice strip saying the task closes by itself. No steps and no foot.
 - **Price task:** a subtle box of Twilio's costs (12/500 quiet labels over 14/600 values, 24 apart), money boxes two
   to a row each with its margin as a 12 hint (`--color-success--onSurface` 600 when the margin is back on target),
   a locked subtle box for what a country doesn't offer, Starts as the segmented switch (Now, On a date) with a
