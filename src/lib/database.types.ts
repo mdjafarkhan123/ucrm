@@ -2960,6 +2960,7 @@ export type Database = {
 					loop_detected_at: string | null;
 					marketing_campaign_id: string | null;
 					message_kind: string;
+					messenger_identity_id: string | null;
 					organization_id: string;
 					owner_user_id: string | null;
 					provider: string;
@@ -2995,6 +2996,7 @@ export type Database = {
 					loop_detected_at?: string | null;
 					marketing_campaign_id?: string | null;
 					message_kind?: string;
+					messenger_identity_id?: string | null;
 					organization_id: string;
 					owner_user_id?: string | null;
 					provider?: string;
@@ -3030,6 +3032,7 @@ export type Database = {
 					loop_detected_at?: string | null;
 					marketing_campaign_id?: string | null;
 					message_kind?: string;
+					messenger_identity_id?: string | null;
 					organization_id?: string;
 					owner_user_id?: string | null;
 					provider?: string;
@@ -3076,6 +3079,13 @@ export type Database = {
 						columns: ['organization_id', 'marketing_campaign_id'];
 						isOneToOne: false;
 						referencedRelation: 'marketing_campaigns';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_inbound_messages_messenger_identity_fkey';
+						columns: ['organization_id', 'messenger_identity_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_messenger_identities';
 						referencedColumns: ['organization_id', 'id'];
 					},
 					{
@@ -3196,6 +3206,164 @@ export type Database = {
 						referencedColumns: ['id'];
 					}
 				];
+			};
+			communication_messenger_connections: {
+				Row: {
+					connected_at: string;
+					connected_by: string | null;
+					created_at: string;
+					disconnected_at: string | null;
+					encryption_key_id: string | null;
+					id: string;
+					is_default: boolean;
+					last_checked_at: string | null;
+					last_event_received_at: string | null;
+					needs_reconnect_reason: string | null;
+					organization_id: string;
+					page_id: string;
+					page_name: string;
+					page_token_ciphertext: string | null;
+					page_token_nonce: string | null;
+					page_token_tag: string | null;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					connected_at?: string;
+					connected_by?: string | null;
+					created_at?: string;
+					disconnected_at?: string | null;
+					encryption_key_id?: string | null;
+					id?: string;
+					is_default?: boolean;
+					last_checked_at?: string | null;
+					last_event_received_at?: string | null;
+					needs_reconnect_reason?: string | null;
+					organization_id: string;
+					page_id: string;
+					page_name: string;
+					page_token_ciphertext?: string | null;
+					page_token_nonce?: string | null;
+					page_token_tag?: string | null;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					connected_at?: string;
+					connected_by?: string | null;
+					created_at?: string;
+					disconnected_at?: string | null;
+					encryption_key_id?: string | null;
+					id?: string;
+					is_default?: boolean;
+					last_checked_at?: string | null;
+					last_event_received_at?: string | null;
+					needs_reconnect_reason?: string | null;
+					organization_id?: string;
+					page_id?: string;
+					page_name?: string;
+					page_token_ciphertext?: string | null;
+					page_token_nonce?: string | null;
+					page_token_tag?: string | null;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_messenger_connections_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_messenger_identities: {
+				Row: {
+					client_id: string;
+					connection_id: string;
+					created_at: string;
+					display_name: string | null;
+					id: string;
+					last_inbound_at: string | null;
+					organization_id: string;
+					psid: string;
+					updated_at: string;
+				};
+				Insert: {
+					client_id: string;
+					connection_id: string;
+					created_at?: string;
+					display_name?: string | null;
+					id?: string;
+					last_inbound_at?: string | null;
+					organization_id: string;
+					psid: string;
+					updated_at?: string;
+				};
+				Update: {
+					client_id?: string;
+					connection_id?: string;
+					created_at?: string;
+					display_name?: string | null;
+					id?: string;
+					last_inbound_at?: string | null;
+					organization_id?: string;
+					psid?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_messenger_identities_client_fkey';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'communication_messenger_identities_connection_fkey';
+						columns: ['organization_id', 'connection_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_messenger_connections';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_messenger_webhook_events: {
+				Row: {
+					body_sha256: string;
+					claim_token: string | null;
+					claimed_at: string | null;
+					id: string;
+					payload: Json;
+					processed_at: string | null;
+					processing_attempts: number;
+					processing_error: string | null;
+					received_at: string;
+				};
+				Insert: {
+					body_sha256: string;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					id?: string;
+					payload: Json;
+					processed_at?: string | null;
+					processing_attempts?: number;
+					processing_error?: string | null;
+					received_at?: string;
+				};
+				Update: {
+					body_sha256?: string;
+					claim_token?: string | null;
+					claimed_at?: string | null;
+					id?: string;
+					payload?: Json;
+					processed_at?: string | null;
+					processing_attempts?: number;
+					processing_error?: string | null;
+					received_at?: string;
+				};
+				Relationships: [];
 			};
 			communication_outbound_attachments: {
 				Row: {
@@ -4903,6 +5071,50 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_sms_tollfree_proof_images: {
+				Row: {
+					created_at: string;
+					file_name: string;
+					id: string;
+					mime_type: string;
+					object_key: string;
+					organization_id: string;
+					public_token: string;
+					size_bytes: number;
+					verification_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					file_name: string;
+					id?: string;
+					mime_type: string;
+					object_key: string;
+					organization_id: string;
+					public_token?: string;
+					size_bytes: number;
+					verification_id: string;
+				};
+				Update: {
+					created_at?: string;
+					file_name?: string;
+					id?: string;
+					mime_type?: string;
+					object_key?: string;
+					organization_id?: string;
+					public_token?: string;
+					size_bytes?: number;
+					verification_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_tollfree_proof_images_check_fkey';
+						columns: ['organization_id', 'verification_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_tollfree_verifications';
+						referencedColumns: ['organization_id', 'id'];
 					}
 				];
 			};
@@ -27929,6 +28141,59 @@ export type Database = {
 					loop_detected_at: string | null;
 					marketing_campaign_id: string | null;
 					message_kind: string;
+					messenger_identity_id: string | null;
+					organization_id: string;
+					owner_user_id: string | null;
+					provider: string;
+					provider_callback_event_id: string | null;
+					provider_message_id: string | null;
+					reply_alias_id: string | null;
+					review_reason: string | null;
+					review_resolved_at: string | null;
+					review_resolved_by: string | null;
+					review_status: string;
+					sender_email: string | null;
+					sender_id: string | null;
+					sender_name: string | null;
+					sender_phone: string | null;
+					subject: string;
+					text_content: string;
+					to_recipients: Json;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_inbound_messages';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			record_communication_messenger_inbound_message: {
+				Args: {
+					target_attachment_count: number;
+					target_connection_id: string;
+					target_mid: string;
+					target_psid: string;
+					target_sent_at: string;
+					target_text: string;
+				};
+				Returns: {
+					attachment_count: number;
+					automation_suppressed: boolean;
+					cc_recipients: Json;
+					channel: string;
+					client_contact_method_id: string | null;
+					client_id: string | null;
+					created_at: string;
+					direction: string;
+					html_content: string | null;
+					id: string;
+					in_reply_to_intent_id: string | null;
+					in_reply_to_provider_message_id: string | null;
+					loop_detected_at: string | null;
+					marketing_campaign_id: string | null;
+					message_kind: string;
+					messenger_identity_id: string | null;
 					organization_id: string;
 					owner_user_id: string | null;
 					provider: string;
@@ -28009,6 +28274,7 @@ export type Database = {
 					loop_detected_at: string | null;
 					marketing_campaign_id: string | null;
 					message_kind: string;
+					messenger_identity_id: string | null;
 					organization_id: string;
 					owner_user_id: string | null;
 					provider: string;
