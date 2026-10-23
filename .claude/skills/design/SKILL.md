@@ -40,7 +40,7 @@ Jafar 2026-10-17).
 - [brand.md](brand.md) — Brand
 - [colors.md](colors.md) — Colour
 - [typography.md](typography.md) — Typography
-- [layout.md](layout.md) — Layout and spacing, sign-in screens, setup steps, booking page, settings home, business profile, branding, website chat widget, number paperwork, number readiness, Uplift's texting setup, a business's Texting view
+- [layout.md](layout.md) — Layout and spacing, sign-in screens, setup steps, booking page, settings home, business profile, branding, website chat widget, number paperwork, number readiness and renewal, Uplift's texting setup, a business's Texting view
 - [radius.md](radius.md) — Radius
 - [borders.md](borders.md) — Borders
 - [shadows.md](shadows.md) — Shadows
