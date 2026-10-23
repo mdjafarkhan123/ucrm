@@ -4,7 +4,7 @@
 **Design:** Pencil board `QiDBX` approved B (Jafar 2026-10-23). Rules: `.claude/skills/design/layout.md` § Number
 readiness (Renewal strip) and § Texting setup (Unpaid number task), `inbox.md` § Reply box.
 **Stage:** Done — merged to main 2026-10-23 — branch `claude/stage10-part7-build`, worktree `.worktrees/stage10-part7`, claim
-`6be781d0a40a` (owner `claude-stage10-part7-build`). Not merged.
+`6be781d0a40a` (owner `claude-stage10-part7-build`).
 **Done when:** each number is charged once a month from the bought balance; a short balance starts a 14-day
 receive-only grace with warnings; a top-up pays and resumes sending; grace end releases the number (off while live
 SMS is off); live-checked against `QiDBX`; merged to main.
