@@ -90,14 +90,15 @@ filter chip's look, except its icon is the 24 date tile in `--color-time--surfac
 
 ## Channel pill
 
-The Email / Text / Website chat picker in the inbox reply box, the folded reply box and a review automation's
+The Messenger / Email / Text / Website chat picker in the inbox reply box, the folded reply box and a review automation's
 "Send by" (board `DXj9z` Part 1, A, Jafar 2026-10-20).
 
 - Pill 32 high, padding 0 10, gap 6, `--radius-circle`, `--color-surface`, 1px `--color-border--interactive`,
-  `--shadow-button`: a 16 channel icon (`mail`, `message-circle`, `messages-square`) in `--color-conversation`, the
-  name 13/600 heading, a 14 chevron `--color-icon--secondary` (up when open).
+  `--shadow-button`: the 16 channel mark (`inbox.md`, Channel marks), the name 13/600 heading, for Messenger the
+  Page's name ("· Uplift Contractor Page") 13 quiet, a 14 chevron `--color-icon--secondary` (up when open).
 - Hover and open: `--color-surface--hover`. Focus: 1.5px `--color-interactive` edge.
-- Menu: the dropdown list, 216 wide; each line has its 16 teal icon; the current one is 600 with the green check.
+- Menu in the inbox: the channel menu in `inbox.md`. Elsewhere: the dropdown list, 216 wide, each line with its
+  16 mark; the current one is 600 with the green check.
 - One channel only: a look-only pill in `--color-conversation--surface` with a 1px `--surface-edge`, no chevron.
 
 ## Days-in-stage line

@@ -1,6 +1,6 @@
 # Part 6 — Inbox shows Messenger
 
-**State:** Design — look chosen 2026-10-23; reply box B approved; fold-up and states drawn 2026-10-23, waiting for Jafar's yes.
+**State:** Design — look chosen 2026-10-23; reply box B approved; fold-up and states approved 2026-10-23. Design done; next: build.
 
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
@@ -27,10 +27,13 @@ note of fold-up section `jU783` (followed Gmail, Front, Slack, Office).
 **Reply box — Approved B (Jafar, 2026-10-23):** section `j93I8l` on `yjdF0` (four states), now in `np8WS`. Team inbox box: Reply / Internal comment tabs on its top edge,
 tools along the bottom, Send in words; Internal comment turns it yellow. Followed Intercom, Front, GoHighLevel.
 
-**Drawn 2026-10-23, not yet approved:** fold-up `jU783` (medium screen with Details open, narrow chat 400 with ⋯
+**Approved by Jafar 2026-10-23:** fold-up `jU783` (medium screen with Details open, narrow chat 400 with ⋯
 menus, list at 240, drag-line hover) and states `y2sz2l` (window closing/closed + channel menu, Page disconnected,
 texts stopped / no permission, minimized box, Message details, ticks sending→seen/failed, "Facebook user" + Link
 to a client).
 
-**Next:** Jafar reviews; change in place. On yes: add brand-mark exception, channel colours, bubble and tick rules
-to the design skill; then a build session builds.
+**Design skill updated 2026-10-23:** `.claude/skills/design/inbox.md` (whole inbox look), channel colours in
+`colors.md`, channel pill in `chips.md`, brand-mark exception in `icon-shapes.md`.
+
+**Next:** a build session builds the inbox look from `inbox.md` and board `yjdF0` (Svelte, live inbox), then
+live screenshots beside the Pencil frames. Then Part 7 Reply.
