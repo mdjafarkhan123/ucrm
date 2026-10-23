@@ -13,6 +13,11 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
+	// Imported rather than served from static/, so a replaced logo gets a new hashed URL and no browser keeps the old one.
+	import chatLogo from '$lib/assets/channels/chat.png';
+	import mailLogo from '$lib/assets/channels/mail.png';
+	import messengerLogo from '$lib/assets/channels/messenger.png';
+	import smsLogo from '$lib/assets/channels/sms.png';
 
 	// Which channel a row, bubble or button belongs to (design skill inbox.md, Channel marks): each channel's
 	// full-colour logo, because customers recognise them. `inverse` is the all-white version that sits inside a
@@ -37,10 +42,10 @@
 	};
 
 	const logos: Record<InboxChannel, string> = {
-		messenger: '/assets/messenger.png',
-		email: '/assets/mail.png',
-		sms: '/assets/sms.png',
-		website_chat: '/assets/chat.png'
+		messenger: messengerLogo,
+		email: mailLogo,
+		sms: smsLogo,
+		website_chat: chatLogo
 	};
 	const logo = $derived(inverse ? undefined : logos[channel]);
 </script>
