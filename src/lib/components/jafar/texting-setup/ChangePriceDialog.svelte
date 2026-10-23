@@ -23,8 +23,10 @@
 		textPrice,
 		type PriceListRow
 	} from '$lib/jafar/texting-setup';
-	import dollarIcon from '@tabler/icons/outline/badge-dollar-sign.svg?raw';
+	import dollarIcon from '@tabler/icons/outline/currency-dollar.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import boltIcon from '@tabler/icons/outline/bolt.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 
 	// Change price (`concept.pen` `dc8G7`): Twilio's costs at the top, the new prices with the margin worked out as
 	// you type, and when they start. Review price and Set price open it on a row; Add a country opens it empty, asks
@@ -256,6 +258,8 @@
 					<dd>
 						{#if row.twilio.number_month}
 							${row.twilio.number_month.cost.toFixed(2)}
+						{:else if row.twilio.segment}
+							<span>None to rent</span>
 						{:else}
 							<span>Not checked yet</span>
 						{/if}
@@ -317,24 +321,26 @@
 					name="price-starts"
 					value={starts}
 					options={[
-						{ value: 'now', label: 'Now' },
-						{ value: 'date', label: 'On a date' }
+						{ value: 'now', label: 'Now', icon: boltIcon },
+						{ value: 'date', label: 'On a date', icon: calendarIcon }
 					]}
 					onchange={(value) => (starts = value as 'now' | 'date')}
 					disabled={saving}
 				/>
 				{#if starts === 'date'}
-					<CalendarPicker
-						id="price-start-date"
-						label="Start date"
-						hideLabel
-						value={startDate}
-						minValue={tomorrow}
-						onchange={(value) => {
-							if (value) startDate = value;
-						}}
-						disabled={saving}
-					/>
+					<div class="change-price__date">
+						<CalendarPicker
+							id="price-start-date"
+							label="Start date"
+							hideLabel
+							value={startDate}
+							minValue={tomorrow}
+							onchange={(value) => {
+								if (value) startDate = value;
+							}}
+							disabled={saving}
+						/>
+					</div>
 				{/if}
 			</div>
 
@@ -421,6 +427,10 @@
 			flex-wrap: wrap;
 			align-items: flex-end;
 			gap: var(--space-slim);
+		}
+
+		&__date {
+			width: calc(var(--base-unit) * 11);
 		}
 	}
 </style>

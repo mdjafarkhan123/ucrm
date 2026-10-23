@@ -27,7 +27,7 @@
 		whenAsked,
 		type PriceListRow
 	} from '$lib/jafar/texting-setup';
-	import dollarIcon from '@tabler/icons/outline/badge-dollar-sign.svg?raw';
+	import dollarIcon from '@tabler/icons/outline/currency-dollar.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -250,11 +250,15 @@
 				<span role="columnheader">Number a month</span>
 				<span role="columnheader">Using it</span>
 				<span role="columnheader">Status</span>
-				<span role="columnheader"><span class="visually-hidden">Actions</span></span>
+				<span role="columnheader"><span class="prices__hidden">Actions</span></span>
 			</div>
 			{#each shown as { row, name } (row.country)}
 				{@const status = priceStatus(row)}
 				{@const fell = priceMoved(row)}
+				{@const loss =
+					!!row.price.segment &&
+					!!row.twilio.segment &&
+					row.price.segment.rate < row.twilio.segment.cost}
 				<div class="prices__row" role="row">
 					<span class="prices__country" role="cell">
 						<PaperworkFlag code={row.country} />
@@ -291,7 +295,12 @@
 							</span>
 						{/if}
 					</span>
-					<span class="prices__margin" class:prices__margin--fell={fell} role="cell">
+					<span
+						class="prices__margin"
+						class:prices__margin--fell={fell}
+						class:prices__margin--loss={loss}
+						role="cell"
+					>
 						{#if row.price.segment && row.twilio.segment}
 							{#if fell}<span aria-hidden="true">{@html trendingDownIcon}</span>{/if}
 							{margin(row.price.segment.rate, row.twilio.segment.cost)}
@@ -509,6 +518,15 @@
 			}
 		}
 
+		&__hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+		}
+
 		&__margin {
 			display: inline-flex;
 			align-items: center;
@@ -519,6 +537,10 @@
 
 			&--fell {
 				color: var(--color-warning--onSurface);
+			}
+
+			&--loss {
+				color: var(--color-critical);
 			}
 
 			span[aria-hidden] {

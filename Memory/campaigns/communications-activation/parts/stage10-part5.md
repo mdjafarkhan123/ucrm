@@ -41,8 +41,11 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   `_record_twilio_prices`; request refuses an Off country). Routes `api/jafar/texting-setup/prices` (+ `check`,
   `[country]/offered`); `CountriesPrices.svelte`, `ChangePriceDialog.svelte` (also Add a country and the task
   panel's price step); MoneyInput `decimals`, Dialog `lead`, CountryPicker `except`; old `SmsRetailRateActions`
-  removed. **Next:** svelte-check these files (`--max-old-space-size=10240`; it was interrupted), svelte-autofixer,
-  a unit test for `twilioPriceRows`, then a live Chrome check of the tab and pop-up against `R6mF2`/`dc8G7`.
+  removed. **Checked 2026-10-23:** svelte-check clean for these files; `sms-country-prices.spec.ts` 3 pass; live
+  Chrome (light + dark) vs `R6mF2`/`r6DfUV`: Check Twilio prices fills costs (BD $0.5962, US $0.0083), pop-up margin
+  line works. Fixed: missing icon crashed the page; hidden Actions header; losing margin red; Now/On a date icons;
+  date beside switch; "None to rent". **Next:** prove Save price live — needs Jafar's real price (US sells at
+  $0.0079, below Twilio's $0.0083, margin -5%; Bangladesh has none). Then merge.
 - **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
   pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
