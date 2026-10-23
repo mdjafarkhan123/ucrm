@@ -1,0 +1,26 @@
+BEGIN
+CREATE INDEX
+CREATE FUNCTION
+REVOKE
+GRANT
+psql:.scratch/messenger-health-db.sql:25: NOTICE:  PASS: single claim, overlapping claim skipped, reconnect wins
+DO
+                                                                QUERY PLAN                                                                
+------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=1.03..1.03 rows=1 width=80) (actual time=0.021..0.021 rows=0 loops=1)
+   Buffers: shared hit=1
+   ->  Sort  (cost=1.03..1.03 rows=1 width=80) (actual time=0.020..0.020 rows=0 loops=1)
+         Sort Key: last_checked_at NULLS FIRST, id
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=1
+         ->  Seq Scan on communication_messenger_connections  (cost=0.00..1.02 rows=1 width=80) (actual time=0.015..0.015 rows=0 loops=1)
+               Filter: ((status = 'active'::text) AND ((last_checked_at IS NULL) OR (last_checked_at <= (now() - '01:00:00'::interval))))
+               Rows Removed by Filter: 1
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=7
+ Planning Time: 0.185 ms
+ Execution Time: 0.048 ms
+(14 rows)
+
+ROLLBACK

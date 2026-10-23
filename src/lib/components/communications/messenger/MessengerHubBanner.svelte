@@ -175,4 +175,16 @@
 			}
 		}
 	}
+	@media (max-width: 700px) {
+		.messenger-hub {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			gap: var(--space-base);
+			padding: var(--space-medium);
+			:global(.button) {
+				grid-column: 1 / -1;
+				justify-self: start;
+			}
+		}
+	}
 </style>

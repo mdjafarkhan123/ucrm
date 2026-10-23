@@ -143,7 +143,7 @@ async function graphRequest<T>(
 	} catch (error) {
 		throw new MessengerGraphError('Facebook could not be reached.', 'unavailable', null, error);
 	}
-	let body: unknown = null;
+	let body: unknown;
 	try {
 		body = await response.json();
 	} catch {
@@ -265,6 +265,72 @@ export async function subscribeMessengerPage(pageId: string, pageToken: string):
 /** Stop Meta delivering this Page's messages to us. */
 export async function unsubscribeMessengerPage(pageId: string, pageToken: string): Promise<void> {
 	await graphRequest<{ success?: boolean }>('DELETE', `${pageId}/subscribed_apps`, {}, pageToken);
+}
+
+/** Read-only health check. Only confirmed failures ask the business to reconnect. */
+export async function checkMessengerPageHealth(
+	pageId: string,
+	pageToken: string
+): Promise<'healthy' | 'token_invalid' | 'permission_missing' | 'webhook_unsubscribed'> {
+	const config = requireConfig();
+	// Failure of the inspecting app credential is a platform problem, not this Page's token.
+	const debug = await graphRequest<{
+		data?: {
+			is_valid?: boolean;
+			app_id?: string;
+			scopes?: string[];
+			expires_at?: number;
+			data_access_expires_at?: number;
+		};
+	}>('GET', 'debug_token', { input_token: pageToken }, `${config.appId}|${config.appSecret}`);
+	const token = debug?.data;
+	if (!token || typeof token.is_valid !== 'boolean')
+		throw new MessengerGraphError('Facebook returned no token health.', 'unavailable');
+	const now = Date.now() / 1000;
+	if (
+		!token.is_valid ||
+		token.app_id !== config.appId ||
+		[token.expires_at, token.data_access_expires_at].some(
+			(expiry) => typeof expiry === 'number' && expiry > 0 && expiry <= now
+		)
+	)
+		return 'token_invalid';
+	if (!Array.isArray(token.scopes))
+		throw new MessengerGraphError('Facebook returned no token permissions.', 'unavailable');
+	if (!['pages_messaging', 'pages_manage_metadata'].every((scope) => token.scopes!.includes(scope)))
+		return 'permission_missing';
+	let subscriptions: {
+		data?: { id?: string; subscribed_fields?: string[] }[];
+		paging?: { next?: string };
+	};
+	try {
+		subscriptions = await graphRequest(
+			'GET',
+			`${pageId}/subscribed_apps`,
+			{ fields: 'id,subscribed_fields', limit: '100' },
+			pageToken
+		);
+	} catch (error) {
+		if (
+			error instanceof MessengerGraphError &&
+			(error.failure === 'token_invalid' || error.failure === 'permission_missing')
+		)
+			return error.failure;
+		throw error;
+	}
+	if (!Array.isArray(subscriptions?.data))
+		throw new MessengerGraphError('Facebook returned no subscription health.', 'unavailable');
+	const ours = subscriptions.data.find((app) => app.id === config.appId);
+	if (!ours && subscriptions.paging?.next)
+		throw new MessengerGraphError(
+			'Facebook returned an incomplete subscription list.',
+			'unavailable'
+		);
+	return ours &&
+		Array.isArray(ours.subscribed_fields) &&
+		MESSENGER_SUBSCRIBED_FIELDS.every((field) => ours.subscribed_fields!.includes(field))
+		? 'healthy'
+		: 'webhook_unsubscribed';
 }
 
 /** A staff reply inside the 24-hour window. `metadata` comes back on Meta's echo of this message. */

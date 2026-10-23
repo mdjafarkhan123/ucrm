@@ -1,0 +1,15 @@
+HEALTHY SCREEN 1
+card bounds 1440 { x: 284, y: 401.703125, width: 748, height: 308.28125 }
+token_invalid 1440 horizontal overflow false
+card bounds 390 { x: 16, y: 623.671875, width: 342, height: 423.71875 }
+token_invalid 390 horizontal overflow false
+card bounds 1440 { x: 284, y: 401.703125, width: 748, height: 308.28125 }
+permission_missing 1440 horizontal overflow false
+card bounds 390 { x: 16, y: 623.671875, width: 342, height: 423.71875 }
+permission_missing 390 horizontal overflow false
+card bounds 1440 { x: 284, y: 401.703125, width: 748, height: 308.28125 }
+webhook_unsubscribed 1440 horizontal overflow false
+card bounds 390 { x: 16, y: 623.671875, width: 342, height: 423.71875 }
+webhook_unsubscribed 390 horizontal overflow false
+reconnect loading/disabled true
+reconnect failure visible

@@ -1,6 +1,6 @@
 # Messenger — implementation plan
 
-Status: **proposed 2026-10-18, waiting for Jafar's approval** (Part 2). Scope and behaviour are in
+Status: **approved by Jafar 2026-10-23** (Part 2). Scope and behaviour are in
 `docs/messenger-behavior-contract.md`; Meta facts are in `docs/research/messenger-transport-webhooks.md`. This plan
 orders the build and fixes the technical shape. Parts 3 onward are the roadmap rows in
 `Memory/campaigns/messenger-unified-inbox/ROADMAP.md`.

@@ -4,6 +4,7 @@ import type { RequestHandler } from './$types';
 import { getServerEnv } from '$lib/server/env';
 import { drainMessengerWebhookEvents } from '$lib/server/communications/messenger-inbound-worker';
 import { drainMessengerSendQueue } from '$lib/server/communications/messenger-send-worker';
+import { checkDueMessengerConnections } from '$lib/server/communications/messenger-health-worker';
 
 function authorized(request: Request) {
 	const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1];
@@ -23,7 +24,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ status: 401, headers: { 'cache-control': 'no-store' } }
 		);
 
-	const inbound = await drainMessengerWebhookEvents();
-	const outbound = await drainMessengerSendQueue();
-	return json({ ...inbound, outbound }, { headers: { 'cache-control': 'no-store' } });
+	const [messages, health] = await Promise.all([
+		(async () => {
+			const inbound = await drainMessengerWebhookEvents();
+			const outbound = await drainMessengerSendQueue();
+			return { ...inbound, outbound };
+		})(),
+		checkDueMessengerConnections()
+	]);
+	return json({ ...messages, health }, { headers: { 'cache-control': 'no-store' } });
 };

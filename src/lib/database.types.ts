@@ -3382,56 +3382,6 @@ export type Database = {
 					}
 				];
 			};
-			communication_messenger_login_sessions: {
-				Row: {
-					created_at: string;
-					encryption_key_id: string;
-					expires_at: string;
-					facebook_user_id: string;
-					facebook_user_name: string;
-					id: string;
-					organization_id: string;
-					user_id: string;
-					user_token_ciphertext: string;
-					user_token_nonce: string;
-					user_token_tag: string;
-				};
-				Insert: {
-					created_at?: string;
-					encryption_key_id: string;
-					expires_at?: string;
-					facebook_user_id: string;
-					facebook_user_name: string;
-					id?: string;
-					organization_id: string;
-					user_id: string;
-					user_token_ciphertext: string;
-					user_token_nonce: string;
-					user_token_tag: string;
-				};
-				Update: {
-					created_at?: string;
-					encryption_key_id?: string;
-					expires_at?: string;
-					facebook_user_id?: string;
-					facebook_user_name?: string;
-					id?: string;
-					organization_id?: string;
-					user_id?: string;
-					user_token_ciphertext?: string;
-					user_token_nonce?: string;
-					user_token_tag?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'communication_messenger_login_sessions_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					}
-				];
-			};
 			communication_messenger_webhook_events: {
 				Row: {
 					body_sha256: string;
@@ -28620,6 +28570,28 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			record_communication_messenger_echo: {
+				Args: {
+					target_connection_id: string;
+					target_psid: string;
+					target_mid: string;
+					target_metadata: string;
+					target_text: string;
+					target_sent_at: string;
+					target_from_this_app: boolean;
+				};
+				Returns: string;
+			};
+			record_communication_messenger_receipt: {
+				Args: {
+					target_connection_id: string;
+					target_psid: string;
+					target_kind: string;
+					target_watermark: string;
+					target_mids?: string[];
+				};
+				Returns: number;
 			};
 			record_communication_messenger_inbound_message: {
 				Args: {

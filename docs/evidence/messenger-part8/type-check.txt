@@ -1,0 +1,4 @@
+Loading svelte-check in workspace: /home/jafar/Ucrm/.worktrees/messenger-part8
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings

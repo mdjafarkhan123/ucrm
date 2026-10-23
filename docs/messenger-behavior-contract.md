@@ -61,7 +61,7 @@ current Pencil concept and the design skill; Jafar approves designs before the i
 - Going live needs Meta Business Verification of the business that owns the app (Uplift). Jafar has a Bangladesh trade
   license (2026-10-18); Meta's own accepted-document list for Bangladesh is unverified, so Part 1b tries it.
 - Webhook host `https://app.upliftcontractor.com` (Jafar confirmed); Meta app "Ucrm Messaging", App ID
-  `1419027217062214`; the three Meta values are set in `.env`.
+  `1709471683925717` (current app on Jafar's second Facebook account); the three Meta values are set in `.env`.
 
 ## Decided
 

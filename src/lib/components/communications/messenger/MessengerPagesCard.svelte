@@ -58,7 +58,7 @@
 		if (reason === 'permission_missing')
 			return "Someone removed this app's access to the Page on Facebook. Reconnect and allow access to messages.";
 		if (reason === 'webhook_unsubscribed')
-			return "Facebook paused message delivery to us. We're reconnecting it; if this stays, press Reconnect.";
+			return 'Facebook paused message delivery to us. Reconnect this Page to receive messages again.';
 		return `Facebook ended this connection${since ? ` on ${dayFormat.format(new Date(since))}` : ''}, so new messages are not arriving. Old conversations are safe.`;
 	}
 
@@ -394,6 +394,48 @@
 				color: var(--color-text--secondary);
 				opacity: 0.6;
 				cursor: default;
+			}
+		}
+	}
+	@media (max-width: 700px) {
+		.messenger-pages {
+			&__heads {
+				display: none;
+			}
+			&__line {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				padding: var(--space-base);
+			}
+			&__page {
+				grid-column: 1;
+			}
+			&__menu {
+				grid-column: 2;
+				grid-row: 1;
+			}
+			&__title-line {
+				flex-wrap: wrap;
+			}
+			&__name {
+				white-space: normal;
+				overflow-wrap: anywhere;
+			}
+			&__status,
+			&__last {
+				grid-column: 1 / -1;
+			}
+			&__fix {
+				padding: 0 var(--space-base) var(--space-base);
+			}
+			&__strip {
+				display: grid;
+				grid-template-columns: auto minmax(0, 1fr);
+				align-items: start;
+				:global(.button) {
+					grid-column: 2;
+					justify-self: start;
+				}
 			}
 		}
 	}

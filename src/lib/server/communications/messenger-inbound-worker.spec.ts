@@ -40,6 +40,26 @@ function fakeClient(
 }
 
 describe('drainMessengerWebhookEvents', () => {
+	it('bounds a local burst to 200 deliveries per wake and leaves the remainder for the next wake', async () => {
+		const events = Array.from({ length: 225 }, (_, index) => ({
+			id: `burst-${index}`,
+			payload: delivery(index % 2 ? '9001' : '9002', [`repeated-${index % 10}`])
+		}));
+		const client = fakeClient(events, { '9001': 'conn-1', '9002': 'conn-2' });
+		expect(await drainMessengerWebhookEvents({ client })).toEqual({
+			claimed: 200,
+			processed: 200,
+			failed: 0
+		});
+		expect(client.recordMessage).toHaveBeenCalledTimes(200);
+		expect(await drainMessengerWebhookEvents({ client })).toEqual({
+			claimed: 25,
+			processed: 25,
+			failed: 0
+		});
+		expect(client.recordMessage).toHaveBeenCalledTimes(225);
+	});
+
 	it('records each customer message against the Page’s connection and marks the delivery done', async () => {
 		const client = fakeClient([{ id: 'e1', payload: delivery('9001', ['m_1', 'm_2']) }], {
 			'9001': 'conn-1'

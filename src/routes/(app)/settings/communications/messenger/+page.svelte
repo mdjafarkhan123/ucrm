@@ -388,6 +388,7 @@
 <style lang="scss">
 	.messenger-settings {
 		display: grid;
+		min-width: 0;
 		gap: var(--space-large);
 
 		&__heading :global(.page-header) {
@@ -406,6 +407,11 @@
 		&__side {
 			display: grid;
 			gap: var(--space-large);
+		}
+	}
+	@media (max-width: 1100px) {
+		.messenger-settings__body {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>
