@@ -29,7 +29,7 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
 
 ## Channel marks
 
-- Every channel uses its full-colour logo from `static/assets/` in place of a Tabler icon, because customers
+- Every channel uses its full-colour logo from `src/lib/assets/channels/` in place of a Tabler icon, because customers
   recognise them: Messenger `messenger.png`, Email `mail.png`, Text `sms.png`, Website chat `chat.png`;
   `instagram.png` waits for that channel.
 - Inside a green bubble the mark turns plain white.
