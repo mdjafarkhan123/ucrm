@@ -13,6 +13,8 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import TaskQueue from '$lib/components/jafar/texting-setup/TaskQueue.svelte';
 	import TaskPanel from '$lib/components/jafar/texting-setup/TaskPanel.svelte';
+	import OptOutTaskPanel from '$lib/components/jafar/texting-setup/OptOutTaskPanel.svelte';
+	import { OPT_OUT_LANGUAGES, languageName } from '$lib/communications/sms-opt-out-words';
 	import CantTurnOnDialog from '$lib/components/jafar/texting-setup/CantTurnOnDialog.svelte';
 	import WaitingOnTwilio from '$lib/components/jafar/texting-setup/WaitingOnTwilio.svelte';
 	import CountriesPrices from '$lib/components/jafar/texting-setup/CountriesPrices.svelte';
@@ -29,6 +31,7 @@
 		textingSetupKey,
 		whenAsked,
 		type AlreadyFinished,
+		type OptOutTask,
 		type PriceListRow,
 		type TextingTask
 	} from '$lib/jafar/texting-setup';
@@ -50,28 +53,40 @@
 	const queue = createQuery(() => ({ queryKey: textingSetupKey, queryFn: fetchTextingSetup }));
 
 	const tasks = $derived(queue.data?.tasks ?? []);
+	// Part 5d: opt-out words tasks share the queue, oldest first with the countries.
+	const optOutTasks = $derived(queue.data?.opt_out_tasks ?? []);
+	type AnyTask = TextingTask | OptOutTask;
+	const isOptOut = (task: AnyTask): task is OptOutTask => 'language' in task;
+	const ordered = $derived(
+		[...tasks, ...optOutTasks].sort((a, b) => a.requested_at.localeCompare(b.requested_at))
+	);
 	const summary = $derived(queue.data?.summary);
 
 	// A business's Open task arrives with `?task=<id>`, opening that task first.
 	let selectedId = $state<string | null>(page.url.searchParams.get('task'));
-	const selected = $derived(tasks.find((task) => task.id === selectedId) ?? tasks[0] ?? null);
+	const selected = $derived(ordered.find((task) => task.id === selectedId) ?? ordered[0] ?? null);
 	// The task someone is working on: picked in the queue, or its box ticked. If it leaves the queue because a
 	// teammate finished it, the panel says so instead of moving on to another task under their hand.
-	let pinned = $state<TextingTask | null>(null);
+	let pinned = $state<AnyTask | null>(null);
 
 	/** What the panel says once a task is finished here, or was finished by a teammate first. */
 	type Result =
-		| { kind: 'done'; task: TextingTask; who: string; at: string }
-		| { kind: 'already'; task: TextingTask; finished: AlreadyFinished };
+		| { kind: 'done'; task: AnyTask; who: string; at: string }
+		| { kind: 'already'; task: AnyTask; finished: AlreadyFinished };
 	let result = $state<Result | null>(null);
 	const shown = $derived.by((): Result | null => {
 		if (result) return result;
-		if (!pinned || marking || closing || tasks.some((task) => task.id === pinned?.id)) return null;
+		if (!pinned || marking || closing || ordered.some((task) => task.id === pinned?.id))
+			return null;
 		const finished = queue.data?.recently_finished.find((row) => row.id === pinned?.id);
 		return {
 			kind: 'already',
 			task: pinned,
-			finished: finished ?? { kind: 'switched_on', at: new Date().toISOString(), who: null }
+			finished: finished ?? {
+				kind: isOptOut(pinned) ? 'opt_out_added' : 'switched_on',
+				at: new Date().toISOString(),
+				who: null
+			}
 		};
 	});
 
@@ -104,7 +119,7 @@
 		if (marking || closing) return;
 		result = null;
 		selectedId = id;
-		pinned = tasks.find((task) => task.id === id) ?? null;
+		pinned = ordered.find((task) => task.id === id) ?? null;
 	}
 
 	function nextTask() {
@@ -113,7 +128,7 @@
 		pinned = null;
 	}
 
-	async function refresh(task: TextingTask) {
+	async function refresh(task: AnyTask) {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: textingSetupKey }),
 			queryClient.invalidateQueries({ queryKey: organizationDestinationsKey(task.organization_id) })
@@ -157,6 +172,38 @@
 		}
 	}
 
+	/** "Mark as done" on an opt-out words task: the words are in the business's Twilio Advanced Opt-Out. */
+	async function markWords(task: OptOutTask) {
+		marking = true;
+		try {
+			const answer = await post('/api/jafar/texting-setup/opt-out', {
+				organization_id: task.organization_id,
+				language: task.language
+			});
+			if (answer.status === 409 && answer.body.already_finished) {
+				result = { kind: 'already', task, finished: answer.body.already_finished };
+			} else if (answer.status >= 400) {
+				toast.error(
+					'Couldn’t mark it as done',
+					answer.body.error ?? 'Nothing was changed. Try again.'
+				);
+				return;
+			} else {
+				result = {
+					kind: 'done',
+					task,
+					who: answer.body.actor_name ?? 'you',
+					at: answer.body.language?.added_at ?? new Date().toISOString()
+				};
+			}
+			await refresh(task);
+		} catch {
+			toast.error('Couldn’t mark it as done', 'Check your connection. Nothing was changed.');
+		} finally {
+			marking = false;
+		}
+	}
+
 	async function close(input: { reason: string; business_message: string }) {
 		const task = closingTask;
 		if (!task) return;
@@ -186,7 +233,7 @@
 		}
 	}
 
-	function businessHref(task: TextingTask) {
+	function businessHref(task: AnyTask) {
 		return `${resolve('/jafar/(protected)/organizations/[organizationId]', { organizationId: task.organization_id })}?tab=communications&channel=texting`;
 	}
 
@@ -325,7 +372,7 @@
 						retry={() => queue.refetch()}
 					/>
 				</div>
-			{:else if tasks.length === 0 && !shown}
+			{:else if ordered.length === 0 && !shown}
 				<div class="texting-setup__state">
 					<EmptyState
 						title="Nothing waits on Uplift"
@@ -336,26 +383,65 @@
 				</div>
 			{:else}
 				<div class="texting-setup__work">
-					<TaskQueue {tasks} selectedId={shown ? null : (selected?.id ?? null)} onSelect={select} />
-					{#if shown}
-						{@const country = countryDisplayName(shown.task.country)}
+					<TaskQueue
+						{tasks}
+						{optOutTasks}
+						selectedId={shown ? null : (selected?.id ?? null)}
+						onSelect={select}
+					/>
+					{#if shown && isOptOut(shown.task)}
+						{@const words = shown.task}
+						{@const language = languageName(words.language)}
 						<section class="texting-setup__result" aria-live="polite">
 							{#if shown.kind === 'done'}
 								<IconTile icon={circleCheckIcon} tone="success" size={40} />
-								<h2>{country} is on for {shown.task.organization_name}</h2>
+								<h2>{language} words are in for {words.organization_name}</h2>
 								<p>
-									{shown.task.organization_name} can text there now{shown.task.price.segment
+									Its customers can reply {OPT_OUT_LANGUAGES[words.language]?.stop[0]} to stop texts.
+									We noted that {shown.who} did it, {doneTime(shown.at)}.
+								</p>
+							{:else}
+								{@const who = shown.finished.who ?? 'A teammate'}
+								<IconTile icon={userCheckIcon} tone="informative" size={40} />
+								<h2>{who} already did this</h2>
+								<p>
+									{who} added the {language} opt-out words for {words.organization_name}
+									{relativeTime(shown.finished.at).toLowerCase()}. Nothing else to do here.
+								</p>
+							{/if}
+							<div class="texting-setup__result-actions">
+								<Button variant="secondary" href={businessHref(words)}>
+									<span aria-hidden="true">{@html buildingIcon}</span>
+									Open {words.organization_name}
+								</Button>
+								{#if ordered.length}
+									<Button onclick={nextTask}>
+										<span aria-hidden="true">{@html arrowRightIcon}</span>
+										Next task
+									</Button>
+								{/if}
+							</div>
+						</section>
+					{:else if shown && !isOptOut(shown.task)}
+						{@const task = shown.task}
+						{@const country = countryDisplayName(task.country)}
+						<section class="texting-setup__result" aria-live="polite">
+							{#if shown.kind === 'done'}
+								<IconTile icon={circleCheckIcon} tone="success" size={40} />
+								<h2>{country} is on for {task.organization_name}</h2>
+								<p>
+									{task.organization_name} can text there now{task.price.segment
 										? ' and sees Ready'
 										: ', and sees Ready once it has a price'}. We noted that {shown.who} did it, {doneTime(
 										shown.at
 									)}.
 								</p>
 								<div class="texting-setup__result-actions">
-									<Button variant="secondary" href={businessHref(shown.task)}>
+									<Button variant="secondary" href={businessHref(task)}>
 										<span aria-hidden="true">{@html buildingIcon}</span>
-										Open {shown.task.organization_name}
+										Open {task.organization_name}
 									</Button>
-									{#if tasks.length}
+									{#if ordered.length}
 										<Button onclick={nextTask}>
 											<span aria-hidden="true">{@html arrowRightIcon}</span>
 											Next task
@@ -371,10 +457,10 @@
 									{shown.finished.kind === 'closed' ? 'closed the request for' : 'marked'}
 									{country}
 									{shown.finished.kind === 'closed' ? 'from' : 'as turned on for'}
-									{shown.task.organization_name}
+									{task.organization_name}
 									{relativeTime(shown.finished.at).toLowerCase()}. Nothing else to do here.
 								</p>
-								{#if tasks.length}
+								{#if ordered.length}
 									<div class="texting-setup__result-actions">
 										<Button onclick={nextTask}>
 											<span aria-hidden="true">{@html arrowRightIcon}</span>
@@ -384,6 +470,15 @@
 								{/if}
 							{/if}
 						</section>
+					{:else if selected && isOptOut(selected)}
+						{#key selected.id}
+							<OptOutTaskPanel
+								task={selected}
+								{marking}
+								onTick={() => (pinned = selected)}
+								onMark={() => markWords(selected)}
+							/>
+						{/key}
 					{:else if selected}
 						{#key selected.id}
 							<TaskPanel
@@ -395,6 +490,7 @@
 									if (!loadingPrice) void openPrice(selected);
 								}}
 								onMark={() => mark(selected)}
+								onOptOut={(language) => select(`opt-out:${selected.organization_id}:${language}`)}
 								onCantTurnOn={() => {
 									closeError = '';
 									closingTask = selected;

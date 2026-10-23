@@ -13,7 +13,13 @@
 		smsTwilioAccountQuery
 	} from '$lib/jafar/organization-communications-queries';
 	import { jafarOrganizationSmsModeKey } from '$lib/jafar/query-keys';
-	import { shortSid, TWILIO_SUBACCOUNTS_URL } from '$lib/jafar/texting-setup';
+	import {
+		shortSid,
+		TWILIO_SUBACCOUNTS_URL,
+		type BusinessDestinations
+	} from '$lib/jafar/texting-setup';
+	import { smsDestinationsQuery } from '$lib/jafar/organization-communications-queries';
+	import { languageName } from '$lib/communications/sms-opt-out-words';
 	import powerIcon from '@tabler/icons/outline/power.svg?raw';
 	import keyIcon from '@tabler/icons/outline/key.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -51,6 +57,14 @@
 	const mode = createQuery(() => smsModeQuery<ModeResponse>(organizationId));
 	const account = createQuery(() => smsTwilioAccountQuery<AccountResponse>(organizationId));
 	const senders = createQuery(() => smsSendersQuery<{ senders: Sender[] }>(organizationId));
+	// The same countries query as the card beside it; it carries the opt-out languages Uplift added (Part 5d).
+	const countries = createQuery(() => smsDestinationsQuery<BusinessDestinations>(organizationId));
+	const optOutWords = $derived(
+		[
+			'English',
+			...(countries.data?.opt_out_languages ?? []).map((row) => languageName(row.language))
+		].join(', ')
+	);
 
 	const on = $derived(mode.data?.effective_mode === 'operational');
 	// No saved mode means texting was never set up, and it is off until it is.
@@ -339,7 +353,7 @@
 				</div>
 				<div class="texting-side__fact">
 					<dt>Opt-out words</dt>
-					<dd>English</dd>
+					<dd>{optOutWords}</dd>
 				</div>
 				<div class="texting-side__fact">
 					<dt>Numbers</dt>

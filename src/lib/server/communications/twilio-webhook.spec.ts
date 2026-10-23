@@ -276,4 +276,15 @@ describe('classifySmsConsentEvent', () => {
 	it('returns null for an ordinary reply', () => {
 		expect(classifySmsConsentEvent(params({ Body: 'Sounds good, see you Tuesday!' }))).toBeNull();
 	});
+
+	it('reads other languages’ words before Twilio is told them (Part 5d)', () => {
+		expect(classifySmsConsentEvent(params({ Body: 'Alto' }))).toEqual({
+			kind: 'opt_out',
+			confirmedByProvider: false
+		});
+		expect(classifySmsConsentEvent(params({ Body: 'INICIO' }))).toEqual({
+			kind: 'opt_in',
+			confirmedByProvider: false
+		});
+	});
 });
