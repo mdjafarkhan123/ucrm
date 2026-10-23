@@ -10,6 +10,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import PaperworkFlag from '$lib/components/communications/paperwork/PaperworkFlag.svelte';
+	import CountryHistoryPopover from '$lib/components/jafar/organization/CountryHistoryPopover.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
 	import { smsDestinationsQuery } from '$lib/jafar/organization-communications-queries';
 	import {
@@ -29,6 +30,7 @@
 	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
+	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 
 	// A business's countries on its Communications tab (board `v6Jtu`, A's table): the Twilio permission, the
@@ -91,6 +93,10 @@
 	function taskHref(row: BusinessDestination) {
 		return `${resolve('/jafar/(protected)/texting-setup')}?task=${row.id}`;
 	}
+
+	// Show its history points at the row's ⋯ button.
+	const actionCells: Record<string, HTMLElement> = {};
+	let showingHistory = $state<BusinessDestination | null>(null);
 
 	let turningOff = $state<BusinessDestination | null>(null);
 	let reason = $state('');
@@ -229,26 +235,33 @@
 								Open task
 							</Button>
 						{:else}
-							<DropdownMenu
-								triggerLabel={`More for ${country}`}
-								items={[
-									{
-										label: 'See it in Twilio',
-										icon: externalIcon,
-										onSelect: () => window.open(TWILIO_GEO_PERMISSIONS_URL, '_blank', 'noopener')
-									}
-								]}
-								footer={row.status === 'ready'
-									? [
-											{
-												label: `Turn off for ${organizationName}`,
-												icon: circleOffIcon,
-												destructive: true,
-												onSelect: () => askTurnOff(row)
-											}
-										]
-									: []}
-							/>
+							<span class="texting-countries__more" bind:this={actionCells[row.id]}>
+								<DropdownMenu
+									triggerLabel={`More for ${country}`}
+									items={[
+										{
+											label: 'See it in Twilio',
+											icon: externalIcon,
+											onSelect: () => window.open(TWILIO_GEO_PERMISSIONS_URL, '_blank', 'noopener')
+										},
+										{
+											label: 'Show its history',
+											icon: historyIcon,
+											onSelect: () => (showingHistory = row)
+										}
+									]}
+									footer={row.status === 'ready'
+										? [
+												{
+													label: `Turn off for ${organizationName}`,
+													icon: circleOffIcon,
+													destructive: true,
+													onSelect: () => askTurnOff(row)
+												}
+											]
+										: []}
+								/>
+							</span>
 						{/if}
 					</span>
 				</li>
@@ -264,6 +277,15 @@
 		</p>
 	{/if}
 </section>
+
+{#if showingHistory}
+	<CountryHistoryPopover
+		row={showingHistory}
+		{organizationName}
+		anchor={actionCells[showingHistory.id] ?? null}
+		onClose={() => (showingHistory = null)}
+	/>
+{/if}
 
 {#if turningOff}
 	{@const country = countryDisplayName(turningOff.country)}
@@ -421,6 +443,10 @@
 		&__action {
 			display: flex;
 			justify-content: flex-end;
+		}
+
+		&__more {
+			display: inline-flex;
 		}
 
 		&__line {

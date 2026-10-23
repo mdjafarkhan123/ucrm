@@ -17,7 +17,7 @@ Parts 4a–4c built (`parts/stage10-part4.md`). Parts 5a and 5b (To do queue + b
 
 5b, 5b-2, Countries & prices (Part 6) and 5c (Text customers in another country) merged to main 2026-10-23;
 prices set (US $0.01, BD $0.70). 5d (opt-out words per language, quiet hours on the customer's clock) built, live-checked and merged 2026-10-23.
-Next: Stage 10's remaining later items (Businesses tab, Show its history) wait on Jafar's go-ahead. Full type check owed, only after Jafar's yes in another session.
+Show its history built, live-checked and merged 2026-10-23. Next: the Businesses tab on Countries & prices, or monthly number renewal (needs planning) — ask Jafar. Full type check owed, only after Jafar's yes in another session.
 
 ## Constraints
 
