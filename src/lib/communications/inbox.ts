@@ -10,7 +10,7 @@ export type OutboundAttachment = {
 export type InboxEmail = {
 	id: string;
 	client_id: string;
-	channel: 'email' | 'sms';
+	channel: 'email' | 'sms' | 'messenger';
 	client_name: string;
 	client_email: string | null;
 	client_phone: string | null;
@@ -35,6 +35,8 @@ export type InboxEmail = {
 		| 'sms_undelivered'
 		| 'sms_failed'
 		| 'sms_needs_checking'
+		| 'messenger_delivered'
+		| 'messenger_read'
 		| null;
 	delivery_outcome_at: string | null;
 	created_at: string;
@@ -47,6 +49,8 @@ export type InboxEmail = {
 	scheduled_at: string | null;
 	can_cancel_scheduled: boolean;
 	send_kind: string;
+	// Who sent it; null for an automated send or a Messenger message written in the Page's Facebook inbox.
+	created_by?: string | null;
 	created_by_name: string | null;
 	assigned_to: string | null;
 	assigned_to_name: string | null;
@@ -137,6 +141,7 @@ function formatScheduledAt(value: string) {
 
 function emailStatusDisplay(email: {
 	status: string;
+	channel?: string;
 	delivery_outcome?: OutboundInboxMessage['delivery_outcome'];
 	failure_message?: string | null;
 	scheduled_at?: string | null;
@@ -166,8 +171,15 @@ function emailStatusDisplay(email: {
 				return { label: 'Failed', tone: 'critical' };
 			case 'sms_needs_checking':
 				return { label: 'Needs checking', tone: 'warning' };
+			case 'messenger_delivered':
+				return { label: 'Delivered', tone: 'success' };
+			case 'messenger_read':
+				return { label: 'Seen', tone: 'success' };
 		}
 	}
+	// Messenger reports delivered and read itself, so until then the message is simply sent.
+	if (email.status === 'submitted' && email.channel === 'messenger')
+		return { label: 'Sent', tone: 'success' };
 	if (email.status === 'submitted') return { label: 'Submitted', tone: 'success' };
 	if (email.status === 'queued') {
 		// A genuinely future scheduled_at is a "Send Later" pick, not the worker holding the row back for
@@ -205,7 +217,7 @@ export type InboxMessage = OutboundInboxMessage | InboundInboxMessage;
 // failed after the server had already accepted it cannot post a second copy.
 export type PendingOutboundSend = {
 	id: string;
-	channel: 'email' | 'sms' | 'website_chat';
+	channel: 'email' | 'sms' | 'messenger' | 'website_chat';
 	subject: string | null;
 	body: string;
 	created_at: string;
@@ -227,9 +239,19 @@ export type PendingOutboundSend = {
 export function pendingSendStatus(send: PendingOutboundSend): EmailStatusDisplay | null {
 	if (send.state === 'sending') return { label: 'Sending…', tone: 'informative' };
 	if (send.state === 'failed') return { label: 'Not sent', tone: 'critical' };
-	if ((send.channel === 'email' || send.channel === 'sms') && send.status)
-		return emailStatusDisplay({ status: send.status });
+	if (send.channel !== 'website_chat' && send.status)
+		return emailStatusDisplay({ status: send.status, channel: send.channel });
 	return null;
+}
+
+export type MessengerMark = 'sent' | 'delivered' | 'seen';
+
+/** The tick a sent Messenger message carries (design `inbox.md`, Bubbles): sent, delivered, or seen. */
+export function messengerMark(message: OutboundInboxMessage): MessengerMark | null {
+	if (message.channel !== 'messenger' || message.status !== 'submitted') return null;
+	if (message.delivery_outcome === 'messenger_read') return 'seen';
+	if (message.delivery_outcome === 'messenger_delivered') return 'delivered';
+	return 'sent';
 }
 
 // Website Chat (Part WC4.5). One message in a chat thread. `direction` is derived server-side from
@@ -326,7 +348,11 @@ export type MessageRunPosition = 'single' | 'first' | 'middle' | 'last';
 // day, a long pause, a narration line or an email (drawn as its own card) starts a new run.
 const RUN_GAP_MS = 10 * 60 * 1000;
 
-function runsTogether(a: TimelineMessage, b: TimelineMessage, sameDay: (a: string, b: string) => boolean) {
+function runsTogether(
+	a: TimelineMessage,
+	b: TimelineMessage,
+	sameDay: (a: string, b: string) => boolean
+) {
 	if (a.direction !== b.direction) return false;
 	if (a.channel === 'email' || b.channel === 'email') return false;
 	if (isWebsiteChatMessage(a) && a.sender_type === 'system') return false;
@@ -362,8 +388,7 @@ export function isUnknownCustomer(group: Pick<ConversationGroup, 'guarded' | 'na
 export const MESSENGER_REPLY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export type MessengerReplyWindow =
-	| { state: 'open' | 'closing'; msLeft: number }
-	| { state: 'closed'; msLeft: 0 };
+	{ state: 'open' | 'closing'; msLeft: number } | { state: 'closed'; msLeft: 0 };
 
 // Meta lets a Page answer freely for 24 hours after the customer's last message (docs/messenger-behavior-
 // contract.md). Under an hour left reads as a warning; after that the window is closed until they write again.
@@ -664,6 +689,32 @@ export async function sendConversationReply(
 	};
 	if (!response.ok) {
 		const error = new Error(result.error ?? 'This reply could not be queued.') as Error & {
+			fieldErrors?: Record<string, string>;
+		};
+		error.fieldErrors = result.field_errors;
+		throw error;
+	}
+	return result as { intent: { id: string; status: string; created_at: string } };
+}
+
+// Messenger Part 7: a text reply on Messenger, inside Meta's 24-hour window. Same idempotency contract.
+export async function sendConversationReplyMessenger(
+	clientId: string,
+	body: string,
+	idempotencyKey: string = crypto.randomUUID()
+) {
+	const response = await fetch(`/api/communications/conversations/${clientId}/reply`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ channel: 'messenger', body, idempotency_key: idempotencyKey })
+	});
+	const result = (await response.json().catch(() => ({}))) as {
+		error?: string;
+		field_errors?: Record<string, string>;
+		intent?: { id: string; status: string; created_at: string };
+	};
+	if (!response.ok) {
+		const error = new Error(result.error ?? 'This message could not be sent.') as Error & {
 			fieldErrors?: Record<string, string>;
 		};
 		error.fieldErrors = result.field_errors;

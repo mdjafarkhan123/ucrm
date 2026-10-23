@@ -658,7 +658,8 @@ export const GET: RequestHandler = async (event) => {
 		client_email: row.recipient_email,
 		client_phone: row.recipient_phone,
 		attachments: outboundAttachmentsByMessage.get(row.id) ?? [],
-		can_resend: canResend(row),
+		// A Messenger reply is never resent: the 24-hour window decides, so staff simply write again.
+		can_resend: row.channel !== 'messenger' && canResend(row),
 		scheduled_at: scheduledAt(row),
 		can_cancel_scheduled: canSend && scheduledAt(row) !== null,
 		created_by_name:

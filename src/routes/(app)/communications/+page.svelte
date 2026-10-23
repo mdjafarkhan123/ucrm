@@ -61,6 +61,7 @@
 		isWebsiteChatMessage,
 		markConversationRead,
 		messageRuns,
+		messengerMark,
 		messengerReplyWindow,
 		outboundEmailStatus,
 		pendingSendStatus,
@@ -166,7 +167,6 @@
 	}
 	let listWidth = $state(savedWidth(LIST_WIDTH));
 	let detailsWidth = $state(savedWidth(DETAILS_WIDTH));
-
 
 	const inboxQuery = createQuery(() => ({
 		queryKey: inboxMessagesKey(search, view),
@@ -308,14 +308,17 @@
 		return channels;
 	});
 
-	// Messenger replies are sent from the inbox in Part 7; until then the reply box says where to answer. A closed
-	// reply window or a disconnected Page says so first, since those still apply once replies are built.
+	// Messenger replies are held only when Meta would refuse them: a Page that is off or needs reconnecting, or a
+	// closed 24-hour window. The server checks the same rules, so this only explains them before Send.
 	const messengerBlock = $derived.by(() => {
 		if (!messengerWindow) return null;
 		if (messengerWindow.pageDisconnected)
 			return {
 				tone: 'critical' as const,
-				text: 'The Facebook Page is disconnected, so Messenger replies can\'t be sent.',
+				text:
+					messengerOrigin?.page_status === 'needs_reconnect'
+						? "Facebook stopped accepting messages from this Page, so Messenger replies can't be sent."
+						: "The Facebook Page is disconnected, so Messenger replies can't be sent.",
 				short: 'Page disconnected',
 				action: {
 					label: 'Reconnect in Settings',
@@ -331,17 +334,14 @@
 					? { label: 'Reply by text', onclick: () => (activeChannel = 'sms') }
 					: undefined
 			};
-		return {
-			tone: 'informative' as const,
-			text: 'Replying on Messenger from here is coming soon. For now, answer from your Facebook Page.',
-			short: 'Messenger replies can\'t be sent from here yet'
-		};
+		return null;
 	});
 
 	// Where each reply channel goes, for the channel menu; a channel that can't send says why instead.
 	function composerChannelDetails(group: OpenConversation) {
-		const details: Partial<Record<InboxChannel, { address?: string; unavailable?: string | null }>> =
-			{};
+		const details: Partial<
+			Record<InboxChannel, { address?: string; unavailable?: string | null }>
+		> = {};
 		if (messengerOrigin)
 			details.messenger = {
 				address: messengerOrigin.page_name,
@@ -351,7 +351,8 @@
 						? 'Reply window closed'
 						: null
 			};
-		if (emailAvailable) details.email = { address: replyRecipient(group) || 'No email address yet' };
+		if (emailAvailable)
+			details.email = { address: replyRecipient(group) || 'No email address yet' };
 		if (smsAvailable) details.sms = { address: replyPhone(group) || 'No phone number yet' };
 		if (chatAvailable) details.website_chat = { address: 'On your website' };
 		return details;
@@ -684,7 +685,10 @@
 			selectedGroupKey = input.clientId;
 			leadLinkTarget = null;
 			leadLinkError = '';
-			toast.success('Linked to ' + input.clientName, 'This Messenger conversation is now on their record.');
+			toast.success(
+				'Linked to ' + input.clientName,
+				'This Messenger conversation is now on their record.'
+			);
 		},
 		onError: (error: Error) => {
 			leadLinkError = error.message;
@@ -886,9 +890,10 @@
 	}
 
 	function sentByName(email: OutboundInboxMessage) {
-		return email.send_kind === 'automated'
-			? 'Sent automatically'
-			: (email.created_by_name ?? 'A teammate');
+		if (email.send_kind === 'automated') return 'Sent automatically';
+		// Written in the Page's own Facebook inbox, not in UCRM.
+		if (email.channel === 'messenger' && !email.created_by) return 'Sent from Facebook';
+		return email.created_by_name ?? 'A teammate';
 	}
 
 	function draftFor(group: OpenConversation, channel: 'email' | 'sms') {
@@ -1163,7 +1168,8 @@
 							<div class="communications__unknown-strip-text">
 								<strong>Is this someone you already know?</strong>
 								<span
-									>Meta doesn't share their name yet. Link them to a client to keep everything in one place.</span
+									>Meta doesn't share their name yet. Link them to a client to keep everything in
+									one place.</span
 								>
 							</div>
 							<Button
@@ -1252,6 +1258,7 @@
 									when={message.created_at}
 									status={delivery.label}
 									statusTone={delivery.tone}
+									mark={messengerMark(message)}
 									{failed}
 									failureReason={failed && message.failure_message
 										? `${delivery.label} · ${message.failure_message}`
@@ -1285,7 +1292,10 @@
 										</h3>
 									{/if}
 									<p class="communications__text">{message.text_content}</p>
-									{#if message.resent_from_intent_id}<p class="communications__notice" role="status">
+									{#if message.resent_from_intent_id}<p
+											class="communications__notice"
+											role="status"
+										>
 											This is a resend of an earlier attempt.
 										</p>{/if}
 									{#if message.resent_into_intent_id}
