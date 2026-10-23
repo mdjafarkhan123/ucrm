@@ -418291,7 +418291,7 @@
               "fill": "$color-text-secondary",
               "textGrowth": "fixed-width",
               "width": 1200,
-              "content": "From B: the chat sits on the warm page with white cards; the list splits Needs reply from Earlier, with Team / Mine and channel lanes; date chips; time inside each bubble. From A: your messages are brand-green bubbles (the customer's are white); the reply bar names the channel (Messenger ▾) and says the reply window in words; header buttons keep their words (Jafar ▾, Details). New: bubbles in a row join up (tight corners where they touch) and the last one of yours gets a small tail; Seen shows only under your last sent message; a failed message keeps its green bubble with the red reason and Retry under it; unread rows show a green time and a count; the selected row is soft grey. Details is closed so the chat gets the room; the Details button opens the panel below on the right. The lines between the parts show a drag handle only on hover.",
+              "content": "From B: the list splits Needs reply from Earlier, with Team / Mine and channel lanes; date chips; time inside each bubble. From A: the chat is one white card (header, messages and reply bar together, Jafar 2026-10-23: the chat must not blend with the page); your messages are brand-green bubbles, the customer's light grey; the reply bar names the channel (Messenger ▾) and says the reply window in words; header buttons keep their words (Jafar ▾, Details). New: bubbles in a row join up (tight corners where they touch) and the last one of yours gets a small tail; Seen shows only under your last sent message; a failed message keeps its green bubble with the red reason and Retry under it; unread rows show a green time and a count; the selected row is soft grey. Details is closed so the chat gets the room; the Details button opens the panel below on the right. The lines between the parts show a drag handle only on hover.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
               "fontSize": "$font-size-base",
@@ -419984,27 +419984,33 @@
                         {
                           "type": "frame",
                           "id": "Hn2Vc",
-                          "name": "Chat",
+                          "name": "Chat card",
+                          "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
                           "layout": "vertical",
                           "children": [
                             {
                               "type": "frame",
                               "id": "f6jm6",
-                              "name": "Floating header",
+                              "name": "Chat header",
                               "width": "fill_container",
-                              "height": 64,
+                              "height": 68,
                               "fill": "$color-surface",
-                              "cornerRadius": "$radius-large",
                               "stroke": "$color-border",
-                              "strokeWidth": 1,
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
                               "gap": 10,
                               "padding": [
                                 0,
-                                12,
+                                16,
                                 0,
-                                14
+                                20
                               ],
                               "alignItems": "center",
                               "children": [
@@ -420553,7 +420559,7 @@
                                       "type": "frame",
                                       "id": "b7CEF",
                                       "name": "Chip",
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-active",
                                       "cornerRadius": 999,
                                       "effect": {
                                         "type": "shadow",
@@ -420605,6 +420611,8 @@
                                       "width": 400,
                                       "fill": "$color-surface",
                                       "cornerRadius": "$radius-large",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
                                       "effect": {
                                         "type": "shadow",
                                         "shadowType": "outer",
@@ -420747,7 +420755,7 @@
                                       "type": "frame",
                                       "id": "srECx",
                                       "name": "Chip",
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-active",
                                       "cornerRadius": 999,
                                       "effect": {
                                         "type": "shadow",
@@ -421014,7 +421022,7 @@
                                       "type": "frame",
                                       "id": "keWRC",
                                       "name": "Chip",
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-active",
                                       "cornerRadius": 999,
                                       "effect": {
                                         "type": "shadow",
@@ -421063,7 +421071,7 @@
                                       "type": "frame",
                                       "id": "X7PnGs",
                                       "name": "Bubble",
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-active",
                                       "cornerRadius": [
                                         "$radius-large",
                                         "$radius-large",
@@ -421153,7 +421161,7 @@
                                       "type": "frame",
                                       "id": "LkYdv",
                                       "name": "Photo bubble",
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-active",
                                       "cornerRadius": [
                                         "$radius-small",
                                         "$radius-large",
@@ -421512,13 +421520,17 @@
                               "id": "QCtII",
                               "name": "Reply",
                               "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
                               "layout": "vertical",
                               "gap": 8,
                               "padding": [
-                                6,
-                                0,
-                                0,
-                                0
+                                10,
+                                20,
+                                16,
+                                20
                               ],
                               "children": [
                                 {
@@ -421732,9 +421744,9 @@
                                       "name": "Message pill",
                                       "width": "fill_container",
                                       "height": 48,
-                                      "fill": "$color-surface",
+                                      "fill": "$color-surface-background-subtle",
                                       "cornerRadius": 999,
-                                      "stroke": "$color-border",
+                                      "stroke": "$color-border-interactive",
                                       "strokeWidth": 1,
                                       "effect": {
                                         "type": "shadow",
@@ -421760,18 +421772,36 @@
                                           "id": "qeIWG",
                                           "name": "Channel switch",
                                           "height": 32,
-                                          "fill": "$color-surface-hover",
+                                          "fill": "$color-surface-key",
                                           "cornerRadius": 999,
-                                          "effect": {
-                                            "type": "shadow",
-                                            "shadowType": "outer",
-                                            "color": "#032b3a14",
-                                            "offset": {
-                                              "x": 0,
-                                              "y": 1
+                                          "effect": [
+                                            {
+                                              "type": "shadow",
+                                              "shadowType": "outer",
+                                              "color": "#032b3a3d",
+                                              "blur": 1
                                             },
-                                            "blur": 2
-                                          },
+                                            {
+                                              "type": "shadow",
+                                              "shadowType": "outer",
+                                              "color": "#032b3a14",
+                                              "offset": {
+                                                "x": 0,
+                                                "y": 1
+                                              },
+                                              "blur": 2
+                                            },
+                                            {
+                                              "type": "shadow",
+                                              "shadowType": "outer",
+                                              "color": "#032b3a0f",
+                                              "offset": {
+                                                "x": 0,
+                                                "y": 2
+                                              },
+                                              "blur": 6
+                                            }
+                                          ],
                                           "gap": 6,
                                           "padding": [
                                             0,

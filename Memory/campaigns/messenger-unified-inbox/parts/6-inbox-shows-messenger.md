@@ -14,9 +14,7 @@ on hover. A and B deleted from the board (kept in Git, commit 5664ffed).
 New Pencil colours `color-channel-email/-text/-chat` (not yet in code). Messenger logo is a brand mark, not
 Tabler — design skill needs an exception.
 
-**Followed:** GoHighLevel (channel mark on the contact picture, channel switch in the reply box); HubSpot/Zendesk
-(name the Page; show time left to reply). Messenger mark = phosphor `messenger-logo` on `color-messenger` (variable
-added to `concept.pen` 2026-10-23; Part 4 board now uses it).
+**Followed:** GoHighLevel (channel mark on the picture, channel switch in the reply box); HubSpot/Zendesk (name the Page, time left to reply).
 
 **Jafar's direction (2026-10-23):** this part also designs the unified inbox's new look (all channels, not only
 Messenger). The chat timeline must look, feel and behave like a native messaging app people know (WhatsApp,
@@ -30,8 +28,10 @@ hide; ⋯ gets a dot when a hidden button is on (Star, Follow). Hide order — h
 Follow → Assign; reply box: emoji → files from the client → snippets; list: Filter label, then tabs fold into
 "All ▾". Followed: Gmail, Front, Slack, Office (overflow menu).
 
-**Next session:** draw the fold-up as wide / medium / narrow of `np8WS` (Details open = medium); then the states
-(window closing soon, window closed with reason, Page disconnected, new "Facebook user" lead with Link to a client
-pop-up, sending/sent/delivered/seen, failed). Missing from the drawing, keep from live: Message details pop-up,
-Minimize composer, text credit / no permission notices. Add the brand-mark exception, channel colours and chat
-bubble rules to the design skill. Show Jafar; a build session builds.
+**Next session:** read `.claude/skills/design/guide.md` first (Jafar 2026-10-23). Draw reply box (composer)
+variants on `yjdF0`, at least 2 that really differ: A = the current pill (refined); B = a new concept, e.g. the
+team-inbox box (Intercom/Front/GoHighLevel: taller writing box, tools along its bottom, Send with words, Internal
+comment turns the box yellow). Research first. Then fold-up (wide/medium/narrow; Details open = medium), a drag
+handle hover example, and the states (window closing/closed, Page disconnected, "Facebook user" lead + Link to a
+client, sending/sent/delivered/seen, failed). Keep from live: Message details pop-up, Minimize composer, text
+credit / no permission notices. Add brand-mark exception, channel colours and bubble rules to the design skill.
