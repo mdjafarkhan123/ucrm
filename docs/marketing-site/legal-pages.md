@@ -1,7 +1,7 @@
 # Legal pages for upliftcontractor.com
 
 Text for the website's three legal pages, ready to paste. Source: `UpliftContractor/src/pages/{privacy,terms}.astro`;
-the Data deletion page is new. Drawings: `UpliftContractor/design/website.pen`.
+the Data deletion page is new. Copy for the website team, with where each page goes: `UpliftContractor/docs/legal-pages-update.md`.
 
 **Why it changed.** Meta reviews the Messenger app before real customers can use it. Its rules say the privacy
 policy must say what Facebook data we collect, why, and how someone asks for it to be deleted, and the app needs
