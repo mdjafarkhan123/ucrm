@@ -25,4 +25,4 @@ No placeholder registrations, purchases, fake-ready senders or live SMS. Real pr
 details and Jafar’s authorization. The SMS wake cron remains inactive. Platform ISV approval is recorded but not
 configured; it does not replace client registration. No regional app block.
 
-Resume: `read memory and continue communications-activation` — merge 5b, then Countries & prices.
+Resume: `read memory and continue communications-activation` — check and prove the Countries & prices draft (part note), then merge.

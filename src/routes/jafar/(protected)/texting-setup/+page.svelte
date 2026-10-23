@@ -15,16 +15,21 @@
 	import TaskPanel from '$lib/components/jafar/texting-setup/TaskPanel.svelte';
 	import CantTurnOnDialog from '$lib/components/jafar/texting-setup/CantTurnOnDialog.svelte';
 	import WaitingOnTwilio from '$lib/components/jafar/texting-setup/WaitingOnTwilio.svelte';
+	import CountriesPrices from '$lib/components/jafar/texting-setup/CountriesPrices.svelte';
+	import ChangePriceDialog from '$lib/components/jafar/texting-setup/ChangePriceDialog.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
 	import { relativeTime } from '$lib/collaboration/format';
 	import {
 		fetchTextingSetup,
 		fetchWaitingOnTwilio,
+		fetchPriceList,
+		priceListKey,
 		waitingOnTwilioKey,
 		organizationDestinationsKey,
 		textingSetupKey,
 		whenAsked,
 		type AlreadyFinished,
+		type PriceListRow,
 		type TextingTask
 	} from '$lib/jafar/texting-setup';
 	import messageIcon from '@tabler/icons/outline/message-2.svg?raw';
@@ -71,6 +76,26 @@
 	});
 
 	let marking = $state(false);
+	// A task's price step opens the same Change price pop-up as the Countries & prices tab.
+	let pricing = $state<{ row: PriceListRow; listed: string[] } | null>(null);
+	let loadingPrice = $state(false);
+
+	async function openPrice(task: TextingTask) {
+		loadingPrice = true;
+		try {
+			const list = await queryClient.fetchQuery({
+				queryKey: priceListKey,
+				queryFn: fetchPriceList
+			});
+			const row = list.countries.find((item) => item.country === task.country);
+			if (row) pricing = { row, listed: list.countries.map((item) => item.country) };
+			else toast.error('Couldn’t open the price', 'Try again from Countries & prices.');
+		} catch {
+			toast.error('Couldn’t load prices', 'Check your connection and try again.');
+		} finally {
+			loadingPrice = false;
+		}
+	}
 	let closingTask = $state<TextingTask | null>(null);
 	let closing = $state(false);
 	let closeError = $state('');
@@ -250,6 +275,12 @@
 						queryKey: waitingOnTwilioKey,
 						queryFn: fetchWaitingOnTwilio
 					})
+			},
+			{
+				value: 'prices',
+				label: 'Countries & prices',
+				onhover: () =>
+					void queryClient.prefetchQuery({ queryKey: priceListKey, queryFn: fetchPriceList })
 			}
 		]}
 	>
@@ -305,11 +336,7 @@
 				</div>
 			{:else}
 				<div class="texting-setup__work">
-					<TaskQueue
-						{tasks}
-						selectedId={shown ? null : (selected?.id ?? null)}
-						onSelect={select}
-					/>
+					<TaskQueue {tasks} selectedId={shown ? null : (selected?.id ?? null)} onSelect={select} />
 					{#if shown}
 						{@const country = countryDisplayName(shown.task.country)}
 						<section class="texting-setup__result" aria-live="polite">
@@ -364,6 +391,9 @@
 								{marking}
 								{closing}
 								onTick={() => (pinned = selected)}
+								onPrice={() => {
+									if (!loadingPrice) void openPrice(selected);
+								}}
 								onMark={() => mark(selected)}
 								onCantTurnOn={() => {
 									closeError = '';
@@ -378,8 +408,15 @@
 		<TabPanel value="waiting">
 			<WaitingOnTwilio />
 		</TabPanel>
+		<TabPanel value="prices">
+			<CountriesPrices />
+		</TabPanel>
 	</Tabs>
 </div>
+
+{#if pricing}
+	<ChangePriceDialog row={pricing.row} listed={pricing.listed} onClose={() => (pricing = null)} />
+{/if}
 
 {#if closingTask}
 	<CantTurnOnDialog

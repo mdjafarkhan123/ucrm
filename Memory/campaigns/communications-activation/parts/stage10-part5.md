@@ -36,6 +36,13 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   reuses the Change price pop-up with a country picker; **Show its history** and the **Businesses** tab later;
   status **Off** = Uplift doesn't offer the country (no new requests; businesses already texting there keep it
   until turned off one by one). Turning off does not email yet.
+  **Countries & prices — first draft built 2026-10-23, not yet checked.** Migration `20261231120000_sms_country_prices`
+  **applied** (tables, `communication_sms_price_list`, `_set_country_price`, `_set_country_offered`,
+  `_record_twilio_prices`; request refuses an Off country). Routes `api/jafar/texting-setup/prices` (+ `check`,
+  `[country]/offered`); `CountriesPrices.svelte`, `ChangePriceDialog.svelte` (also Add a country and the task
+  panel's price step); MoneyInput `decimals`, Dialog `lead`, CountryPicker `except`; old `SmsRetailRateActions`
+  removed. **Next:** svelte-check these files (`--max-old-space-size=10240`; it was interrupted), svelte-autofixer,
+  a unit test for `twilioPriceRows`, then a live Chrome check of the tab and pop-up against `R6mF2`/`dc8G7`.
 - **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
   pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.

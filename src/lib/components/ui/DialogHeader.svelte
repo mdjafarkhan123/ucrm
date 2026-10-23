@@ -14,6 +14,7 @@
 		icon,
 		tone,
 		badge,
+		lead,
 		closeDisabled = false
 	}: {
 		title: string;
@@ -22,6 +23,8 @@
 		tone?: string;
 		/** A small pill beside the title. */
 		badge?: Snippet;
+		/** Drawn in place of the tile, e.g. a country's flag. */
+		lead?: Snippet;
 		/** While something can't be interrupted (buying), the × is greyed and does nothing. */
 		closeDisabled?: boolean;
 	} = $props();
@@ -29,7 +32,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <header class="dialog-header">
-	{#if icon}<IconTile {icon} {tone} />{/if}
+	{#if lead}{@render lead()}{:else if icon}<IconTile {icon} {tone} />{/if}
 	<div class="dialog-header__copy">
 		<div class="dialog-header__title-row">
 			<DialogPrimitive.Title level={2} class="dialog-header__title">{title}</DialogPrimitive.Title>

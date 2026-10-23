@@ -3214,6 +3214,7 @@ export type Database = {
 					created_at: string;
 					disconnected_at: string | null;
 					encryption_key_id: string | null;
+					facebook_user_name: string | null;
 					id: string;
 					is_default: boolean;
 					last_checked_at: string | null;
@@ -3234,6 +3235,7 @@ export type Database = {
 					created_at?: string;
 					disconnected_at?: string | null;
 					encryption_key_id?: string | null;
+					facebook_user_name?: string | null;
 					id?: string;
 					is_default?: boolean;
 					last_checked_at?: string | null;
@@ -3254,6 +3256,7 @@ export type Database = {
 					created_at?: string;
 					disconnected_at?: string | null;
 					encryption_key_id?: string | null;
+					facebook_user_name?: string | null;
 					id?: string;
 					is_default?: boolean;
 					last_checked_at?: string | null;
@@ -3326,6 +3329,56 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'communication_messenger_connections';
 						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
+			communication_messenger_login_sessions: {
+				Row: {
+					created_at: string;
+					encryption_key_id: string;
+					expires_at: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Insert: {
+					created_at?: string;
+					encryption_key_id: string;
+					expires_at?: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id?: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Update: {
+					created_at?: string;
+					encryption_key_id?: string;
+					expires_at?: string;
+					facebook_user_id?: string;
+					facebook_user_name?: string;
+					id?: string;
+					organization_id?: string;
+					user_id?: string;
+					user_token_ciphertext?: string;
+					user_token_nonce?: string;
+					user_token_tag?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_messenger_login_sessions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
 					}
 				];
 			};
@@ -3849,6 +3902,27 @@ export type Database = {
 						referencedColumns: ['id'];
 					}
 				];
+			};
+			communication_sms_countries: {
+				Row: {
+					changed_at: string;
+					changed_by_name: string | null;
+					country_code: string;
+					offered: boolean;
+				};
+				Insert: {
+					changed_at?: string;
+					changed_by_name?: string | null;
+					country_code: string;
+					offered?: boolean;
+				};
+				Update: {
+					changed_at?: string;
+					changed_by_name?: string | null;
+					country_code?: string;
+					offered?: boolean;
+				};
+				Relationships: [];
 			};
 			communication_sms_credit_accounts: {
 				Row: {
@@ -5447,6 +5521,39 @@ export type Database = {
 						referencedColumns: ['id'];
 					}
 				];
+			};
+			communication_sms_twilio_prices: {
+				Row: {
+					checked_at: string;
+					cost_changed_at: string | null;
+					cost_major: number;
+					country_code: string;
+					currency_code: string;
+					kind: string;
+					number_type: string;
+					previous_cost_major: number | null;
+				};
+				Insert: {
+					checked_at?: string;
+					cost_changed_at?: string | null;
+					cost_major: number;
+					country_code: string;
+					currency_code?: string;
+					kind: string;
+					number_type: string;
+					previous_cost_major?: number | null;
+				};
+				Update: {
+					checked_at?: string;
+					cost_changed_at?: string | null;
+					cost_major?: number;
+					country_code?: string;
+					currency_code?: string;
+					kind?: string;
+					number_type?: string;
+					previous_cost_major?: number | null;
+				};
+				Relationships: [];
 			};
 			communication_sms_usage_reconciliation_findings: {
 				Row: {
@@ -22182,6 +22289,7 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_price_list: { Args: never; Returns: Json };
 			communication_sms_promotional_balance: {
 				Args: { p_organization_id: string };
 				Returns: number;
@@ -22400,6 +22508,10 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_record_twilio_prices: {
+				Args: { p_rows: Json };
+				Returns: number;
 			};
 			communication_sms_record_usage_reconciliation_finding: {
 				Args: {
@@ -22706,6 +22818,37 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_set_country_offered: {
+				Args: {
+					p_actor_name: string;
+					p_country_code: string;
+					p_offered: boolean;
+				};
+				Returns: {
+					changed_at: string;
+					changed_by_name: string | null;
+					country_code: string;
+					offered: boolean;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_countries';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_country_price: {
+				Args: {
+					p_actor_name: string;
+					p_country_code: string;
+					p_effective_from: string;
+					p_mms: number;
+					p_number_month: number;
+					p_segment: number;
+					p_set_by: string;
+				};
+				Returns: Json;
 			};
 			communication_sms_set_default_sender: {
 				Args: {

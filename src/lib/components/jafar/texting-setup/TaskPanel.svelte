@@ -34,6 +34,7 @@
 		closing,
 		onTick,
 		onMark,
+		onPrice,
 		onCantTurnOn
 	}: {
 		task: TextingTask;
@@ -43,6 +44,8 @@
 		/** The box was ticked: this is the task being worked on now. */
 		onTick: () => void;
 		onMark: () => void;
+		/** Opens the Change price pop-up for the task's country. */
+		onPrice: () => void;
 		onCantTurnOn: () => void;
 	} = $props();
 
@@ -69,7 +72,10 @@
 		if (!segment) return '';
 		const parts = [`${textPrice(segment.rate)} a segment`];
 		if (segment.cost !== null) {
-			parts.push(`Twilio charges us ${textPrice(segment.cost)}`, `${margin(segment.rate, segment.cost)} margin`);
+			parts.push(
+				`Twilio charges us ${textPrice(segment.cost)}`,
+				`${margin(segment.rate, segment.cost)} margin`
+			);
 		}
 		const pictures = task.price.mms
 			? `${textPrice(task.price.mms.rate)} a picture text.`
@@ -124,34 +130,40 @@
 	<ol class="task-panel__steps">
 		<li class="task-panel__step">
 			{#if segment}
-				<span class="task-panel__mark task-panel__mark--done" aria-hidden="true">{@html checkIcon}</span>
+				<span class="task-panel__mark task-panel__mark--done" aria-hidden="true"
+					>{@html checkIcon}</span
+				>
 				<div class="task-panel__step-copy">
 					<h3 class="task-panel__step-title task-panel__step-title--done">Price for {country}</h3>
 					<p>{priceLine}</p>
-					<a class="task-panel__link" href={resolve('/jafar/(protected)/communications')}>
+					<button type="button" class="task-panel__link" onclick={onPrice}>
 						<span aria-hidden="true">{@html pencilIcon}</span>
 						Change price
-					</a>
+					</button>
 				</div>
 				<span class="task-panel__done">Done</span>
 			{:else}
-				<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true">{@html pencilIcon}</span>
+				<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true"
+					>{@html pencilIcon}</span
+				>
 				<div class="task-panel__step-copy">
 					<h3 class="task-panel__step-title">Price for {country}</h3>
 					<p>
-						No price yet. {task.organization_name} sees Ready only once {country} has a price, so set one
-						too.
+						No price yet. {task.organization_name} sees Ready only once {country} has a price, so set
+						one too.
 					</p>
-					<a class="task-panel__link" href={resolve('/jafar/(protected)/communications')}>
+					<button type="button" class="task-panel__link" onclick={onPrice}>
 						<span aria-hidden="true">{@html pencilIcon}</span>
 						Set a price
-					</a>
+					</button>
 				</div>
 			{/if}
 		</li>
 
 		<li class="task-panel__step">
-			<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true">{@html pencilIcon}</span>
+			<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true"
+				>{@html pencilIcon}</span
+			>
 			<div class="task-panel__step-copy">
 				<h3 class="task-panel__step-title">Tick {country} in Twilio</h3>
 				<p>
@@ -212,7 +224,11 @@
 			<ul>
 				{#each task.history as event (`${event.kind}-${event.at}`)}
 					<li>
-						<IconTile icon={historyIcon[event.kind].icon} tone={historyIcon[event.kind].tone} size={24} />
+						<IconTile
+							icon={historyIcon[event.kind].icon}
+							tone={historyIcon[event.kind].tone}
+							size={24}
+						/>
 						<span class="task-panel__history-text">{historyText(event)}</span>
 						<time datetime={event.at}>{historyTime(event.at)}</time>
 					</li>
@@ -364,7 +380,12 @@
 
 		&__link {
 			display: inline-flex;
+			align-self: flex-start;
 			align-items: center;
+			padding: 0;
+			border: 0;
+			background: none;
+			cursor: pointer;
 			gap: var(--space-smaller);
 			color: var(--color-interactive);
 			font-size: var(--typography--fontSize-small);

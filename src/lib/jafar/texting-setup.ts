@@ -125,7 +125,9 @@ export function whenAsked(value: string): string {
 export function historyTime(value: string): string {
 	const date = new Date(value);
 	const label = dayLabel(value);
-	const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+	const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+		date
+	);
 	if (label === 'Today' || label === 'Yesterday') return `${label} ${time}`;
 	return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
 }
@@ -154,3 +156,77 @@ export function destinationStatus(destination: BusinessDestination) {
 /** Twilio's Subaccounts list. Twilio has no link to one account's page, so the card copies the id beside it. */
 export const TWILIO_SUBACCOUNTS_URL =
 	'https://console.twilio.com/us1/account/manage-account/subaccounts';
+
+// Stage 10 Part 6: the Countries & prices tab (cards `R6mF2`, `dc8G7`). One price list for every business.
+
+export type PriceListRow = {
+	country: string;
+	/** The number kind a business buys there: local, mobile or national. */
+	number_type: string;
+	toll_free: boolean;
+	/** False once Uplift stopped offering the country (status Off). */
+	offered: boolean;
+	twilio: {
+		segment: {
+			cost: number;
+			previous: number | null;
+			changed_at: string | null;
+			checked_at: string;
+		} | null;
+		number_month: { cost: number; checked_at: string } | null;
+	};
+	price: CountryPrice;
+	/** When a segment price was last saved, so a Twilio move after it still needs reviewing. */
+	segment_set_at: string | null;
+	number: { monthly: number; setup: number } | null;
+	/** A segment price starting later, shown on its row until that day. */
+	later: { segment: number; from: string } | null;
+	using: number;
+	asked: number;
+};
+
+export type PriceList = { last_checked_at: string | null; countries: PriceListRow[] };
+
+export const priceListKey = [...textingSetupKey, 'prices'] as const;
+
+export async function fetchPriceList(): Promise<PriceList> {
+	return readJson(
+		await fetch('/api/jafar/texting-setup/prices'),
+		'The price list could not be loaded.'
+	);
+}
+
+/** Twilio sends picture texts only to these countries; elsewhere a picture arrives as a link or not at all. */
+export const PICTURE_COUNTRIES = ['US', 'CA'] as const;
+
+export function picturesOffered(row: Pick<PriceListRow, 'country' | 'price'>): boolean {
+	return Boolean(row.price.mms) || (PICTURE_COUNTRIES as readonly string[]).includes(row.country);
+}
+
+/** Twilio raised its text cost after the price was last set, so the margin shown has fallen. */
+export function priceMoved(row: PriceListRow): boolean {
+	const segment = row.twilio.segment;
+	if (!segment?.changed_at || segment.previous === null || segment.cost <= segment.previous)
+		return false;
+	return !row.segment_set_at || segment.changed_at > row.segment_set_at;
+}
+
+export function priceStatus(row: PriceListRow) {
+	if (!row.offered) return { label: 'Off', tone: 'inactive' as const };
+	if (!row.price.segment) return { label: 'No price', tone: 'warning' as const };
+	return { label: 'Live', tone: 'success' as const };
+}
+
+/** "Local and toll-free", "Mobile numbers". */
+export function numberKindLabel(row: Pick<PriceListRow, 'number_type' | 'toll_free'>): string {
+	const kind =
+		{ local: 'Local', mobile: 'Mobile', national: 'National' }[row.number_type] ?? 'Local';
+	return row.toll_free ? `${kind} and toll-free` : `${kind} numbers`;
+}
+
+/** "$2.00", "$9.00 + $3.00 setup". */
+export function numberPrice(number: PriceListRow['number']): string | null {
+	if (!number) return null;
+	const monthly = `$${number.monthly.toFixed(2)}`;
+	return number.setup > 0 ? `${monthly} + $${number.setup.toFixed(2)} setup` : monthly;
+}
