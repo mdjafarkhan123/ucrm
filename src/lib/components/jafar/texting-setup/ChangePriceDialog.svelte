@@ -82,9 +82,11 @@
 	);
 
 	function marginHint(units: number, scale: number, cost: number | null | undefined) {
-		if (!units || cost === null || cost === undefined) return { text: '', back: false };
+		if (!units || cost === null || cost === undefined)
+			return { text: '', back: false, loss: false };
 		const rate = units / scale;
 		const now = `Margin ${margin(rate, cost)}`;
+		const loss = rate < cost;
 		const segmentTwilio = row?.twilio.segment;
 		if (
 			scale === 10_000 &&
@@ -95,10 +97,10 @@
 		) {
 			const before = margin(row.price.segment.rate, segmentTwilio.previous);
 			if (Number.parseInt(margin(rate, cost)) >= Number.parseInt(before)) {
-				return { text: `${now}, back where it was`, back: true };
+				return { text: `${now}, back where it was`, back: true, loss };
 			}
 		}
-		return { text: now, back: false };
+		return { text: now, back: false, loss };
 	}
 	const segmentHint = $derived(marginHint(segment, 10_000, row?.twilio.segment?.cost));
 	const monthlyHint = $derived(marginHint(monthly, 100, row?.twilio.number_month?.cost));
@@ -286,7 +288,11 @@
 						currencyCode="USD"
 					/>
 					{#if segmentHint.text}
-						<p class="change-price__hint" class:change-price__hint--back={segmentHint.back}>
+						<p
+							class="change-price__hint"
+							class:change-price__hint--back={segmentHint.back}
+							class:change-price__hint--loss={segmentHint.loss}
+						>
 							{segmentHint.text}
 						</p>
 					{/if}
@@ -299,7 +305,12 @@
 						disabled={saving}
 						currencyCode="USD"
 					/>
-					{#if monthlyHint.text}<p class="change-price__hint">{monthlyHint.text}</p>{/if}
+					{#if monthlyHint.text}<p
+							class="change-price__hint"
+							class:change-price__hint--loss={monthlyHint.loss}
+						>
+							{monthlyHint.text}
+						</p>{/if}
 				</div>
 				{#if pictures}
 					<div class="change-price__box">
@@ -418,6 +429,11 @@
 
 			&--back {
 				color: var(--color-success--onSurface);
+				font-weight: 600;
+			}
+
+			&--loss {
+				color: var(--color-critical);
 				font-weight: 600;
 			}
 		}
