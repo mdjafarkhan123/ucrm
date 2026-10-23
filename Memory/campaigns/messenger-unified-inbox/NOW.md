@@ -2,27 +2,14 @@
 
 **Goal:** A business connects its Facebook Page; customers' Messenger messages arrive in the Conversations inbox
 like GoHighLevel does; staff reply from there; Meta's rules are respected. Messenger only (Instagram later).
-**Core agreement — read on every resume:** `docs/messenger-behavior-contract.md` (Summary, First version, Rules, Still unclear) and the Messenger/Instagram + Connections sections of `docs/unified-inbox-behavior-contract.md`.
-**Plan:** `docs/messenger-behavior-contract.md` — first-version scope approved 2026-10-18; open product choices listed in it.
-**Stage:** Planning. Parts 1, 1b and 2 can run side by side.
+**Core agreement — read on every resume:** `docs/messenger-behavior-contract.md` (Summary, First version, Rules, Decided) and the Messenger/Instagram + Connections sections of `docs/unified-inbox-behavior-contract.md`.
+**Plan:** `docs/messenger-behavior-contract.md` and `docs/messenger-implementation-plan.md` — approved 2026-10-23, including the three product choices.
+**Stage:** Building. Part 3 done 2026-10-23.
 
-**Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1709471683925717` (new, 2nd account, 2026-10-18; the old 1419027217062214 is abandoned), development mode, portfolio Uplift Contractor 855656587107152 (verification in review). `META_APP_ID`, `PUBLIC_META_APP_ID`, `META_APP_SECRET` are set in `.env`; `MESSENGER_VERIFY_TOKEN` is not.
-Webhook host `https://app.upliftcontractor.com`. Jafar tests with his own Facebook Page "Random News".
-Jafar has his Bangladesh **trade license in hand** (2026-10-18). Claude cannot type passwords or upload his legal
-documents; Jafar logs in, uploads and confirms submits while Claude drives Chrome. Use Opus for Parts 2–3.
+**Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1709471683925717` (2nd Facebook account; old 1419027217062214 abandoned), development mode, portfolio Uplift Contractor 855656587107152, Business Verification **Verified** 2026-10-18. Webhook host `https://app.upliftcontractor.com`. Test Page **Uplift Contractor** (Random News is another account — never use it). Jafar logs in, types passwords and uploads; Claude drives Chrome.
 
-**In progress:**
+**Done:** Parts 1, 1b, 2, 3 (2026-10-23). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
 
-- 1b Business portfolio + Meta Business Verification — `parts/1b-business-verification.md` (start first: review takes days)
-- 1 Meta app dashboard setup — `parts/1-meta-app-dashboard-setup.md`
-- 2 Plan: research done 2026-10-18, plan written; waits for Jafar's answers to three choices — `parts/2-plan-messenger.md`
+**Next part:** 5 Inbound webhook (no screens; can build now). Parts 4 (connect card) and 6 (inbox) need Pencil drawings approved by Jafar first — drawing happens in a design session, building in another.
 
-**Next part:** 3 Database foundation — waits for Part 2 approval.
-
-**Paused 2026-10-18:** Part 2 research and plan done and waiting on Jafar's three answers (replies after 24h, reconnect history, customer matching). Part 1b blocked by his main account's ad restriction; second account plan in `parts/1b-business-verification.md`. Random News admin confirmed.
-
-**Part 1b 2026-10-18 later:** portfolio exists on Jafar's 2nd account (details in the part note); Business verification **VERIFIED** (seen in Business settings → Business info, dated Oct 18, 2026, checked live 2026-10-18). Not started: separate "Access verification" (Tech Provider), likely needed for Part 10 — confirm then.
-
-**Open 2026-10-18:** `META_APP_SECRET` in `.env` is still the OLD app's; Jafar must paste the new secret. Test Page needs to belong to / be accessible by the 2nd account.
-
-**Blockers:** none for Part 1b verification. Still open: `META_APP_SECRET` (new app), test Page reachable from 2nd account. Part 2 waits for Jafar's three answers (he said "follow GHL"; GHL docs confirm only the 24h rule, reconnect and name-matching undocumented; awaiting his yes to the recommendations).
+**Blockers (Jafar):** `META_APP_SECRET` in `.env` is still the old app's — paste the new app's secret (needed by Part 4).

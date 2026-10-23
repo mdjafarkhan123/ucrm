@@ -52,8 +52,9 @@ Settings → Communications → Messenger card (connect, Page picker, test messa
 channel switch with the disabled-after-24-hours state, and the Messenger badge in the conversation list. Jafar approves
 the design before any `.svelte` file is touched.
 
-## Decisions waiting for Jafar
+## Decisions approved by Jafar (2026-10-23)
 
-1. Replies after 24 hours: block with a plain reason now; add Meta's 7-day Human Agent option after Meta approves it.
-2. Disconnect then reconnect a Page: keep old conversations visible and continue the same threads.
-3. Unknown customers: always start as a new lead; never merge by name; staff can link a thread to an existing client.
+1. Replies after 24 hours: blocked with a plain reason (as GoHighLevel documents). Meta's 7-day Human Agent option is
+   requested in the same App Review as go-live (Part 10) and switched on only after Meta approves it.
+2. Disconnect then reconnect a Page: old conversations stay visible and the same threads continue.
+3. Unknown customers: always start as a new lead; never merged by name; staff can link a thread to an existing client.
