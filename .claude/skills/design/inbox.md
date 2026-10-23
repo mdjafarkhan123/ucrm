@@ -53,7 +53,8 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
 - **No line under the message.** Hovering the ticks shows the dark tooltip with the mark and "Seen at 9:26 AM · click for
   details" 12/600; clicking them opens Message details, which lists Sent, Delivered (`check-check` quiet) and Seen
   (a 16 filled `--color-interactive` circle with a white `check-check`) with their times.
-- **Failed:** the bubble stays; under it `circle-alert` and the reason 12 `--color-critical`, then "Retry" 12/700
+- **Failed:** the bubble stays, with a 20 solid `--color-critical` circle holding a white "!" (13/800) 8 to its
+  left, as iMessage does; under it `circle-alert` and the reason 12 `--color-critical`, then "Retry" 12/700
   `--color-interactive`.
 - **Internal comment in the timeline:** a centred yellow pill (`--color-warning-surface`, its edge, `lock`, words
   12/600 `--color-warning-on-surface`).
