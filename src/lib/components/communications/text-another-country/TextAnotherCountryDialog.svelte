@@ -266,7 +266,7 @@
 			<div class="ask-country__actions">
 				<Button variant="secondary" disabled={asking} onclick={onClose}>Cancel</Button>
 				<Button loading={asking} disabled={!country} onclick={submit}>
-					{#if !asking}<span aria-hidden="true">{@html sendIcon}</span>{/if}
+					<span aria-hidden="true">{@html sendIcon}</span>
 					Ask Uplift to switch it on
 				</Button>
 			</div>

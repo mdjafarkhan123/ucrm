@@ -46,6 +46,7 @@
 	} = $props();
 
 	let open = $state(false);
+	let box = $state<HTMLElement | null>(null);
 	let query = $state('');
 	let alreadyCodes = $derived(new Map(already.map((entry) => [entry.country, entry])));
 	let results = $derived(
@@ -102,7 +103,7 @@
 		{items}
 		{disabled}
 	>
-		<div class="country-box" class:country-box--open={open} class:country-box--disabled={disabled}>
+		<div bind:this={box} class="country-box" class:country-box--open={open} class:country-box--disabled={disabled}>
 			{#if open}
 				<span class="country-box__lead" aria-hidden="true">{@html searchIcon}</span>
 			{:else if value}
@@ -137,7 +138,10 @@
 			{/if}
 		</div>
 		<Combobox.Portal>
-			<Combobox.Content class="country-box__menu" align="start" sideOffset={8} collisionPadding={8}>
+			<Combobox.Content
+				class="country-box__menu"
+				customAnchor={box}
+				align="start" sideOffset={8} collisionPadding={8}>
 				<Combobox.Viewport
 					class="country-box__viewport"
 					onscroll={(event: Event) => showMoreNearBottom(event.currentTarget as HTMLElement)}
@@ -249,8 +253,12 @@
 			border-color: var(--color-border);
 		}
 
-		:global(.country-box__input) {
+		:global(input.country-box__input),
+		:global(input.country-box__input:focus),
+		:global(input.country-box__input:hover) {
 			flex: 1 1 auto;
+			box-shadow: none;
+			border-radius: 0;
 			min-width: 0;
 			min-height: 42px;
 			padding: 0;

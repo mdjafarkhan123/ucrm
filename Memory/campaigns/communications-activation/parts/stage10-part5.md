@@ -1,7 +1,7 @@
 # Stage 10 Part 5 — Sending rules per country
 
 **Campaign:** communications-activation · **Plan:** `docs/global-sms-behavior-contract.md` § Part 5
-**Stage:** 5a, 5b and 5b-2 (incl. Countries & prices, Part 6) built and **merged to main 2026-10-23**. 5c, 5d not
+**Stage:** 5a, 5b, 5b-2 (incl. Countries & prices, Part 6) and 5c built and **merged to main 2026-10-23**. 5d not
 started. Full-app type check still owed — only in a separate session after Jafar's yes (it crashes here).
 **Done when:** a business texts only countries Uplift switched on, from a number that can text them; Uplift
 works the requests in Texting setup (`v6Jtu`); opt-out words are set per language; merged to main.
@@ -47,11 +47,13 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   date beside switch; "None to rent". Save price proven live 2026-10-23 (Jafar: "save what you think
   good"): BD $0.70 a segment (15%), US $0.01 a segment (17%) + $2.00 a number month; new rate rows keep Twilio cost,
   old US $0.0079 row kept. Merged to main.
-- **5c — Jafar approved A 2026-10-23 ("then A")**, board `xGLYB` "Text customers in another country · Approved
-  A": 600 pop-up — country box, What it costs (text, pictures, number a month), Which number texts them band,
-  What happens next; opened list greys countries already on/asked with their pill, hides Off ones. Option B
-  deleted. Every state drawn under "Every state · drawn on A" (nothing picked, loading, no price yet, a +1 number
-  already texts it, asking, couldn't ask, asked, no country matches); Jafar approved them 2026-10-23 ("saved, approved"). **Next: build** (request route over `communication_sms_request_destination`; WHERE YOU CAN TEXT link opens it).
+- **5c — built and merged 2026-10-23** against board `xGLYB`. Route `api/settings/communications/sms/destinations`
+  (GET: the business's countries, Off countries, selling prices only; POST: Zod, `communication_sms_request_destination`).
+  `$lib/communications/sms-destinations.ts` (+1 reach, which-number band, rates); `text-another-country/`
+  `TextAnotherCountryDialog` + `CountryBox`; link under WHERE YOU CAN TEXT; asked countries join that list (Ready only
+  when Uplift switched it on and a number can text it). Dialog `bare` header for the centred result.
+  **Checked:** svelte-check clean for these files; `sms-destinations.spec.ts` 7 pass; live (Raad owner, Playwright,
+  light + dark): every state, asked Canada → Setting up in the list (test row then removed).
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
 
 ## Proof so far
