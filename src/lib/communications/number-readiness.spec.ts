@@ -121,7 +121,7 @@ describe('numberCard', () => {
 		expect(card.detail).toBe('+1 206-555-0187 · US and Canada · Toll-free');
 		expect(card.steps[2].state).toBe('your_turn');
 		expect(card.status).toBe('business_details_needed');
-		expect(card.action).toBeNull();
+		expect(card.action).toMatchObject({ kind: 'toll_free_check', label: 'Add business details' });
 	});
 
 	it('follows a toll-free number through its own check: sent, turned down, approved', () => {

@@ -43,5 +43,4 @@ SMS is off); live-checked against `QiDBX`; merged to main.
 
 Nothing — part complete.
 
-Known, not touched (needs Jafar's yes): `number-readiness.spec.ts` "toll-free … action toBeNull" was already failing
-before this part (Part 4c added the action).
+The old toll-free readiness test now expects Part 4c's toll-free action (fixed 2026-10-23, Jafar's yes).
