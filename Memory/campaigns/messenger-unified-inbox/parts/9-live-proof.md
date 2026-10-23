@@ -15,5 +15,5 @@
 - C. Jafar's channel logos: `src/lib/assets/channels/*.png` (imported for hashed URLs); bubbles keep white mark.
 
 **Also proven:** 4 revoke → Reconnect needed → reconnect (same row); 5 Meta Page webhook fields subscribed.
-**Noted, waiting for Jafar:** Messenger settings header uses
-a phone icon; Text and Website chat logos look alike.
+**Follow-ups closed:** new SMS/website-chat logos (Jafar's picks), Messenger logo in the settings heading;
+Flaticon credit deferred (`Memory/deferred/flaticon-icon-credit-on-marketing-site.md`).
