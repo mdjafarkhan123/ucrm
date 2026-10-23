@@ -1,6 +1,6 @@
 # Part 6 — Inbox shows Messenger
 
-**State:** Design — look chosen 2026-10-23; reply box A/B drawn 2026-10-23, waiting for Jafar's pick.
+**State:** Design — look chosen 2026-10-23; reply box B approved 2026-10-23; next: fold-up and states.
 
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
@@ -10,11 +10,11 @@ inside bubbles. From A: brand-green bubbles for yours (`color-interactive`, text
 theirs; the chat is one white card (header, messages, reply bar) — Jafar: the timeline must not blend with the page; labelled reply bar (Messenger ▾, reply window in words, Reply / Internal comment); labelled header buttons.
 New: bubbles join up (radius-large, radius-small where they touch), tail on your last bubble; Seen only under
 your last sent message; unread rows show green time + count; selected row `color-surface-active`; drag handle only
-on hover. A and B deleted from the board (kept in Git, commit 5664ffed).
+on hover. A and B deleted from the board (in Git, 5664ffed).
 New Pencil colours `color-channel-email/-text/-chat` (not yet in code). Messenger logo is a brand mark, not
 Tabler — design skill needs an exception.
 
-**Followed:** GoHighLevel (channel mark on the picture, channel switch in the reply box); HubSpot/Zendesk (name the Page, time left to reply).
+**Followed:** GoHighLevel (channel mark on the picture); HubSpot/Zendesk (name the Page, time left to reply).
 
 **Jafar's direction (2026-10-23):** this part also designs the unified inbox's new look (all channels, not only
 Messenger). The chat timeline must look, feel and behave like a native messaging app people know (WhatsApp,
@@ -28,12 +28,10 @@ hide; ⋯ gets a dot when a hidden button is on (Star, Follow). Hide order — h
 Follow → Assign; reply box: emoji → files from the client → snippets; list: Filter label, then tabs fold into
 "All ▾". Followed: Gmail, Front, Slack, Office (overflow menu).
 
-**Reply box A/B (2026-10-23):** section `j93I8l` on `yjdF0`, four states each (empty, Messenger + photo, internal
-comment, email). A = refined pill (Upload + Files from the client move into the round + menu). B = team inbox box
-(tabs on its top edge, tools along the bottom, Send in words, yellow for internal comment). Followed Intercom, Front,
-GoHighLevel, WhatsApp. On Jafar's pick: delete the other, put the pick into `np8WS`.
+**Reply box — Approved B (Jafar, 2026-10-23):** section `j93I8l` on `yjdF0` (four states), now in `np8WS`. Team inbox box: Reply / Internal comment tabs on its top edge,
+tools along the bottom, Send in words; Internal comment turns it yellow. Followed Intercom, Front, GoHighLevel.
 
-**Next session:** read `.claude/skills/design/guide.md` first. If no pick yet, ask Jafar A or B. Then fold-up (wide/medium/narrow; Details open = medium), a drag
+**Next session:** read `.claude/skills/design/guide.md`, then draw the fold-up (wide/medium/narrow; Details open = medium), a drag
 handle hover example, and the states (window closing/closed, Page disconnected, "Facebook user" lead + Link to a
 client, sending/sent/delivered/seen, failed). Keep from live: Message details pop-up, Minimize composer, text
 credit / no permission notices. Add brand-mark exception, channel colours and bubble rules to the design skill.
