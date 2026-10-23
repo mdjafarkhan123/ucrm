@@ -5,13 +5,14 @@
 	// splitter: drag it, or focus it and use the arrow keys (Home and End jump to the limits); a double-click puts
 	// the pane back to its own width. It sets the width of one pane -- the one on the `pane` side of the line.
 	let {
-		width = $bindable(),
+		width,
 		min,
 		max,
 		defaultWidth,
 		pane = 'before',
 		label,
 		controls,
+		onResize,
 		onCommit
 	}: {
 		width: number;
@@ -23,6 +24,8 @@
 		label: string;
 		/** The id of the pane this line resizes. */
 		controls?: string;
+		/** The new width while dragging, on each key press and on reset. */
+		onResize: (width: number) => void;
 		/** A drag, key press or reset has finished: a good moment to remember the width. */
 		onCommit?: (width: number) => void;
 	} = $props();
@@ -48,7 +51,7 @@
 	function onpointermove(event: PointerEvent) {
 		if (!dragging) return;
 		const moved = event.clientX - startX;
-		width = clamp(startWidth + (pane === 'before' ? moved : -moved));
+		onResize(clamp(startWidth + (pane === 'before' ? moved : -moved)));
 	}
 
 	function onpointerup(event: PointerEvent) {
@@ -69,13 +72,15 @@
 		else if (event.key === 'Enter') next = defaultWidth;
 		if (next === null) return;
 		event.preventDefault();
-		width = clamp(next);
-		onCommit?.(width);
+		const resized = clamp(next);
+		onResize(resized);
+		onCommit?.(resized);
 	}
 
 	function reset() {
-		width = clamp(defaultWidth);
-		onCommit?.(width);
+		const resized = clamp(defaultWidth);
+		onResize(resized);
+		onCommit?.(resized);
 	}
 </script>
 

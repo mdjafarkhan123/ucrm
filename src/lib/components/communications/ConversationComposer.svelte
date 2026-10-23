@@ -169,13 +169,18 @@
 	const windowChip = $derived.by(() => {
 		if (channel !== 'messenger' || !replyWindow) return null;
 		if (replyWindow.pageDisconnected)
-			return { tone: 'critical', icon: unplugIcon, text: 'Page disconnected' };
+			return { tone: 'critical', icon: unplugIcon, text: 'Page disconnected', short: 'Disconnected' };
 		if (replyWindow.state === 'closed')
-			return { tone: 'critical', icon: windowClosedIcon, text: 'Reply window closed' };
+			return { tone: 'critical', icon: windowClosedIcon, text: 'Reply window closed', short: 'Closed' };
+		// On a narrow chat the words shorten: "23 h 17 min left to reply on Messenger", "23 h left", "23 h".
+		const hours = Math.floor(replyWindow.msLeft / 3_600_000);
+		const roughly = hours > 0 ? `${hours} h` : formatTimeLeft(replyWindow.msLeft);
 		return {
 			tone: replyWindow.state === 'closing' ? 'warning' : 'informative',
 			icon: replyWindow.state === 'closing' ? windowClosingIcon : windowOpenIcon,
-			text: `${formatTimeLeft(replyWindow.msLeft)} left to reply on Messenger`
+			text: `${formatTimeLeft(replyWindow.msLeft)} left to reply on Messenger`,
+			mid: `${roughly} left`,
+			short: roughly
 		};
 	});
 
@@ -565,9 +570,18 @@
 				Reply
 			</span>
 			{#if windowChip}
-				<span class="conversation-composer__chip conversation-composer__chip--{windowChip.tone}">
-					<span aria-hidden="true">{@html windowChip.icon}</span>
-					{windowChip.text}
+				<span
+					class="conversation-composer__chip conversation-composer__chip--{windowChip.tone}"
+					title={windowChip.text}
+				>
+					<span class="conversation-composer__chip-icon" aria-hidden="true"
+						>{@html windowChip.icon}</span
+					>
+					<span class="conversation-composer__chip-full">{windowChip.text}</span>
+					<span class="conversation-composer__chip-mid" aria-hidden="true"
+						>{windowChip.mid ?? windowChip.text}</span
+					>
+					<span class="conversation-composer__chip-short" aria-hidden="true">{windowChip.short}</span>
 				</span>
 			{/if}
 			<Button variant="quiet" size="small" iconOnly label="Minimize reply box" onclick={collapse}>
@@ -1008,16 +1022,16 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 
-		> span {
-			display: inline-grid;
-			flex: 0 0 auto;
-			place-items: center;
-		}
-
 		:global(svg) {
 			width: 14px;
 			height: 14px;
 		}
+	}
+
+	.conversation-composer__chip-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
 	}
 
 	@each $tone in informative, warning, critical {
@@ -1326,6 +1340,41 @@
 
 	.conversation-composer__files:not(:empty) {
 		padding: var(--space-small) 0 0;
+	}
+
+	// On a narrow chat card the words go first (design `inbox.md`, Narrow widths): the chip shortens, the
+	// shortcut hint goes, then the tabs drop their icons.
+	.conversation-composer__chip-mid,
+	.conversation-composer__chip-short {
+		display: none;
+	}
+
+	@container inbox-chat (max-width: 640px) {
+		.conversation-composer__chip-full {
+			display: none;
+		}
+
+		.conversation-composer__chip-mid {
+			display: inline;
+		}
+
+		.conversation-composer__hint {
+			display: none;
+		}
+	}
+
+	@container inbox-chat (max-width: 480px) {
+		.conversation-composer__chip-mid {
+			display: none;
+		}
+
+		.conversation-composer__chip-short {
+			display: inline;
+		}
+
+		.conversation-composer__tab-icon {
+			display: none;
+		}
 	}
 
 	@media (max-width: 560px) {

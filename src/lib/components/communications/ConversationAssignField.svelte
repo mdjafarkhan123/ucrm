@@ -6,6 +6,7 @@
 	import { assignConversation } from '$lib/communications/inbox';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import chevronIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
 
 	// The one place the conversation assign menu is built, mirroring pipeline's OpportunityOwnerField:
 	// team list, mutation, and eligible-member items live here once; the caller only supplies identity and
@@ -66,6 +67,8 @@
 		{#snippet trigger()}
 			{#if assignedToId}
 				<Avatar id={assignedToId} name={assignedToName} size="small" />
+			{:else}
+				<span class="conversation-assign__nobody" aria-hidden="true">{@html userIcon}</span>
 			{/if}
 			<span class="conversation-assign__label">{assignedToName ?? 'Unassigned'}</span>
 			<span class="conversation-assign__chevron" aria-hidden="true">{@html chevronIcon}</span>
@@ -120,6 +123,28 @@
 		:global(svg) {
 			width: 14px;
 			height: 14px;
+		}
+	}
+
+	// Nobody assigned: an empty picture, which is all that shows once the chat card is narrow.
+	.conversation-assign__nobody {
+		display: inline-grid;
+		width: 24px;
+		height: 24px;
+		place-items: center;
+		border: var(--border-base) dashed var(--color-border--interactive);
+		border-radius: var(--radius-circle);
+		color: var(--color-icon--secondary);
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	@container inbox-chat (max-width: 640px) {
+		.conversation-assign__label {
+			display: none;
 		}
 	}
 

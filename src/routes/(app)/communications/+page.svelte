@@ -166,6 +166,26 @@
 	}
 	let listWidth = $state(savedWidth(LIST_WIDTH));
 	let detailsWidth = $state(savedWidth(DETAILS_WIDTH));
+	// The chat never gets narrower than 400: the side cards give way first, Details before the list.
+	const CHAT_MIN_WIDTH = 400;
+	let workspaceWidth = $state(0);
+	const detailsShown = $derived(detailsOpen && !narrowDetails.current && selectedGroup !== null);
+	const sideRoom = $derived(workspaceWidth > 0 ? workspaceWidth - CHAT_MIN_WIDTH - 8 : Infinity);
+	const shownDetailsWidth = $derived(
+		Math.min(detailsWidth, Math.max(DETAILS_WIDTH.min, sideRoom - LIST_WIDTH.min))
+	);
+	const shownListWidth = $derived(
+		Math.min(listWidth, Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0)))
+	);
+	const listMax = $derived(
+		Math.min(
+			LIST_WIDTH.max,
+			Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0))
+		)
+	);
+	const detailsMax = $derived(
+		Math.min(DETAILS_WIDTH.max, Math.max(DETAILS_WIDTH.min, sideRoom - shownListWidth))
+	);
 
 	const inboxQuery = createQuery(() => ({
 		queryKey: inboxMessagesKey(search, view),
@@ -1007,8 +1027,9 @@
 			class:communications__workspace--single={groups.length === 0 &&
 				!selectedGroup &&
 				!requestedGroupLoading}
-			style:--inbox-list-width="{listWidth}px"
-			style:--inbox-details-width="{detailsWidth}px"
+			style:--inbox-list-width="{shownListWidth}px"
+			style:--inbox-details-width="{shownDetailsWidth}px"
+			bind:clientWidth={workspaceWidth}
 		>
 			<InboxList
 				{groups}
@@ -1023,11 +1044,12 @@
 			/>
 			{#if groups.length > 0 || selectedGroup || requestedGroupLoading}
 				<PaneResizer
-					bind:width={listWidth}
+					width={shownListWidth}
 					min={LIST_WIDTH.min}
-					max={LIST_WIDTH.max}
+					max={listMax}
 					defaultWidth={LIST_WIDTH.default}
 					label="Resize the conversation list"
+					onResize={(width) => (listWidth = width)}
 					onCommit={(width) => rememberWidth(LIST_WIDTH, width)}
 				/>
 			{/if}
@@ -1504,13 +1526,14 @@
 				</main>
 				{#if detailsOpen && !narrowDetails.current}
 					<PaneResizer
-						bind:width={detailsWidth}
+						width={shownDetailsWidth}
 						min={DETAILS_WIDTH.min}
-						max={DETAILS_WIDTH.max}
+						max={detailsMax}
 						defaultWidth={DETAILS_WIDTH.default}
 						pane="after"
 						label="Resize Details"
 						controls="conversation-details"
+						onResize={(width) => (detailsWidth = width)}
 						onCommit={(width) => rememberWidth(DETAILS_WIDTH, width)}
 					/>
 					<aside class="communications__context" id="conversation-details" aria-label="Details">
@@ -1789,6 +1812,13 @@
 	.communications__message {
 		display: flex;
 		flex-direction: column;
+		/* Its parts shorten by the chat card's own width (design `inbox.md`, Narrow widths). */
+		container: inbox-chat / inline-size;
+	}
+	@container inbox-chat (max-width: 640px) {
+		.communications__details-label {
+			display: none;
+		}
 	}
 	.communications__thread-header {
 		display: flex;

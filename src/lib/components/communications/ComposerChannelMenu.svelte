@@ -172,6 +172,12 @@
 		width: 216px;
 	}
 
+	@container inbox-chat (max-width: 640px) {
+		.composer-channel-menu__page {
+			display: none;
+		}
+	}
+
 	// The inbox's channel menu lists where each channel goes, so it is wider (`inbox.md`, Channel menu).
 	:global(.composer-channel-menu__content--detailed.dropdown-menu__content) {
 		width: 300px;
