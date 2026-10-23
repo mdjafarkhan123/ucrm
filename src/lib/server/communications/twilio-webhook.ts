@@ -2,6 +2,7 @@ import twilio from 'twilio';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
 import { decryptTwilioCredential } from './twilio-credential-crypto';
+import { optOutKeywordKind } from '$lib/communications/sms-opt-out-words';
 import type { StoredTwilioCredential, TwilioProvisioningStore } from './twilio-provisioning-store';
 
 // Signed Twilio status callbacks (Stage 5A). Signature validation uses the official `twilio` library
@@ -304,7 +305,7 @@ const DEFAULT_HELP_KEYWORDS = new Set(['help', 'info']);
 
 /** Classify an inbound message as a consent keyword event, preferring Twilio's own `OptOutType`
  *  classification (Advanced Opt-Out, when configured) and falling back to Twilio's documented default
- *  keyword list otherwise. Returns null for an ordinary reply. */
+ *  keyword list and the opt-out words of every other language otherwise. Returns null for an ordinary reply. */
 export function classifySmsConsentEvent(params: TwilioInboundParams): {
 	kind: SmsConsentEventKind;
 	confirmedByProvider: boolean;
@@ -318,5 +319,8 @@ export function classifySmsConsentEvent(params: TwilioInboundParams): {
 	if (DEFAULT_OPT_IN_KEYWORDS.has(body)) return { kind: 'opt_in', confirmedByProvider: false };
 	if (DEFAULT_HELP_KEYWORDS.has(body))
 		return { kind: 'help_requested', confirmedByProvider: false };
+	// Stage 10 Part 5d: the other languages' words (ALTO, ARRÊT…), honoured even before Uplift adds them in Twilio.
+	const other = optOutKeywordKind(params.Body);
+	if (other) return { kind: other, confirmedByProvider: false };
 	return null;
 }

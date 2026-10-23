@@ -4701,6 +4701,27 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			communication_sms_opt_out_languages: {
+				Row: {
+					added_at: string;
+					added_by_name: string | null;
+					language: string;
+					organization_id: string;
+				};
+				Insert: {
+					added_at?: string;
+					added_by_name?: string | null;
+					language: string;
+					organization_id: string;
+				};
+				Update: {
+					added_at?: string;
+					added_by_name?: string | null;
+					language?: string;
+					organization_id?: string;
+				};
+				Relationships: [];
+			};
 			communication_sms_org_modes: {
 				Row: {
 					chosen_mode: string;
@@ -21810,6 +21831,15 @@ export type Database = {
 					scope: string;
 				}[];
 			};
+			communication_sms_add_opt_out_language: {
+				Args: { p_actor_name?: string; p_language: string; p_organization_id: string };
+				Returns: {
+					added_at: string;
+					added_by_name: string | null;
+					language: string;
+					organization_id: string;
+				};
+			};
 			communication_sms_advance_usage_reconciliation_cursor: {
 				Args: { p_organization_id: string; p_reconciled_through: string };
 				Returns: undefined;
@@ -22294,10 +22324,9 @@ export type Database = {
 				Args: { p_organization_id: string };
 				Returns: number;
 			};
-			communication_sms_quiet_hours_available_at: {
-				Args: { p_at?: string };
-				Returns: string;
-			};
+			communication_sms_quiet_hours_available_at:
+				| { Args: { p_at?: string }; Returns: string }
+				| { Args: { p_at: string; p_recipient_e164: string }; Returns: string };
 			communication_sms_readiness: {
 				Args: {
 					p_country_code: string;

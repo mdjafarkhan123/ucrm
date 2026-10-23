@@ -7,6 +7,11 @@
 	import PaperworkFlag from '$lib/components/communications/paperwork/PaperworkFlag.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
 	import {
+		countryOptOutLanguages,
+		englishOnlyLanguage,
+		languageName
+	} from '$lib/communications/sms-opt-out-words';
+	import {
 		historyTime,
 		margin,
 		shortSid,
@@ -25,8 +30,9 @@
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message-2.svg?raw';
 	import circleOffIcon from '@tabler/icons/outline/circle-off.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
-	// One task's panel (board `v6Jtu`): the price, the Twilio tick with the account it belongs to, then "Mark as
+	// One task's panel (board `v6Jtu`): the price, the opt-out words, the Twilio tick with the account it belongs to, then "Mark as
 	// turned on" once the box says it was done. Can't turn on closes the request instead.
 	let {
 		task,
@@ -35,6 +41,7 @@
 		onTick,
 		onMark,
 		onPrice,
+		onOptOut,
 		onCantTurnOn
 	}: {
 		task: TextingTask;
@@ -46,6 +53,8 @@
 		onMark: () => void;
 		/** Opens the Change price pop-up for the task's country. */
 		onPrice: () => void;
+		/** Opens the opt-out words task for a language this country still needs. */
+		onOptOut: (language: string) => void;
 		onCantTurnOn: () => void;
 	} = $props();
 
@@ -81,6 +90,18 @@
 			? `${textPrice(task.price.mms.rate)} a picture text.`
 			: 'No picture texts there.';
 		return `${parts.join(' · ')}. ${pictures}`;
+	});
+
+	// Part 5d: the customer's own language's stop words go into Twilio before the country is turned on.
+	const missing = $derived(task.opt_out_missing);
+	const missingNames = $derived(missing.map(languageName).join(' and '));
+	const optOutLine = $derived.by(() => {
+		const english = `English STOP, UNSUBSCRIBE and CANCEL already work in ${country}.`;
+		const added = countryOptOutLanguages(task.country).map(languageName);
+		if (added.length) return `${added.join(' and ')} words are in Twilio. ${english}`;
+		const only = englishOnlyLanguage(task.country);
+		if (only) return `Twilio takes no ${languageName(only)} words. ${english}`;
+		return english;
 	});
 
 	async function copyAccount() {
@@ -161,6 +182,36 @@
 		</li>
 
 		<li class="task-panel__step">
+			{#if missing.length}
+				<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true"
+					>{@html pencilIcon}</span
+				>
+				<div class="task-panel__step-copy">
+					<h3 class="task-panel__step-title">Opt-out words</h3>
+					<p>
+						Customers in {country} must be able to reply STOP in {missingNames}. Add those words in
+						Twilio first.
+					</p>
+					{#each missing as language (language)}
+						<button type="button" class="task-panel__link" onclick={() => onOptOut(language)}>
+							<span aria-hidden="true">{@html arrowRightIcon}</span>
+							Add {languageName(language)} opt-out words
+						</button>
+					{/each}
+				</div>
+			{:else}
+				<span class="task-panel__mark task-panel__mark--done" aria-hidden="true"
+					>{@html checkIcon}</span
+				>
+				<div class="task-panel__step-copy">
+					<h3 class="task-panel__step-title task-panel__step-title--done">Opt-out words</h3>
+					<p>{optOutLine}</p>
+				</div>
+				<span class="task-panel__done">Done</span>
+			{/if}
+		</li>
+
+		<li class="task-panel__step">
 			<span class="task-panel__mark task-panel__mark--turn" aria-hidden="true"
 				>{@html pencilIcon}</span
 			>
@@ -201,7 +252,7 @@
 		</li>
 
 		<li class="task-panel__step">
-			<span class="task-panel__mark" aria-hidden="true">3</span>
+			<span class="task-panel__mark" aria-hidden="true">4</span>
 			<div class="task-panel__step-copy">
 				<h3 class="task-panel__step-title">Mark as turned on</h3>
 				<p>{task.organization_name} sees Ready straight after, and we note who did it.</p>
@@ -243,8 +294,13 @@
 			Can’t turn on
 		</Button>
 		<div class="task-panel__foot-end">
-			{#if !ticked}<span class="task-panel__hint">Tick the box first</span>{/if}
-			<Button onclick={onMark} disabled={!ticked || closing} loading={marking}>
+			{#if missing.length}<span class="task-panel__hint">Add the opt-out words first</span>
+			{:else if !ticked}<span class="task-panel__hint">Tick the box first</span>{/if}
+			<Button
+				onclick={onMark}
+				disabled={!ticked || closing || missing.length > 0}
+				loading={marking}
+			>
 				{#if !marking}<span aria-hidden="true">{@html checkIcon}</span>{/if}
 				{marking ? 'Marking…' : 'Mark as turned on'}
 			</Button>

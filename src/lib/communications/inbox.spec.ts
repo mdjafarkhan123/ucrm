@@ -281,7 +281,7 @@ describe('outboundEmailStatus', () => {
 		const held = outbound({
 			channel: 'sms',
 			status: 'queued',
-			failure_message: 'This text is waiting for quiet hours to end before it goes out.'
+			failure_message: 'This text waits for morning where the customer is before it goes out.'
 		});
 		expect(outboundEmailStatus(held)).toEqual({ label: 'Waiting to send', tone: 'informative' });
 	});
