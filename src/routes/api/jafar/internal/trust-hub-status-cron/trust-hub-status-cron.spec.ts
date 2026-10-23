@@ -12,6 +12,10 @@ vi.mock('$lib/server/communications/sms-number-paperwork', () => ({
 	createNumberPaperworkDeps: vi.fn(() => ({})),
 	runPaperworkStatusCheck: vi.fn(async () => ({ checked: 2, approved: 1, needsFix: 0, failed: 0 }))
 }));
+vi.mock('$lib/server/communications/sms-tollfree-verification', () => ({
+	createTollfreeCheckDeps: vi.fn(() => ({})),
+	runTollfreeStatusCheck: vi.fn(async () => ({ checked: 1, approved: 0, needsFix: 0, failed: 0 }))
+}));
 vi.mock('$lib/server/communications/sms-number-readiness', () => ({
 	reconcileAllSenderReadiness: vi.fn().mockResolvedValue({ organizations: 0, switched_on: 0 })
 }));
@@ -96,6 +100,7 @@ describe('trust-hub-status-cron internal route', () => {
 			stillPending: 1,
 			failed: 0,
 			paperwork: { checked: 2, approved: 1, needsFix: 0, failed: 0 },
+			tollfree: { checked: 1, approved: 0, needsFix: 0, failed: 0 },
 			numbers: { organizations: 0, switched_on: 0 }
 		});
 	});

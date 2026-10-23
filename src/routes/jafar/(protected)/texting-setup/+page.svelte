@@ -14,10 +14,13 @@
 	import TaskQueue from '$lib/components/jafar/texting-setup/TaskQueue.svelte';
 	import TaskPanel from '$lib/components/jafar/texting-setup/TaskPanel.svelte';
 	import CantTurnOnDialog from '$lib/components/jafar/texting-setup/CantTurnOnDialog.svelte';
+	import WaitingOnTwilio from '$lib/components/jafar/texting-setup/WaitingOnTwilio.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
 	import { relativeTime } from '$lib/collaboration/format';
 	import {
 		fetchTextingSetup,
+		fetchWaitingOnTwilio,
+		waitingOnTwilioKey,
 		organizationDestinationsKey,
 		textingSetupKey,
 		whenAsked,
@@ -236,7 +239,19 @@
 
 	<Tabs
 		label="Texting setup sections"
-		tabs={[{ value: 'to-do', label: 'To do', badge: String(summary?.to_do ?? 0) }]}
+		tabs={[
+			{ value: 'to-do', label: 'To do', badge: String(summary?.to_do ?? 0) },
+			{
+				value: 'waiting',
+				label: 'Waiting on Twilio',
+				badge: String(summary?.waiting_on_twilio ?? 0),
+				onhover: () =>
+					void queryClient.prefetchQuery({
+						queryKey: waitingOnTwilioKey,
+						queryFn: fetchWaitingOnTwilio
+					})
+			}
+		]}
 	>
 		<TabPanel value="to-do">
 			{#if queue.isPending}
@@ -359,6 +374,9 @@
 					{/if}
 				</div>
 			{/if}
+		</TabPanel>
+		<TabPanel value="waiting">
+			<WaitingOnTwilio />
 		</TabPanel>
 	</Tabs>
 </div>

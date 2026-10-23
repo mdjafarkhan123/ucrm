@@ -76,6 +76,31 @@ export async function fetchTextingSetup(): Promise<TextingSetupQueue> {
 	return readJson(await fetch('/api/jafar/texting-setup'), 'The to-do list could not be loaded.');
 }
 
+/** Something Uplift sent to Twilio for a business and is waiting to hear back on (Waiting on Twilio tab). */
+export type WaitingItem = {
+	kind: 'registration' | 'paperwork' | 'tollfree';
+	id: string;
+	organization_id: string;
+	organization_name: string;
+	/** Twilio answered no in the last week; the business was told what to fix. */
+	turned_down: boolean;
+	sent_at: string | null;
+	decided_at: string | null;
+	/** Paperwork: "GB:mobile". Toll-free: the number. */
+	detail: string | null;
+};
+
+export type WaitingOnTwilio = { items: WaitingItem[]; last_checked_at: string | null };
+
+export const waitingOnTwilioKey = [...textingSetupKey, 'waiting'] as const;
+
+export async function fetchWaitingOnTwilio(): Promise<WaitingOnTwilio> {
+	return readJson(
+		await fetch('/api/jafar/texting-setup/waiting'),
+		'The Waiting on Twilio list could not be loaded.'
+	);
+}
+
 /** "$0.09", "$0.0079": a text price keeps the digits it was set with, at least two. */
 export function textPrice(amount: number): string {
 	const digits = Math.min(Math.max(2, (String(amount).split('.')[1] ?? '').length), 4);
