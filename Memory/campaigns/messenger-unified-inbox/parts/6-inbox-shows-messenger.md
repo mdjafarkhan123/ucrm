@@ -5,9 +5,9 @@
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
 board `yjdF0`, block `Z0nFi5`, screen `np8WS` (Details closed) plus the Details panel `PpowK` shown opening.
-From B: warm page, floating white cards, Needs reply / Earlier list, Team / Mine, channel lanes, date chips, time
-inside bubbles. From A: brand-green bubbles for yours (`color-interactive`, text `color-surface`), white for
-theirs; labelled reply bar (Messenger ▾, reply window in words, Reply / Internal comment); labelled header buttons.
+From B: Needs reply / Earlier list, Team / Mine, channel lanes, date chips, time
+inside bubbles. From A: brand-green bubbles for yours (`color-interactive`, text `color-surface`), light grey for
+theirs; the chat is one white card (header, messages, reply bar) — Jafar: the timeline must not blend with the page; labelled reply bar (Messenger ▾, reply window in words, Reply / Internal comment); labelled header buttons.
 New: bubbles join up (radius-large, radius-small where they touch), tail on your last bubble; Seen only under
 your last sent message; unread rows show green time + count; selected row `color-surface-active`; drag handle only
 on hover. A and B deleted from the board (kept in Git, commit 5664ffed).
