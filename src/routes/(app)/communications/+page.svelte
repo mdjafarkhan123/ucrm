@@ -166,26 +166,7 @@
 	}
 	let listWidth = $state(savedWidth(LIST_WIDTH));
 	let detailsWidth = $state(savedWidth(DETAILS_WIDTH));
-	// The chat never gets narrower than 400: the side cards give way first, Details before the list.
-	const CHAT_MIN_WIDTH = 400;
-	let workspaceWidth = $state(0);
-	const detailsShown = $derived(detailsOpen && !narrowDetails.current && selectedGroup !== null);
-	const sideRoom = $derived(workspaceWidth > 0 ? workspaceWidth - CHAT_MIN_WIDTH - 8 : Infinity);
-	const shownDetailsWidth = $derived(
-		Math.min(detailsWidth, Math.max(DETAILS_WIDTH.min, sideRoom - LIST_WIDTH.min))
-	);
-	const shownListWidth = $derived(
-		Math.min(listWidth, Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0)))
-	);
-	const listMax = $derived(
-		Math.min(
-			LIST_WIDTH.max,
-			Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0))
-		)
-	);
-	const detailsMax = $derived(
-		Math.min(DETAILS_WIDTH.max, Math.max(DETAILS_WIDTH.min, sideRoom - shownListWidth))
-	);
+
 
 	const inboxQuery = createQuery(() => ({
 		queryKey: inboxMessagesKey(search, view),
@@ -275,6 +256,26 @@
 	);
 	const requestedGroupLoading = $derived(openingClientId !== null && requestedGroup === null);
 
+	// The chat never gets narrower than 400: the side cards give way first, Details before the list.
+	const CHAT_MIN_WIDTH = 400;
+	let workspaceWidth = $state(0);
+	const detailsShown = $derived(detailsOpen && !narrowDetails.current && selectedGroup !== null);
+	const sideRoom = $derived(workspaceWidth > 0 ? workspaceWidth - CHAT_MIN_WIDTH - 8 : Infinity);
+	const shownDetailsWidth = $derived(
+		Math.min(detailsWidth, Math.max(DETAILS_WIDTH.min, sideRoom - LIST_WIDTH.min))
+	);
+	const shownListWidth = $derived(
+		Math.min(listWidth, Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0)))
+	);
+	const listMax = $derived(
+		Math.min(
+			LIST_WIDTH.max,
+			Math.max(LIST_WIDTH.min, sideRoom - (detailsShown ? shownDetailsWidth : 0))
+		)
+	);
+	const detailsMax = $derived(
+		Math.min(DETAILS_WIDTH.max, Math.max(DETAILS_WIDTH.min, sideRoom - shownListWidth))
+	);
 	const emailAvailable = $derived(Boolean(selectedGroup?.clientId));
 	// SMS shares email's availability rule (both need only a known client) rather than a separate org
 	// readiness gate: the blueprint keeps a known SMS conversation visible even when it cannot send yet,
