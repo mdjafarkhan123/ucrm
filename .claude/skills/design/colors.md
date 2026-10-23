@@ -91,6 +91,18 @@ Bar order: item cost · expenses · labour · profit (or loss). Pills on profit,
 
 In `concept.pen`; add it to `_variables.scss` with the build.
 
+## Channel Colours
+
+The marks that tell channels apart in the inbox (`inbox.md`), the same in light and dark. In `concept.pen`; add the
+three tile colours to `_variables.scss` with the inbox build.
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-messenger` | `#0866FF` | Facebook Messenger's own logo, the one brand mark in the app: Settings → Messenger, a Page's badge, Messenger marks in the inbox. Never for anything else |
+| `--color-channel-email` | `#E4702A` | Email tile |
+| `--color-channel-text` | `#118197` | Text tile |
+| `--color-channel-chat` | `#6B4BD8` | Website chat tile |
+
 ## File Families
 
 Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as photos.

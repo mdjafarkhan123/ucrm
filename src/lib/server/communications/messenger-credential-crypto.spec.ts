@@ -10,7 +10,7 @@ import {
 
 const context: MessengerSecretContext = {
 	organizationId: 'b2100000-0000-4000-8000-000000000001',
-	connectionId: 'b2200000-0000-4000-8000-000000000001',
+	recordId: 'b2200000-0000-4000-8000-000000000001',
 	purpose: 'page_token'
 };
 
@@ -43,7 +43,7 @@ describe('Messenger credential encryption', () => {
 
 	it.each([
 		['another organization', { organizationId: 'b2100000-0000-4000-8000-000000000009' }],
-		['another connection', { connectionId: 'b2200000-0000-4000-8000-000000000009' }]
+		['another connection', { recordId: 'b2200000-0000-4000-8000-000000000009' }]
 	])('refuses a ciphertext moved to %s', (_label, change) => {
 		const ring = keyring();
 		const encrypted = encryptMessengerSecret(secret, context, ring);

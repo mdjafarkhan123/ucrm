@@ -154,6 +154,7 @@ export async function loadSettingsHomeSummary(facts: Facts): Promise<SettingsHom
 		activity,
 		senders,
 		chatSites,
+		messengerPages,
 		forms,
 		templates,
 		snippets,
@@ -292,6 +293,17 @@ export async function loadSettingsHomeSummary(facts: Facts): Promise<SettingsHom
 						.eq('organization_id', organizationId)
 						.eq('published', true)
 						.is('disabled_at', null)
+				),
+			permissions.communications_manage
+		),
+		active(
+			() =>
+				count(
+					owner
+						.from('communication_messenger_connections')
+						.select('id', { count: 'exact', head: true })
+						.eq('organization_id', organizationId)
+						.neq('status', 'disconnected')
 				),
 			permissions.communications_manage
 		),
@@ -440,6 +452,12 @@ export async function loadSettingsHomeSummary(facts: Facts): Promise<SettingsHom
 		activity: activity === null ? null : `${activity} this week`,
 		website_chat:
 			chatSites === null ? null : chatSites === 0 ? 'Off' : `On ${plural(chatSites, 'site')}`,
+		messenger:
+			messengerPages === null
+				? null
+				: messengerPages === 0
+					? 'Not connected'
+					: `On ${plural(messengerPages, 'Page')}`,
 		request_forms: forms === null ? null : `${forms} live`,
 		email_templates: templates === null ? null : `${templates} saved`,
 		snippets: snippets === null ? null : `${snippets} saved`,

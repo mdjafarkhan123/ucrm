@@ -36,6 +36,7 @@
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import mobileIcon from '@tabler/icons/outline/device-mobile.svg?raw';
+	import brandMessengerIcon from '@tabler/icons/outline/brand-messenger.svg?raw';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import bellRingingIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
@@ -283,6 +284,14 @@
 				tone: 'conversation',
 				href: resolve('/(app)/settings/communications/website-chat'),
 				value: values?.website_chat
+			});
+			talking.push({
+				key: 'messenger',
+				title: 'Facebook Messenger',
+				icon: brandMessengerIcon,
+				tone: 'conversation',
+				href: resolve('/(app)/settings/communications/messenger'),
+				value: values?.messenger
 			});
 		}
 		if (p.forms_manage)

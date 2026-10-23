@@ -183,6 +183,8 @@
 	--color-overlay--dimmed: rgba(var(--color-white--rgb), 0.6);
 	// The dark panel a photo sits on in the profile photo pop-up; the same in both modes.
 	--color-photo-studio: #032b3a;
+	// Facebook Messenger's own blue, the same in light and dark, for the Messenger mark and badges only.
+	--color-messenger: #0866ff;
 	--color-white: rgba(var(--color-white--rgb), 1);
 	--color-black: rgba(var(--color-black--rgb), 1);
 	--color-greyBlue: var(--color-base-blue--600);
