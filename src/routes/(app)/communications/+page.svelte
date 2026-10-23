@@ -28,8 +28,13 @@
 	import ConversationMessage from '$lib/components/communications/ConversationMessage.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
+	import LinkToClientDialog from '$lib/components/communications/inbox/LinkToClientDialog.svelte';
+	import userSearchIcon from '@tabler/icons/outline/user-search.svg?raw';
+	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+	import { mergeClients } from '$lib/clients/api';
 	import ChooseChannelDialog from '$lib/components/communications/ChooseChannelDialog.svelte';
 	import InboxList from '$lib/components/communications/inbox/InboxList.svelte';
+	import PaneResizer from '$lib/components/ui/PaneResizer.svelte';
 	import ChannelMark, {
 		type InboxChannel
 	} from '$lib/components/communications/inbox/ChannelMark.svelte';
@@ -117,6 +122,9 @@
 	let linkTarget = $state<OpenConversation | null>(null);
 	let dismissTarget = $state<OpenConversation | null>(null);
 	let linkError = $state('');
+	// The Messenger lead being linked to a real client, and why the last try failed.
+	let leadLinkTarget = $state<{ leadId: string } | null>(null);
+	let leadLinkError = $state('');
 	let newConversationOpen = $state(false);
 	let newConversationClientId = $state<string | null>(null);
 	let timelineEl = $state<HTMLDivElement | null>(null);
@@ -136,6 +144,28 @@
 	// default. Where the page is too narrow for a third card, the same content opens as a side drawer instead.
 	let detailsOpen = $state(false);
 	const narrowDetails = new MediaQuery('max-width: 1180px');
+
+	// The list and Details widths each person dragged to, kept in their own browser (design `inbox.md`, Layout).
+	const LIST_WIDTH = { min: 240, max: 420, default: 300, key: 'ucrm:inbox:list-width' };
+	const DETAILS_WIDTH = { min: 280, max: 420, default: 310, key: 'ucrm:inbox:details-width' };
+	function savedWidth(limits: typeof LIST_WIDTH) {
+		try {
+			const saved = Number(localStorage.getItem(limits.key));
+			if (saved >= limits.min && saved <= limits.max) return saved;
+		} catch {
+			// Storage can be blocked (private window); the default width is fine.
+		}
+		return limits.default;
+	}
+	function rememberWidth(limits: typeof LIST_WIDTH, width: number) {
+		try {
+			localStorage.setItem(limits.key, String(width));
+		} catch {
+			// Not remembered this time; nothing else depends on it.
+		}
+	}
+	let listWidth = $state(savedWidth(LIST_WIDTH));
+	let detailsWidth = $state(savedWidth(DETAILS_WIDTH));
 
 	const inboxQuery = createQuery(() => ({
 		queryKey: inboxMessagesKey(search, view),
@@ -618,6 +648,28 @@
 		}
 	}));
 
+	// Links an unknown Messenger customer: their lead merges into the client the team picked (the same merge as
+	// Clients > Merge clients, which also moves the Messenger link), and the inbox opens on that client.
+	const linkLeadMutationState = createMutation(() => ({
+		mutationFn: (input: { leadId: string; clientId: string; clientName: string }) =>
+			mergeClients(input.clientId, input.leadId),
+		onSuccess: async (_result, input) => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: ['communications', 'inbox'] }),
+				queryClient.invalidateQueries({ queryKey: ['clients'] }),
+				queryClient.invalidateQueries({ queryKey: clientCommunicationHistoryKey(input.clientId) }),
+				queryClient.invalidateQueries({ queryKey: conversationContextKey(input.clientId) })
+			]);
+			selectedGroupKey = input.clientId;
+			leadLinkTarget = null;
+			leadLinkError = '';
+			toast.success('Linked to ' + input.clientName, 'This Messenger conversation is now on their record.');
+		},
+		onError: (error: Error) => {
+			leadLinkError = error.message;
+		}
+	}));
+
 	// Ends a live Website Chat session from the staff side; the visitor's panel swaps to the ended state
 	// over the same socket, no reload involved. The re-read is awaited, the way the composer's send is, so
 	// the confirm stays busy until the ended state is on screen instead of closing onto the old thread.
@@ -955,6 +1007,8 @@
 			class:communications__workspace--single={groups.length === 0 &&
 				!selectedGroup &&
 				!requestedGroupLoading}
+			style:--inbox-list-width="{listWidth}px"
+			style:--inbox-details-width="{detailsWidth}px"
 		>
 			<InboxList
 				{groups}
@@ -967,6 +1021,16 @@
 				onNew={() => (newConversationOpen = true)}
 				onNewHover={prefetchClientPicker}
 			/>
+			{#if groups.length > 0 || selectedGroup || requestedGroupLoading}
+				<PaneResizer
+					bind:width={listWidth}
+					min={LIST_WIDTH.min}
+					max={LIST_WIDTH.max}
+					defaultWidth={LIST_WIDTH.default}
+					label="Resize the conversation list"
+					onCommit={(width) => rememberWidth(LIST_WIDTH, width)}
+				/>
+			{/if}
 
 			{#if requestedGroupLoading}
 				<main class="communications__message" aria-label="Conversation timeline" aria-busy="true">
@@ -1066,6 +1130,32 @@
 							</Button>
 						</div>
 					</header>
+					{#if unknown && !group.guarded && group.clientId && messengerOrigin && inboxQuery.data?.can_merge}
+						{@const leadId = group.clientId}
+						<!-- A Messenger lead the team may already know (design `inbox.md`, Unknown customer). -->
+						<div class="communications__unknown-strip">
+							<span class="communications__unknown-strip-icon" aria-hidden="true"
+								>{@html userSearchIcon}</span
+							>
+							<div class="communications__unknown-strip-text">
+								<strong>Is this someone you already know?</strong>
+								<span
+									>Meta doesn't share their name yet. Link them to a client to keep everything in one place.</span
+								>
+							</div>
+							<Button
+								variant="secondary"
+								size="small"
+								onclick={() => {
+									leadLinkError = '';
+									leadLinkTarget = { leadId };
+								}}
+							>
+								{@html linkIcon}
+								Link to a client
+							</Button>
+						</div>
+					{/if}
 					<!-- A scrolling area has to be reachable by keyboard so the arrow and Page keys can scroll it. -->
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
@@ -1350,7 +1440,7 @@
 									<ConversationComposer
 										clientId={group.clientId}
 										channel="messenger"
-										customerName={group.name}
+										customerName={unknown ? '' : group.name}
 										channels={composerChannels}
 										channelDetails={composerChannelDetails(group)}
 										pageName={messengerOrigin.page_name}
@@ -1367,7 +1457,7 @@
 											sessionId={group.chatSession.id}
 											clientId={group.clientId}
 											channel="website_chat"
-											customerName={group.name}
+											customerName={unknown ? '' : group.name}
 											channels={composerChannels}
 											channelDetails={composerChannelDetails(group)}
 											onChannelChange={(channel) => (activeChannel = channel)}
@@ -1383,7 +1473,7 @@
 										defaultSubject=""
 										initialBody={draftFor(group, 'sms')?.body ?? ''}
 										recipientLabel={replyPhone(group)}
-										customerName={group.name}
+										customerName={unknown ? '' : group.name}
 										channels={composerChannels}
 										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
@@ -1399,7 +1489,7 @@
 											replySubject(latestEmailSubject(group))}
 										initialBody={draftFor(group, 'email')?.body ?? ''}
 										recipientLabel={replyRecipient(group)}
-										customerName={group.name}
+										customerName={unknown ? '' : group.name}
 										channels={composerChannels}
 										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
@@ -1413,6 +1503,16 @@
 					{/if}
 				</main>
 				{#if detailsOpen && !narrowDetails.current}
+					<PaneResizer
+						bind:width={detailsWidth}
+						min={DETAILS_WIDTH.min}
+						max={DETAILS_WIDTH.max}
+						defaultWidth={DETAILS_WIDTH.default}
+						pane="after"
+						label="Resize Details"
+						controls="conversation-details"
+						onCommit={(width) => rememberWidth(DETAILS_WIDTH, width)}
+					/>
 					<aside class="communications__context" id="conversation-details" aria-label="Details">
 						{@render contextPanel(group)}
 					</aside>
@@ -1501,6 +1601,26 @@
 				senderEmail: target.senderEmail ?? '',
 				resolution: 'link',
 				clientId
+			})}
+	/>
+{/if}
+
+{#if leadLinkTarget}
+	{@const target = leadLinkTarget}
+	<LinkToClientDialog
+		open
+		leadId={target.leadId}
+		pending={linkLeadMutationState.isPending}
+		errorMessage={leadLinkError}
+		onCancel={() => {
+			leadLinkTarget = null;
+			leadLinkError = '';
+		}}
+		onConfirm={(client) =>
+			linkLeadMutationState.mutate({
+				leadId: target.leadId,
+				clientId: client.id,
+				clientName: client.name
 			})}
 	/>
 {/if}
@@ -1639,16 +1759,20 @@
 	   customer's Details when they are open. The workspace is pinned to the window so the thread scrolls
 	   inside its own card and the reply box stays at the bottom of it. 100px is everything around it: the
 	   shell's padding, the top bar, and the gap above the cards. */
+	/* Between two cards sits a zero-wide track holding the drag line, so with a 2px gap either side the cards
+	   end up 4 apart. */
 	.communications__workspace {
 		display: grid;
-		grid-template-columns: 300px minmax(0, 1fr);
-		gap: var(--space-slim);
+		grid-template-columns: var(--inbox-list-width, 300px) 0 minmax(0, 1fr);
+		gap: var(--space-smallest);
 		height: calc(100dvh - 100px);
 		min-height: 420px;
 		padding-bottom: var(--space-smaller);
 	}
 	.communications__workspace--details {
-		grid-template-columns: 300px minmax(0, 1fr) 310px;
+		grid-template-columns:
+			var(--inbox-list-width, 300px) 0 minmax(0, 1fr) 0
+			var(--inbox-details-width, 310px);
 	}
 	.communications__workspace--single {
 		grid-template-columns: 1fr;
@@ -1697,6 +1821,45 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	// Under the header of an unknown Messenger customer: a full-width informative strip with Link to a client.
+	.communications__unknown-strip {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-medium);
+		border-bottom: var(--border-base) solid var(--color-informative--surface-edge);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+	}
+
+	.communications__unknown-strip-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+
+		:global(svg) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	.communications__unknown-strip-text {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		span {
+			font-size: var(--typography--fontSize-overline);
+		}
+	}
+
 	.communications__unknown-avatar {
 		display: inline-grid;
 		width: 40px;
@@ -2001,7 +2164,7 @@
 	/* Without room for a third card, Details opens as a drawer over the chat instead (narrowDetails). */
 	@container (max-width: 900px) {
 		.communications__workspace {
-			grid-template-columns: 260px minmax(0, 1fr);
+			grid-template-columns: min(var(--inbox-list-width, 300px), 260px) 0 minmax(0, 1fr);
 		}
 	}
 	@container (max-width: 720px) {
@@ -2013,6 +2176,10 @@
 		   composer sits at the end of the thread -- the usual mobile pattern. */
 		.communications__workspace {
 			height: auto;
+		}
+		/* Stacked, there is nothing to resize. */
+		.communications__workspace > :global(.pane-resizer) {
+			display: none;
 		}
 		.communications__workspace > :global(.inbox-list) {
 			max-height: 330px;

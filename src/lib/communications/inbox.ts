@@ -293,6 +293,8 @@ export type InboxMessagePage = {
 	can_manage_assignment: boolean;
 	can_forward: boolean;
 	can_send: boolean;
+	/** May link an unknown Messenger customer to a client, which merges the lead into it (customers.merge). */
+	can_merge?: boolean;
 };
 
 // One item in a conversation's merged timeline -- an email-shaped message or a Website Chat one. Kept as

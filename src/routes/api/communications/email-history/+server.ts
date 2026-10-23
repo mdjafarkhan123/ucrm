@@ -99,6 +99,8 @@ export const GET: RequestHandler = async (event) => {
 		inboxIncluded && hasPermission(access, 'conversations.manage_assignment');
 	const canForward = inboxIncluded && hasPermission(access, 'conversations.forward');
 	const canSend = inboxIncluded && hasPermission(access, 'conversations.send');
+	// A Messenger lead the team recognises is linked by merging it into the real client (customers.merge).
+	const canMerge = inboxIncluded && hasPermission(access, 'customers.merge');
 	if (!canViewTeam && !canViewAssigned) {
 		return json(
 			{ error: 'You do not have access to conversations.', reason: 'permission_denied' },
@@ -169,7 +171,8 @@ export const GET: RequestHandler = async (event) => {
 					can_view_team: canViewTeam,
 					can_manage_assignment: canManageAssignment,
 					can_forward: canForward,
-					can_send: canSend
+					can_send: canSend,
+					can_merge: canMerge
 				},
 				{ headers: PRIVATE_READ_HEADERS }
 			);
@@ -773,7 +776,8 @@ export const GET: RequestHandler = async (event) => {
 		can_view_team: canViewTeam,
 		can_manage_assignment: canManageAssignment,
 		can_forward: canForward,
-		can_send: canSend
+		can_send: canSend,
+		can_merge: canMerge
 	};
 	if (includeInbound) {
 		// Website Chat travels beside `messages` rather than inside it. The merge that governs paging
