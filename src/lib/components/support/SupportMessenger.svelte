@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { createQuery, keepPreviousData, useQueryClient } from '@tanstack/svelte-query';
 	import SupportConversation from './SupportConversation.svelte';
 	import SupportPeople from './SupportPeople.svelte';
@@ -230,6 +230,99 @@
 		if (!context) newTopic = 'setup';
 	}
 
+	// The launcher can be dragged anywhere on screen, like a chat head, so it never sits on a Send or Save
+	// button (Jafar, 2026-10-23). The spot is how far it moved from its home corner, kept per browser and
+	// held inside the window. A press that moves under 5px is still a click.
+	const LAUNCHER_SPOT_KEY = 'uplift.support-launcher-spot';
+	const DRAG_THRESHOLD = 5;
+	const SCREEN_MARGIN = 8;
+	let spot = $state({ x: 0, y: 0 });
+	let dragging = $state(false);
+	let drag: {
+		pointerId: number;
+		startX: number;
+		startY: number;
+		baseX: number;
+		baseY: number;
+	} | null = null;
+	let skipClick = false;
+
+	function keepOnScreen(next: { x: number; y: number }) {
+		if (!launcherEl) return next;
+		const rect = launcherEl.getBoundingClientRect();
+		const homeLeft = rect.left - spot.x;
+		const homeTop = rect.top - spot.y;
+		const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+		return {
+			x: clamp(
+				next.x,
+				SCREEN_MARGIN - homeLeft,
+				window.innerWidth - SCREEN_MARGIN - homeLeft - rect.width
+			),
+			y: clamp(
+				next.y,
+				SCREEN_MARGIN - homeTop,
+				window.innerHeight - SCREEN_MARGIN - homeTop - rect.height
+			)
+		};
+	}
+
+	$effect(() => {
+		if (!launcherEl) return;
+		try {
+			const saved = JSON.parse(localStorage.getItem(LAUNCHER_SPOT_KEY) ?? 'null');
+			if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y))
+				spot = untrack(() => keepOnScreen(saved));
+		} catch {
+			// No saved spot (or storage is blocked): the launcher stays in its corner.
+		}
+	});
+
+	function startDrag(event: PointerEvent) {
+		if (event.button !== 0) return;
+		drag = {
+			pointerId: event.pointerId,
+			startX: event.clientX,
+			startY: event.clientY,
+			baseX: spot.x,
+			baseY: spot.y
+		};
+		// Hold the pointer from the press, so a quick flick that leaves the button still drags it.
+		launcherEl?.setPointerCapture(event.pointerId);
+	}
+
+	function moveDrag(event: PointerEvent) {
+		if (!drag || event.pointerId !== drag.pointerId) return;
+		const dx = event.clientX - drag.startX;
+		const dy = event.clientY - drag.startY;
+		if (!dragging) {
+			if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+			dragging = true;
+		}
+		spot = keepOnScreen({ x: drag.baseX + dx, y: drag.baseY + dy });
+	}
+
+	function endDrag(event: PointerEvent) {
+		if (!drag || event.pointerId !== drag.pointerId) return;
+		drag = null;
+		if (!dragging) return;
+		dragging = false;
+		skipClick = true;
+		try {
+			localStorage.setItem(LAUNCHER_SPOT_KEY, JSON.stringify(spot));
+		} catch {
+			// The spot just isn't remembered.
+		}
+	}
+
+	function launcherClick() {
+		if (skipClick) {
+			skipClick = false;
+			return;
+		}
+		void openPanel();
+	}
+
 	async function closePanel() {
 		open = false;
 		screen = { kind: 'home' };
@@ -333,6 +426,8 @@
 <svelte:document
 	onvisibilitychange={() => (pageVisible = document.visibilityState === 'visible')}
 />
+<!-- A smaller window pulls a dragged launcher back inside it. -->
+<svelte:window onresize={() => (spot = keepOnScreen(spot))} />
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet chatRow(item: SupportChatRow, from: 'home' | 'team')}
@@ -574,13 +669,19 @@
 {:else}
 	<button
 		class="support-messenger__launcher"
+		class:support-messenger__launcher--dragging={dragging}
 		type="button"
 		bind:this={launcherEl}
 		aria-haspopup="dialog"
 		aria-label={unread > 0 ? `Chat with Uplift, ${unread} unread` : undefined}
+		style:translate={spot.x || spot.y ? `${spot.x}px ${spot.y}px` : undefined}
 		onpointerenter={warm}
 		onfocus={warm}
-		onclick={() => void openPanel()}
+		onpointerdown={startDrag}
+		onpointermove={moveDrag}
+		onpointerup={endDrag}
+		onpointercancel={endDrag}
+		onclick={launcherClick}
 	>
 		<span class="support-messenger__launcher-icon" aria-hidden="true">{@html messageIcon}</span>
 		<span class="support-messenger__launcher-label">Chat with Uplift</span>
@@ -623,12 +724,19 @@
 		background: var(--color-interactive);
 		box-shadow: var(--shadow-high);
 		cursor: pointer;
+		// A finger drag moves the button instead of scrolling the page.
+		touch-action: none;
+		user-select: none;
 		transition:
 			background var(--timing-quick) ease,
 			bottom var(--timing-base) ease-out;
 
 		&:hover {
 			background: var(--color-interactive--hover);
+		}
+
+		&--dragging {
+			cursor: grabbing;
 		}
 
 		&:focus-visible {
