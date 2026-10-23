@@ -1,6 +1,6 @@
 # Part 6 — Inbox shows Messenger
 
-**State:** Design — look chosen 2026-10-23; next: fold-up and states.
+**State:** Design — look chosen 2026-10-23; reply box A/B drawn 2026-10-23, waiting for Jafar's pick.
 
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
@@ -28,10 +28,12 @@ hide; ⋯ gets a dot when a hidden button is on (Star, Follow). Hide order — h
 Follow → Assign; reply box: emoji → files from the client → snippets; list: Filter label, then tabs fold into
 "All ▾". Followed: Gmail, Front, Slack, Office (overflow menu).
 
-**Next session:** read `.claude/skills/design/guide.md` first (Jafar 2026-10-23). Draw reply box (composer)
-variants on `yjdF0`, at least 2 that really differ: A = the current pill (refined); B = a new concept, e.g. the
-team-inbox box (Intercom/Front/GoHighLevel: taller writing box, tools along its bottom, Send with words, Internal
-comment turns the box yellow). Research first. Then fold-up (wide/medium/narrow; Details open = medium), a drag
+**Reply box A/B (2026-10-23):** section `j93I8l` on `yjdF0`, four states each (empty, Messenger + photo, internal
+comment, email). A = refined pill (Upload + Files from the client move into the round + menu). B = team inbox box
+(tabs on its top edge, tools along the bottom, Send in words, yellow for internal comment). Followed Intercom, Front,
+GoHighLevel, WhatsApp. On Jafar's pick: delete the other, put the pick into `np8WS`.
+
+**Next session:** read `.claude/skills/design/guide.md` first. If no pick yet, ask Jafar A or B. Then fold-up (wide/medium/narrow; Details open = medium), a drag
 handle hover example, and the states (window closing/closed, Page disconnected, "Facebook user" lead + Link to a
 client, sending/sent/delivered/seen, failed). Keep from live: Message details pop-up, Minimize composer, text
 credit / no permission notices. Add brand-mark exception, channel colours and bubble rules to the design skill.
