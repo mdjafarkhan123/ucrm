@@ -18,7 +18,8 @@
 		disabled = false,
 		variant = 'email',
 		clientId = null,
-		clientLabel = null
+		clientLabel = null,
+		triggerVariant = 'secondary'
 	}: {
 		files: Pick<FileListItem, 'id' | 'display_name' | 'mime_type' | 'size_bytes'>[];
 		onChange: (
@@ -28,6 +29,8 @@
 		variant?: 'email' | 'sms';
 		clientId?: string | null;
 		clientLabel?: string | null;
+		/** `quiet` in the inbox reply box's tool bar, where the tools sit on the box itself. */
+		triggerVariant?: 'secondary' | 'quiet';
 	} = $props();
 
 	const isSms = $derived(variant === 'sms');
@@ -72,7 +75,7 @@
 		</span>
 	{/each}
 	<Button
-		variant="secondary"
+		variant={triggerVariant}
 		size="small"
 		iconOnly
 		label={triggerLabel}

@@ -39,6 +39,7 @@
 		presign,
 		maxFiles,
 		triggerFirst = false,
+		triggerVariant = 'secondary',
 		cardsTarget = null,
 		onUploadingChange,
 		onReadyChange
@@ -55,6 +56,8 @@
 		maxFiles?: number;
 		/** Keeps the paperclip in front of the files, so it does not move as they are added. */
 		triggerFirst?: boolean;
+		/** `quiet` in the inbox reply box's tool bar, where the tools sit on the box itself. */
+		triggerVariant?: 'secondary' | 'quiet';
 		/** Where the file cards go: under the message words, inside the writing area. The paperclip stays
 		 *  where this component is mounted (the footer). Left out, the cards sit beside the paperclip. */
 		cardsTarget?: HTMLElement | null;
@@ -345,7 +348,7 @@
 		onchange={(event) => addFiles((event.currentTarget as HTMLInputElement).files)}
 	/>
 	<Button
-		variant="secondary"
+		variant={triggerVariant}
 		size="small"
 		iconOnly
 		class={triggerFirst ? 'conversation-attachments__trigger--first' : ''}

@@ -41,6 +41,7 @@
 		conversationContextKey,
 		conversationCustomerEmail,
 		conversationCustomerPhone,
+		conversationMessenger,
 		endWebsiteChatSession,
 		fetchClientCommunicationHistory,
 		fetchConversationContext,
@@ -55,6 +56,7 @@
 		isWebsiteChatMessage,
 		markConversationRead,
 		messageRuns,
+		messengerReplyWindow,
 		outboundEmailStatus,
 		pendingSendStatus,
 		placeTimelineNotes,
@@ -124,7 +126,7 @@
 	let showJumpToLatest = $state(false);
 	// Which composer shows for the selected conversation, when more than one channel is eligible.
 	// Reset (below) only when the selected conversation itself changes, never on every background refetch.
-	let activeChannel = $state<'email' | 'sms' | 'website_chat'>('email');
+	let activeChannel = $state<InboxChannel>('email');
 	let composerExpanded = $state(false);
 	let composerGroupKey: string | null = null;
 	let endSessionTarget = $state<OpenConversation | null>(null);
@@ -231,18 +233,83 @@
 	const smsAvailable = $derived(Boolean(selectedGroup?.clientId));
 	const chatAvailable = $derived(Boolean(selectedGroup?.chatSession));
 	const canSend = $derived(inboxQuery.data?.can_send ?? false);
-	type ComposerChannel = 'email' | 'sms' | 'website_chat';
+	// The Page this customer wrote to on Messenger, and how long Meta still lets the business answer there.
+	const messengerOrigin = $derived(selectedGroup ? conversationMessenger(selectedGroup) : null);
+	// Ticks twice a minute so the time left to reply counts down while the conversation is open.
+	let now = $state(Date.now());
+	$effect(() => {
+		const timer = setInterval(() => (now = Date.now()), 30_000);
+		return () => clearInterval(timer);
+	});
+	const messengerWindow = $derived.by(() => {
+		if (!messengerOrigin) return null;
+		return {
+			...messengerReplyWindow(messengerOrigin.last_inbound_at, now),
+			pageDisconnected: messengerOrigin.page_status !== 'active'
+		};
+	});
 	const composerChannels = $derived.by(() => {
-		const channels: ComposerChannel[] = [];
+		const channels: InboxChannel[] = [];
+		if (messengerOrigin) channels.push('messenger');
 		if (emailAvailable) channels.push('email');
 		if (smsAvailable) channels.push('sms');
 		if (chatAvailable) channels.push('website_chat');
 		return channels;
 	});
 
-	function latestMessageChannel(group: OpenConversation): 'email' | 'sms' | 'website_chat' {
+	// Messenger replies are sent from the inbox in Part 7; until then the reply box says where to answer. A closed
+	// reply window or a disconnected Page says so first, since those still apply once replies are built.
+	const messengerBlock = $derived.by(() => {
+		if (!messengerWindow) return null;
+		if (messengerWindow.pageDisconnected)
+			return {
+				tone: 'critical' as const,
+				text: 'The Facebook Page is disconnected, so Messenger replies can\'t be sent.',
+				short: 'Page disconnected',
+				action: {
+					label: 'Reconnect in Settings',
+					href: resolve('/(app)/settings/communications/messenger')
+				}
+			};
+		if (messengerWindow.state === 'closed')
+			return {
+				tone: 'critical' as const,
+				text: 'Meta allows replies only within 24 hours of their last message.',
+				short: 'Reply window closed',
+				action: smsAvailable
+					? { label: 'Reply by text', onclick: () => (activeChannel = 'sms') }
+					: undefined
+			};
+		return {
+			tone: 'informative' as const,
+			text: 'Replying on Messenger from here is coming soon. For now, answer from your Facebook Page.',
+			short: 'Messenger replies can\'t be sent from here yet'
+		};
+	});
+
+	// Where each reply channel goes, for the channel menu; a channel that can't send says why instead.
+	function composerChannelDetails(group: OpenConversation) {
+		const details: Partial<Record<InboxChannel, { address?: string; unavailable?: string | null }>> =
+			{};
+		if (messengerOrigin)
+			details.messenger = {
+				address: messengerOrigin.page_name,
+				unavailable: messengerWindow?.pageDisconnected
+					? 'Page disconnected'
+					: messengerWindow?.state === 'closed'
+						? 'Reply window closed'
+						: null
+			};
+		if (emailAvailable) details.email = { address: replyRecipient(group) || 'No email address yet' };
+		if (smsAvailable) details.sms = { address: replyPhone(group) || 'No phone number yet' };
+		if (chatAvailable) details.website_chat = { address: 'On your website' };
+		return details;
+	}
+
+	function latestMessageChannel(group: OpenConversation): InboxChannel {
 		if (!group.latest) return 'email';
 		if (isWebsiteChatMessage(group.latest)) return 'website_chat';
+		if (group.latest.channel === 'messenger') return 'messenger';
 		return group.latest.channel === 'sms' ? 'sms' : 'email';
 	}
 
@@ -1279,7 +1346,20 @@
 										>
 									</div>
 								{/if}
-								{#if activeChannel === 'website_chat' && group.chatSession}
+								{#if activeChannel === 'messenger' && messengerOrigin}
+									<ConversationComposer
+										clientId={group.clientId}
+										channel="messenger"
+										customerName={group.name}
+										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
+										pageName={messengerOrigin.page_name}
+										replyWindow={messengerWindow}
+										blocked={messengerBlock}
+										onChannelChange={(channel) => (activeChannel = channel)}
+										bind:expanded={composerExpanded}
+									/>
+								{:else if activeChannel === 'website_chat' && group.chatSession}
 									{#if group.chatSession.closed_at}
 										<p class="communications__chat-ended">{endedStateLabel(group.chatSession)}</p>
 									{:else}
@@ -1287,8 +1367,11 @@
 											sessionId={group.chatSession.id}
 											clientId={group.clientId}
 											channel="website_chat"
+											customerName={group.name}
 											channels={composerChannels}
+											channelDetails={composerChannelDetails(group)}
 											onChannelChange={(channel) => (activeChannel = channel)}
+											onOpenDetails={() => (detailsOpen = true)}
 											bind:expanded={composerExpanded}
 											onPendingChange={(send) => handlePendingChange(group.key, send)}
 										/>
@@ -1300,8 +1383,11 @@
 										defaultSubject=""
 										initialBody={draftFor(group, 'sms')?.body ?? ''}
 										recipientLabel={replyPhone(group)}
+										customerName={group.name}
 										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
+										onOpenDetails={() => (detailsOpen = true)}
 										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>
@@ -1313,8 +1399,11 @@
 											replySubject(latestEmailSubject(group))}
 										initialBody={draftFor(group, 'email')?.body ?? ''}
 										recipientLabel={replyRecipient(group)}
+										customerName={group.name}
 										channels={composerChannels}
+										channelDetails={composerChannelDetails(group)}
 										onChannelChange={(channel) => (activeChannel = channel)}
+										onOpenDetails={() => (detailsOpen = true)}
 										bind:expanded={composerExpanded}
 										onPendingChange={(send) => handlePendingChange(group.key, send)}
 									/>

@@ -249,6 +249,11 @@
 		align-items: center;
 		gap: var(--space-small);
 		margin-bottom: var(--space-small);
+
+		// The page always passes the snippet; when it renders nothing, the row takes no room.
+		&:not(:has(*)) {
+			display: none;
+		}
 	}
 
 	// Channel, time and ticks sit inside the bubble at its bottom right; on a short message they share the

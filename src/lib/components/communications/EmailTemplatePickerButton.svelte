@@ -15,9 +15,12 @@
 	// decide whether to confirm before overwriting text the user already started.
 	let {
 		disabled = false,
+		triggerVariant = 'secondary',
 		onApply
 	}: {
 		disabled?: boolean;
+		/** `quiet` in the inbox reply box's tool bar, where the tools sit on the box itself. */
+		triggerVariant?: 'secondary' | 'quiet';
 		onApply: (template: CommunicationEmailTemplateListItem) => void;
 	} = $props();
 
@@ -63,7 +66,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				variant="secondary"
+				variant={triggerVariant}
 				size="small"
 				iconOnly
 				label="Use an email template"

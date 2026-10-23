@@ -20,6 +20,10 @@
 		tileSize?: 24 | 32;
 		/** A quiet line under the label, saying what the choice makes. */
 		hint?: string;
+		/** The hint says why the choice can't be used right now, in the critical colour. */
+		hintCritical?: boolean;
+		/** Drawn in place of `icon`, for a mark that is not a plain icon (a channel's mark). */
+		leading?: Snippet;
 		onSelect: () => void;
 		destructive?: boolean;
 		disabled?: boolean;
@@ -126,7 +130,9 @@
 		disabled={item.disabled}
 		onSelect={() => item.onSelect()}
 	>
-		{#if item.icon && item.tile}
+		{#if item.leading}
+			<span class="dropdown-menu__item-icon" aria-hidden="true">{@render item.leading()}</span>
+		{:else if item.icon && item.tile}
 			<span aria-hidden="true"
 				><IconTile icon={item.icon} tone={item.tile} size={item.tileSize ?? 24} /></span
 			>
@@ -140,7 +146,10 @@
 		{#if item.hint}
 			<span class="dropdown-menu__item-text">
 				<span class="dropdown-menu__item-label">{item.label}</span>
-				<span class="dropdown-menu__item-hint">{item.hint}</span>
+				<span
+					class="dropdown-menu__item-hint"
+					class:dropdown-menu__item-hint--critical={item.hintCritical}>{item.hint}</span
+				>
 			</span>
 		{:else}
 			<span class="dropdown-menu__item-label">{item.label}</span>
@@ -471,6 +480,10 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-smaller);
 		line-height: var(--typography--lineHeight-tight);
+	}
+
+	.dropdown-menu__item-hint--critical {
+		color: var(--color-critical--onSurface);
 	}
 
 	/* Read out, never drawn: the trailing icon says the same thing to the eye. */
