@@ -11,7 +11,7 @@ describe('twilioPriceRows', () => {
 				inbound: { mobile: '0.0075' },
 				outbound: {
 					mobile: { min: '0.0400', max: '0.0524' },
-					alphanumeric: { min: '0.05', max: '0.06' }
+					short_code: { min: '0.05', max: '0.06' }
 				}
 			},
 			{ countryCode: 'GB', currency: 'USD', monthly: { mobile: '1.15' } }
@@ -28,7 +28,7 @@ describe('twilioPriceRows', () => {
 			{
 				country_code: 'GB',
 				kind: 'segment',
-				number_type: 'alphanumeric',
+				number_type: 'short_code',
 				currency_code: 'USD',
 				cost_major: 0.06
 			},
