@@ -5,6 +5,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import ChannelMark from '$lib/components/communications/inbox/ChannelMark.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -271,11 +272,11 @@
 				]}
 			/>
 			<PageHeader
-				icon={messengerIcon}
-				tone="conversation"
 				title="Messenger"
 				description="Your Facebook Pages, whether their messages reach Conversations, and what to do next."
-			/>
+			>
+				{#snippet leading()}<ChannelMark channel="messenger" size={40} />{/snippet}
+			</PageHeader>
 		</div>
 
 		{#if loginProblem}

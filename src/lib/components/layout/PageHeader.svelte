@@ -7,6 +7,7 @@
 		description,
 		icon,
 		tone = 'inactive',
+		leading,
 		actions,
 		titleId,
 		class: className = ''
@@ -17,6 +18,8 @@
 		icon?: string;
 		/** The colour family of the icon tile, the same as the page's sidebar item: `job`, `quote`, `time`… */
 		tone?: string;
+		/** A 40 brand logo in place of the icon tile, for a page that is about one outside service. */
+		leading?: Snippet;
 		actions?: Snippet;
 		/** The title's id, for a page section labelled by it. */
 		titleId?: string;
@@ -27,7 +30,9 @@
 <!-- The page's title row: the icon tile, a 24 title with the description under it, and the page's actions
      centred at the right. -->
 <header class={['page-header', className]}>
-	{#if icon}
+	{#if leading}
+		{@render leading()}
+	{:else if icon}
 		<IconTile {icon} {tone} />
 	{/if}
 	<div class="page-header__copy">
