@@ -48,10 +48,10 @@ know (WhatsApp, iMessage, Messenger), with premium polish.
   corner where bubbles in a run touch; your last bubble in a run has a small tail. Bubbles 3 apart within a run, 5
   between runs. An email is a white card bubble (400 wide, 1px border) with its subject line.
 - **Inside each bubble**, bottom right, all solid `--color-surface` on green: the channel mark 12, the time 12, and
-  on yours the tick: `clock-3` sending (bubble at 70%), `check` sent, `check-check` delivered, and once read a 16
-  filled `--color-surface` circle holding a green `check` (`--color-interactive`), so Seen stands apart from Delivered.
-- **Seen line:** only under your last message the customer has read: a 14 filled `--color-interactive` circle with a
-  white `check`, then "Seen 9:26 AM" 12/500 quiet. No line for the other ticks.
+  on yours the tick: `clock-3` sending (bubble at 70%), `check` sent, `check-check` delivered, and once read an 18
+  filled `--color-surface` circle holding a 12 green `check-check` (`--color-interactive`), so Seen stands apart from Delivered.
+- **Seen line:** only under your last message the customer has read: a 16 filled `--color-interactive` circle with an 11
+  white `check-check`, then "Seen 9:26 AM" 12/500 quiet. No line for the other ticks.
 - **Failed:** the bubble stays; under it `circle-alert` and the reason 12 `--color-critical`, then "Retry" 12/700
   `--color-interactive`.
 - **Internal comment in the timeline:** a centred yellow pill (`--color-warning-surface`, its edge, `lock`, words
