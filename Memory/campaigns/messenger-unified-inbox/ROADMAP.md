@@ -14,7 +14,7 @@
 | 7 Reply | First version: Reply | Reply branch, 24-hour window check, worker, delivered/read states; widen `communication_delivery_intents` and `communication_outbox_events` to `messenger` (Part 3 left sending tables unchanged) | 6 | Reply reaches the test account; window-closed state shows a reason | Done 2026-10-23 — live reply reached Jafar's tester account; inbox showed Sent → Seen; `parts/7-reply.md` |
 | 8 Hardening and performance | Health | Token expiry, revoked permission, webhook auto-disabled recovery, many Pages, performance verdict | 7 | Each health state shows "reconnect"; `performance-review` verdict recorded | Done 2026-10-23 — cron health wake proven; `docs/evidence/messenger-part8/README.md` |
 | 9 Live proof | Success checks | Full journey on the live app, screenshots next to Pencil | 1–8 | Jafar sees it work; evidence recorded; committed and pushed | Done 2026-10-23 — all checks live, three fixes (live Facebook-inbox replies, Needs reply, logos); `docs/evidence/messenger-part9/README.md` |
-| 10 Go-live (Jafar-owned) | Not doing | Verification approved (from 1b), privacy and data-deletion URLs, App Review including the Human Agent (7-day reply) feature | 9, 1b approved | Meta grants Advanced Access | Not started |
+| 10 Go-live (Jafar-owned) | Not doing | Verification approved (from 1b), privacy and data-deletion URLs, App Review including the Human Agent (7-day reply) feature | 9, 1b approved | Meta grants Advanced Access | In progress 2026-10-23 — legal page text ready; `parts/10-go-live.md` |
 
 **Code to reuse:** webhooks `src/routes/api/webhooks/{twilio,stripe,ses-inbound}` (Stripe's per-connection URL is the closest);
 Stripe connect `src/lib/server/payments/stripe-connection.ts` and `stripe-credential-crypto.ts`; send path
