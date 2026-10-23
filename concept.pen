@@ -447625,6 +447625,1175 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "oCM6G",
+      "x": 15768,
+      "y": 39655,
+      "name": "Concept · Communications · Show its history · Approved · 2026-10-23",
+      "width": 1300,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "az0ZW",
+          "name": "Row · Show its history",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "elWMS",
+              "name": "Row label",
+              "fill": "$color-heading",
+              "content": "Show its history",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-large",
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "pKD7T",
+              "name": "Row note",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1200,
+              "content": "From the ⋯ menu on a country the business can text, or one that is off. The approved History pop-over (board e18rX) points at the ⋯ button. Newest first; each line says what happened and who did it, with the reason when a country was turned off or couldn’t be turned on. Nothing to load: the card already has it.",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-smaller",
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "xzmBw",
+              "name": "Items",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "V2eGI",
+                  "name": "State · SHOW ITS HISTORY · A COUNTRY THAT IS ON",
+                  "width": 360,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "q11rN",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "SHOW ITS HISTORY · A COUNTRY THAT IS ON",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-overline",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "O4V7o",
+                      "name": "Button and pop-over",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        12,
+                        16,
+                        12
+                      ],
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "id": "eusZN",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "More · open",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-surface-active"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gv43X",
+                          "name": "Pop-over · History of the United States",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RjyEx",
+                              "name": "Arrow · up",
+                              "width": "fill_container",
+                              "height": 10,
+                              "padding": [
+                                0,
+                                0,
+                                0,
+                                304
+                              ],
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "X4Ba7",
+                                  "name": "Pointer",
+                                  "geometry": "M0 10l8-9 8 9",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    16,
+                                    10
+                                  ],
+                                  "fill": "$color-inactive-surface",
+                                  "width": 16,
+                                  "height": 10,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "h16a41",
+                              "name": "Card",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-large",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "effect": [
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000001a",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 1
+                                  },
+                                  "blur": 4
+                                },
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000000d",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 4
+                                  },
+                                  "blur": 12
+                                }
+                              ],
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "C57RhF",
+                                  "name": "Header",
+                                  "width": "fill_container",
+                                  "fill": "$color-inactive-surface",
+                                  "gap": 10,
+                                  "padding": [
+                                    12,
+                                    12,
+                                    12,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "lfaaG",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-inactive-surface-edge",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "k3elok",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "history",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "G6oY5j",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "History of the United States",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "h5opJF",
+                                      "name": "Close",
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": "$radius-base",
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "cU71U",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive-on-surface"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dLC2n",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    4,
+                                    16,
+                                    8,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "A01pb",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "KgKuv",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-success-surface",
+                                          "stroke": "$color-success-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "check",
+                                              "fill": "$color-success"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "JvOSX",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Kfk4s",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Turned on by Jafar",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "lqcid",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Oct 13, 2026, 10:05 AM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "STwkN",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "tER7B",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-conversation-surface",
+                                          "stroke": "$color-conversation-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "message-square-text",
+                                              "fill": "$color-conversation"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "aciWJ",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "FAnSI",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Asked for by Raad Khan",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "hGqR7",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Oct 12, 2026, 4:12 PM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qavG9",
+                  "name": "State · SHOW ITS HISTORY · TURNED OFF, ASKED BEFORE",
+                  "width": 360,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "x04GG",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "SHOW ITS HISTORY · TURNED OFF, ASKED BEFORE",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-overline",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zAyL3",
+                      "name": "Button and pop-over",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        12,
+                        16,
+                        12
+                      ],
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "id": "E4cwu",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "More · open",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-surface-active"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cH9oq",
+                          "name": "Pop-over · History of Canada",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YIIF7",
+                              "name": "Arrow · up",
+                              "width": "fill_container",
+                              "height": 10,
+                              "padding": [
+                                0,
+                                0,
+                                0,
+                                304
+                              ],
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "iHy9w",
+                                  "name": "Pointer",
+                                  "geometry": "M0 10l8-9 8 9",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    16,
+                                    10
+                                  ],
+                                  "fill": "$color-inactive-surface",
+                                  "width": 16,
+                                  "height": 10,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KRcVo",
+                              "name": "Card",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-large",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "effect": [
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000001a",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 1
+                                  },
+                                  "blur": 4
+                                },
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000000d",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 4
+                                  },
+                                  "blur": 12
+                                }
+                              ],
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LYUmD",
+                                  "name": "Header",
+                                  "width": "fill_container",
+                                  "fill": "$color-inactive-surface",
+                                  "gap": 10,
+                                  "padding": [
+                                    12,
+                                    12,
+                                    12,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "irUCO",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-inactive-surface-edge",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "i2EcX5",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "history",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "OAPwv",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "History of Canada",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lfOLj",
+                                      "name": "Close",
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": "$radius-base",
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "SAgXH",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive-on-surface"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PF4W6",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    4,
+                                    16,
+                                    8,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "nLlBS",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "qQYSq",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-inactive-surface",
+                                          "stroke": "$color-inactive-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "circle-off",
+                                              "fill": "$color-inactive"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "DvJPj",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "xR9dy",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Turned off by Sam · too many failed texts",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "EuNow",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Oct 3, 2026, 9:40 AM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "muxRT",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "lS43q",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-success-surface",
+                                          "stroke": "$color-success-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "check",
+                                              "fill": "$color-success"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "s3sVi",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "g1MjQt",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Turned on by Jafar",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "E1ii5",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Sep 30, 2026, 2:18 PM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "cAhmv",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "oiXxF",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-conversation-surface",
+                                          "stroke": "$color-conversation-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "message-square-text",
+                                              "fill": "$color-conversation"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "HOEzI",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "BoDrU",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Asked for by Raad Khan",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "E8uAZ",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Sep 30, 2026, 11:02 AM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JHBPt",
+                  "name": "State · SHOW ITS HISTORY · HOME COUNTRY",
+                  "width": 360,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gkEGS",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "SHOW ITS HISTORY · HOME COUNTRY",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-overline",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U31kj",
+                      "name": "Button and pop-over",
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        12,
+                        12,
+                        16,
+                        12
+                      ],
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "id": "k7j14A",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "More · open",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$color-surface-active"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "L7SPGd",
+                          "name": "Pop-over · History of the United States",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uAT42",
+                              "name": "Arrow · up",
+                              "width": "fill_container",
+                              "height": 10,
+                              "padding": [
+                                0,
+                                0,
+                                0,
+                                304
+                              ],
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "uxHNn",
+                                  "name": "Pointer",
+                                  "geometry": "M0 10l8-9 8 9",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    16,
+                                    10
+                                  ],
+                                  "fill": "$color-inactive-surface",
+                                  "width": 16,
+                                  "height": 10,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hHlrb",
+                              "name": "Card",
+                              "clip": true,
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-large",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "effect": [
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000001a",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 1
+                                  },
+                                  "blur": 4
+                                },
+                                {
+                                  "type": "shadow",
+                                  "shadowType": "outer",
+                                  "color": "#0000000d",
+                                  "offset": {
+                                    "x": 0,
+                                    "y": 4
+                                  },
+                                  "blur": 12
+                                }
+                              ],
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "V5Qhrw",
+                                  "name": "Header",
+                                  "width": "fill_container",
+                                  "fill": "$color-inactive-surface",
+                                  "gap": 10,
+                                  "padding": [
+                                    12,
+                                    12,
+                                    12,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ooGT2",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-inactive-surface-edge",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "wmqgJ",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "history",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "S9R7xg",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "History of the United States",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-large",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "l4hDj",
+                                      "name": "Close",
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": "$radius-base",
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "oCZzj",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-inactive-on-surface"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PjaC3",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    4,
+                                    16,
+                                    8,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "n77plQ",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "W1AcmL",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-success-surface",
+                                          "stroke": "$color-success-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "check",
+                                              "fill": "$color-success"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "eUoY2",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "NbE1F",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Turned on by Jafar",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "so3z7",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Aug 15, 2026, 9:30 AM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "q68cMO",
+                                      "name": "Event",
+                                      "width": "fill_container",
+                                      "stroke": "$color-border",
+                                      "gap": 12,
+                                      "padding": [
+                                        10,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "Ae3aK",
+                                          "type": "ref",
+                                          "ref": "t06N6v",
+                                          "name": "Tile",
+                                          "fill": "$color-conversation-surface",
+                                          "stroke": "$color-conversation-surface-edge",
+                                          "descendants": {
+                                            "QAnaV": {
+                                              "icon": "message-square-text",
+                                              "fill": "$color-conversation"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "A6tDDs",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ltLAt",
+                                              "name": "Action",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Came with Raad Khan’s first number",
+                                              "lineHeight": 1.3,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "OOFWC",
+                                              "name": "When",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Aug 14, 2026, 3:47 PM",
+                                              "lineHeight": 1.21,
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-small",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
