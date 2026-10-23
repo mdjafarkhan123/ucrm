@@ -32,8 +32,10 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
   `communication_sms_number_retail_rates`), margin, picture, number a month, businesses using it
   (`communication_sms_destinations`), status, any price starting later. (3) Check Twilio prices (route + button,
   spins). (4) Change price pop-up: segment, picture and number prices, Now or On a date, new rate versions only.
-  (5) Price-moved notice with Review price. (6) Remove the old SMS retail rates list. Ask Jafar before building
-  the undrawn **Businesses** tab, **Add a country** and **Show its history**. Turning off does not email yet.
+  (5) Price-moved notice with Review price. (6) Remove the old SMS retail rates list. Jafar 2026-10-23: **Add a country**
+  reuses the Change price pop-up with a country picker; **Show its history** and the **Businesses** tab later;
+  status **Off** = Uplift doesn't offer the country (no new requests; businesses already texting there keep it
+  until turned off one by one). Turning off does not email yet.
 - **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
   pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
 - **5d.** Opt-out words per language (Opt-out task in `v6Jtu`), recipient-local quiet hours.
