@@ -494,7 +494,7 @@ restrictions; worth checking before Stage 9B/9C if Jafar wants any live send pro
 
 Plan: `docs/global-sms-behavior-contract.md`. Parts 1 country rules + ISV settings · 2 buy a number · 3 paperwork
 (bundles) · 4 registration per number (10DLC wired, toll-free verification) · 5 sending rules per country · 6 prices per
-country. Combined plan approved 2026-10-22: GHL journey with sender/destination readiness, provider
+country · 7 monthly number renewal. Combined plan approved 2026-10-22: GHL journey with sender/destination readiness, provider
 permissions, configured opt-out languages and published selling rates. Jafar requested campaign update only
 this session and will start a new session for designing. **Design done 2026-10-22:** all five Stage 10 screens approved
 with every state in `concept.pen` (`qaFQf`, `A0URqF`, `NbWfA`, `nLAe4`, `v6Jtu`); record in
@@ -503,7 +503,7 @@ country catalog + ISV settings, unit-tested and proven read-only against live Tw
 (`parts/stage10-parts23.md`): Add number with its purchase saga, and Number paperwork end to end, screens checked
 against `qaFQf`/`A0URqF`. **Part 4a and 4b merged 2026-10-23**; Part 4c's guided toll-free form design
 approved 2026-10-23 (`SCpaW`). **Parts 4c, 5a–5d and 6 built and merged 2026-10-23** (`parts/stage10-part4.md`,
-`parts/stage10-part5.md`). Show its history built 2026-10-23 (`oCM6G`). Later, on Jafar's go-ahead: Businesses tab. Open: monthly renewal. Live activation still requires truthful business details and Jafar's authorization.
+`parts/stage10-part5.md`). Show its history built 2026-10-23 (`oCM6G`). **Part 7 monthly number renewal planned and approved 2026-10-23** (plan § Part 7, `parts/stage10-part7.md`): Pencil design next, then build. Later, on Jafar's go-ahead: Businesses tab. Live activation still requires truthful business details and Jafar's authorization.
 
 ## Stage 8 parts (billing reconciliation; started 2026-09-15, non-blocked pieces run in parallel with Stage 9)
 
