@@ -1,23 +1,61 @@
 <script lang="ts">
 	import PaperworkFlag from '$lib/components/communications/paperwork/PaperworkFlag.svelte';
 	import { countryDisplayName } from '$lib/settings/country-names';
-	import { whenAsked, type TextingTask } from '$lib/jafar/texting-setup';
+	import { languageName } from '$lib/communications/sms-opt-out-words';
+	import { whenAsked, type OptOutTask, type TextingTask } from '$lib/jafar/texting-setup';
 	import sortIcon from '@tabler/icons/outline/arrows-sort.svg?raw';
 	import globeIcon from '@tabler/icons/outline/world.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import messageOffIcon from '@tabler/icons/outline/message-off.svg?raw';
 
 	// The Texting setup queue card (board `v6Jtu`): every task for every business, oldest first. The open
 	// task is tinted with a green bar down its left edge.
 	let {
 		tasks,
+		optOutTasks,
 		selectedId,
 		onSelect
 	}: {
 		tasks: TextingTask[];
+		/** Opt-out words tasks (Part 5d), in the same oldest-first list. */
+		optOutTasks: OptOutTask[];
 		selectedId: string | null;
 		onSelect: (id: string) => void;
 	} = $props();
+
+	type Row = {
+		id: string;
+		flag: string;
+		title: string;
+		meta: string;
+		kind: string;
+		icon: string;
+		at: string;
+	};
+
+	const rows = $derived(
+		[
+			...tasks.map((task): Row => ({
+				id: task.id,
+				flag: task.country,
+				title: `Turn on ${countryDisplayName(task.country)}`,
+				meta: `${task.organization_name} · asked ${whenAsked(task.requested_at)}`,
+				kind: 'Twilio permission',
+				icon: globeIcon,
+				at: task.requested_at
+			})),
+			...optOutTasks.map((task): Row => ({
+				id: task.id,
+				flag: task.countries[0],
+				title: `Add ${languageName(task.language)} opt-out words`,
+				meta: `For ${task.countries.map(countryDisplayName).join(' and ')} · ${task.organization_name} · ${whenAsked(task.requested_at)}`,
+				kind: 'Opt-out words',
+				icon: messageOffIcon,
+				at: task.requested_at
+			}))
+		].sort((a, b) => a.at.localeCompare(b.at))
+	);
 </script>
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
@@ -30,21 +68,21 @@
 		</span>
 	</header>
 	<ul class="task-queue__rows">
-		{#each tasks as task (task.id)}
+		{#each rows as row (row.id)}
 			<li>
 				<button
 					type="button"
-					class={['task-queue__row', task.id === selectedId && 'task-queue__row--open']}
-					aria-current={task.id === selectedId ? 'true' : undefined}
-					onclick={() => onSelect(task.id)}
+					class={['task-queue__row', row.id === selectedId && 'task-queue__row--open']}
+					aria-current={row.id === selectedId ? 'true' : undefined}
+					onclick={() => onSelect(row.id)}
 				>
-					<PaperworkFlag code={task.country} />
+					<PaperworkFlag code={row.flag} />
 					<span class="task-queue__copy">
-						<strong>Turn on {countryDisplayName(task.country)}</strong>
-						<span>{task.organization_name} · asked {whenAsked(task.requested_at)}</span>
+						<strong>{row.title}</strong>
+						<span>{row.meta}</span>
 						<span class="task-queue__kind">
-							<span aria-hidden="true">{@html globeIcon}</span>
-							Twilio permission
+							<span aria-hidden="true">{@html row.icon}</span>
+							{row.kind}
 						</span>
 					</span>
 					<span class="task-queue__chevron" aria-hidden="true">{@html chevronRightIcon}</span>

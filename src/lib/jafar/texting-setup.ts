@@ -26,6 +26,21 @@ export type TextingTask = {
 	account_sid: string | null;
 	price: CountryPrice;
 	history: DestinationEvent[];
+	/** Languages beyond English whose opt-out words the business still needs before this country (Part 5d). */
+	opt_out_missing: string[];
+};
+
+/** Add a language's opt-out words to a business's Twilio messaging service (Part 5d). */
+export type OptOutTask = {
+	/** `opt-out:<organization>:<language>`. */
+	id: string;
+	organization_id: string;
+	organization_name: string;
+	language: string;
+	/** The asked countries that need it. */
+	countries: string[];
+	requested_at: string;
+	messaging_service_sid: string | null;
 };
 
 export type TextingSetupQueue = {
@@ -40,6 +55,7 @@ export type TextingSetupQueue = {
 	/** Tasks someone switched on or closed in the last day, and who. */
 	recently_finished: { id: string; kind: string; at: string; who: string | null }[];
 	tasks: TextingTask[];
+	opt_out_tasks: OptOutTask[];
 };
 
 export type BusinessDestination = {
@@ -57,6 +73,8 @@ export type BusinessDestination = {
 
 export type BusinessDestinations = {
 	account_sid: string | null;
+	/** Languages beyond English whose opt-out words Uplift added to the business's messaging service. */
+	opt_out_languages: { language: string; at: string; who: string | null }[];
 	destinations: BusinessDestination[];
 };
 
@@ -136,6 +154,9 @@ export function historyTime(value: string): string {
 export function shortSid(sid: string): string {
 	return `${sid.slice(0, 2)}…${sid.slice(-4)}`;
 }
+
+/** Twilio's Messaging Services list, where each service's Opt-Out tab takes the language words. */
+export const TWILIO_MESSAGING_SERVICES_URL = 'https://console.twilio.com/us1/develop/sms/services';
 
 /** Twilio's SMS Geo permissions page. Twilio switches accounts by hand, so the id is copied beside it. */
 export const TWILIO_GEO_PERMISSIONS_URL =
