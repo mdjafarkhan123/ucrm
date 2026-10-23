@@ -420875,124 +420875,93 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "rcCBe",
-                                      "name": "Failed bubble row",
-                                      "gap": 8,
-                                      "alignItems": "center",
+                                      "id": "N8KBU5",
+                                      "name": "Bubble",
+                                      "fill": "$color-critical-surface",
+                                      "cornerRadius": [
+                                        "$radius-large",
+                                        "$radius-small",
+                                        "$radius-small",
+                                        "$radius-large"
+                                      ],
+                                      "stroke": "$color-critical-surface-edge",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#032b3a14",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 1
+                                      },
+                                      "gap": 10,
+                                      "padding": [
+                                        8,
+                                        12,
+                                        7,
+                                        14
+                                      ],
+                                      "alignItems": "end",
                                       "children": [
                                         {
+                                          "type": "text",
+                                          "id": "p2uby",
+                                          "name": "t",
+                                          "fill": "$color-critical-on-surface",
+                                          "content": "Reminder: our crew arrives at 8 AM tomorrow.",
+                                          "lineHeight": 1.45,
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
                                           "type": "frame",
-                                          "id": "M5Awov",
-                                          "name": "Not sent mark",
-                                          "width": 20,
-                                          "height": 20,
-                                          "fill": "$color-critical",
-                                          "cornerRadius": 999,
-                                          "justifyContent": "center",
+                                          "id": "pTs2K",
+                                          "name": "Meta",
+                                          "gap": 4,
                                           "alignItems": "center",
                                           "children": [
                                             {
+                                              "type": "icon",
+                                              "id": "whgGD",
+                                              "name": "Text channel",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "message-circle",
+                                              "library": "lucide",
+                                              "fill": "$color-critical-on-surface"
+                                            },
+                                            {
                                               "type": "text",
-                                              "id": "mX9zQ",
-                                              "name": "!",
-                                              "fill": "#ffffff",
-                                              "content": "!",
+                                              "id": "a4RNX",
+                                              "name": "time",
+                                              "fill": "$color-critical-on-surface",
+                                              "content": "5:41 PM",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 13,
-                                              "fontWeight": "800"
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
                                         {
-                                          "type": "frame",
-                                          "id": "N8KBU5",
-                                          "name": "Bubble",
-                                          "fill": "$color-interactive",
-                                          "cornerRadius": [
-                                            "$radius-large",
-                                            "$radius-small",
-                                            "$radius-small",
-                                            "$radius-large"
+                                          "type": "path",
+                                          "id": "zY9ui",
+                                          "layoutPosition": "absolute",
+                                          "x": 394,
+                                          "y": 17,
+                                          "name": "Tail",
+                                          "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
+                                          "viewBox": [
+                                            0,
+                                            0,
+                                            16,
+                                            18
                                           ],
-                                          "stroke": "$color-critical",
-                                          "effect": {
-                                            "type": "shadow",
-                                            "shadowType": "outer",
-                                            "color": "#032b3a14",
-                                            "offset": {
-                                              "x": 0,
-                                              "y": 1
-                                            },
-                                            "blur": 1
-                                          },
-                                          "gap": 10,
-                                          "padding": [
-                                            8,
-                                            12,
-                                            7,
-                                            14
-                                          ],
-                                          "alignItems": "end",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "p2uby",
-                                              "name": "t",
-                                              "fill": "$color-surface",
-                                              "content": "Reminder: our crew arrives at 8 AM tomorrow.",
-                                              "lineHeight": 1.45,
-                                              "fontFamily": "$font-family",
-                                              "fontSize": 14,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "pTs2K",
-                                              "name": "Meta",
-                                              "gap": 4,
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "whgGD",
-                                                  "name": "Text channel",
-                                                  "width": 12,
-                                                  "height": 12,
-                                                  "icon": "message-circle",
-                                                  "library": "lucide",
-                                                  "fill": "$color-surface"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "a4RNX",
-                                                  "name": "time",
-                                                  "fill": "$color-surface",
-                                                  "content": "5:41 PM",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "path",
-                                              "id": "zY9ui",
-                                              "layoutPosition": "absolute",
-                                              "x": 394,
-                                              "y": 17,
-                                              "name": "Tail",
-                                              "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
-                                              "viewBox": [
-                                                0,
-                                                0,
-                                                16,
-                                                18
-                                              ],
-                                              "fill": "$color-interactive",
-                                              "width": 16,
-                                              "height": 18
-                                            }
-                                          ]
+                                          "fill": "$color-critical-surface",
+                                          "width": 16,
+                                          "height": 18
                                         }
                                       ]
                                     },
@@ -428098,124 +428067,93 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Q11xyD",
-                                      "name": "Failed bubble row",
-                                      "gap": 8,
-                                      "alignItems": "center",
+                                      "id": "Yarzr",
+                                      "name": "Bubble",
+                                      "fill": "$color-critical-surface",
+                                      "cornerRadius": [
+                                        "$radius-large",
+                                        "$radius-small",
+                                        "$radius-small",
+                                        "$radius-large"
+                                      ],
+                                      "stroke": "$color-critical-surface-edge",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#032b3a14",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 1
+                                      },
+                                      "gap": 10,
+                                      "padding": [
+                                        8,
+                                        12,
+                                        7,
+                                        14
+                                      ],
+                                      "alignItems": "end",
                                       "children": [
                                         {
+                                          "type": "text",
+                                          "id": "PB2UN",
+                                          "name": "t",
+                                          "fill": "$color-critical-on-surface",
+                                          "content": "Reminder: our crew arrives at 8 AM tomorrow.",
+                                          "lineHeight": 1.45,
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
                                           "type": "frame",
-                                          "id": "DSm5I",
-                                          "name": "Not sent mark",
-                                          "width": 20,
-                                          "height": 20,
-                                          "fill": "$color-critical",
-                                          "cornerRadius": 999,
-                                          "justifyContent": "center",
+                                          "id": "lE2p6",
+                                          "name": "Meta",
+                                          "gap": 4,
                                           "alignItems": "center",
                                           "children": [
                                             {
+                                              "type": "icon",
+                                              "id": "mq6BD",
+                                              "name": "Text channel",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "message-circle",
+                                              "library": "lucide",
+                                              "fill": "$color-critical-on-surface"
+                                            },
+                                            {
                                               "type": "text",
-                                              "id": "m5MMvW",
-                                              "name": "!",
-                                              "fill": "#ffffff",
-                                              "content": "!",
+                                              "id": "J5CFGd",
+                                              "name": "time",
+                                              "fill": "$color-critical-on-surface",
+                                              "content": "5:41 PM",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 13,
-                                              "fontWeight": "800"
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
                                         {
-                                          "type": "frame",
-                                          "id": "Yarzr",
-                                          "name": "Bubble",
-                                          "fill": "$color-interactive",
-                                          "cornerRadius": [
-                                            "$radius-large",
-                                            "$radius-small",
-                                            "$radius-small",
-                                            "$radius-large"
+                                          "type": "path",
+                                          "id": "zkI3k",
+                                          "layoutPosition": "absolute",
+                                          "x": 394,
+                                          "y": 17,
+                                          "name": "Tail",
+                                          "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
+                                          "viewBox": [
+                                            0,
+                                            0,
+                                            16,
+                                            18
                                           ],
-                                          "stroke": "$color-critical",
-                                          "effect": {
-                                            "type": "shadow",
-                                            "shadowType": "outer",
-                                            "color": "#032b3a14",
-                                            "offset": {
-                                              "x": 0,
-                                              "y": 1
-                                            },
-                                            "blur": 1
-                                          },
-                                          "gap": 10,
-                                          "padding": [
-                                            8,
-                                            12,
-                                            7,
-                                            14
-                                          ],
-                                          "alignItems": "end",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "PB2UN",
-                                              "name": "t",
-                                              "fill": "$color-surface",
-                                              "content": "Reminder: our crew arrives at 8 AM tomorrow.",
-                                              "lineHeight": 1.45,
-                                              "fontFamily": "$font-family",
-                                              "fontSize": 14,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "lE2p6",
-                                              "name": "Meta",
-                                              "gap": 4,
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "mq6BD",
-                                                  "name": "Text channel",
-                                                  "width": 12,
-                                                  "height": 12,
-                                                  "icon": "message-circle",
-                                                  "library": "lucide",
-                                                  "fill": "$color-surface"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "J5CFGd",
-                                                  "name": "time",
-                                                  "fill": "$color-surface",
-                                                  "content": "5:41 PM",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "path",
-                                              "id": "zkI3k",
-                                              "layoutPosition": "absolute",
-                                              "x": 394,
-                                              "y": 17,
-                                              "name": "Tail",
-                                              "geometry": "M0 0l8 0c0 8 2 14 8 18-5 0.6-10 0.2-14-2l-2-16z",
-                                              "viewBox": [
-                                                0,
-                                                0,
-                                                16,
-                                                18
-                                              ],
-                                              "fill": "$color-interactive",
-                                              "width": 16,
-                                              "height": 18
-                                            }
-                                          ]
+                                          "fill": "$color-critical-surface",
+                                          "width": 16,
+                                          "height": 18
                                         }
                                       ]
                                     },
@@ -437986,121 +437924,91 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "l43zHZ",
-                                  "name": "Failed bubble row",
-                                  "gap": 8,
-                                  "alignItems": "center",
+                                  "id": "sKPK5",
+                                  "name": "Bubble",
+                                  "fill": "$color-critical-surface",
+                                  "cornerRadius": [
+                                    "$radius-large",
+                                    "$radius-large",
+                                    "$radius-small",
+                                    "$radius-large"
+                                  ],
+                                  "stroke": "$color-critical-surface-edge",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#032b3a14",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 1
+                                    },
+                                    "blur": 1
+                                  },
+                                  "gap": 10,
+                                  "padding": [
+                                    8,
+                                    12,
+                                    7,
+                                    14
+                                  ],
+                                  "alignItems": "end",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "AXXC4",
-                                      "name": "Not sent mark",
-                                      "width": 20,
-                                      "height": 20,
-                                      "fill": "$color-critical",
-                                      "cornerRadius": 999,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "DvOf6",
-                                          "name": "!",
-                                          "fill": "#ffffff",
-                                          "content": "!",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 13,
-                                          "fontWeight": "800"
-                                        }
-                                      ]
+                                      "type": "text",
+                                      "id": "P7lRc",
+                                      "name": "t",
+                                      "fill": "$color-critical-on-surface",
+                                      "content": "See you Thursday at 8!",
+                                      "lineHeight": 1.45,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "sKPK5",
-                                      "name": "Bubble",
-                                      "fill": "$color-interactive",
-                                      "cornerRadius": [
-                                        "$radius-large",
-                                        "$radius-large",
-                                        "$radius-small",
-                                        "$radius-large"
-                                      ],
-                                      "effect": {
-                                        "type": "shadow",
-                                        "shadowType": "outer",
-                                        "color": "#032b3a14",
-                                        "offset": {
-                                          "x": 0,
-                                          "y": 1
-                                        },
-                                        "blur": 1
-                                      },
-                                      "gap": 10,
-                                      "padding": [
-                                        8,
-                                        12,
-                                        7,
-                                        14
-                                      ],
-                                      "alignItems": "end",
+                                      "id": "rPGxg",
+                                      "name": "Meta",
+                                      "gap": 4,
+                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "text",
-                                          "id": "P7lRc",
-                                          "name": "t",
-                                          "fill": "$color-surface",
-                                          "content": "See you Thursday at 8!",
-                                          "lineHeight": 1.45,
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "normal"
-                                        },
-                                        {
                                           "type": "frame",
-                                          "id": "rPGxg",
-                                          "name": "Meta",
-                                          "gap": 4,
-                                          "alignItems": "center",
+                                          "id": "X1xD91",
+                                          "name": "Messenger logo",
+                                          "width": 12,
+                                          "height": 12,
+                                          "layout": "none",
                                           "children": [
                                             {
-                                              "type": "frame",
-                                              "id": "X1xD91",
-                                              "name": "Messenger logo",
+                                              "type": "path",
+                                              "id": "ivhx7",
+                                              "x": 0,
+                                              "y": 0,
+                                              "name": "Messenger mark",
+                                              "geometry": "M0.001 11.639c0-6.69 5.24-11.639 12-11.639s11.999 4.95 11.999 11.639c0 6.689-5.24 11.638-12 11.638-1.21 0-2.38-0.16-3.47-0.46a0.96 0.96 0 0 0-0.64 0.05l-2.39 1.05a0.96 0.96 0 0 1-1.35-0.85l-0.07-2.14a0.97 0.97 0 0 0-0.32-0.68 11.39 11.389 0 0 1-3.758-8.607z m8.32-2.19l-3.52 5.6c-0.35 0.53 0.32 1.139 0.82 0.75l3.79-2.87c0.26-0.2 0.6-0.2 0.87 0l2.8 2.1c0.84 0.63 2.04 0.4 2.6-0.48l3.52-5.6c0.35-0.53-0.32-1.13-0.82-0.75l-3.79 2.87c-0.25 0.2-0.6 0.2-0.86 0l-2.8-2.1a1.8 1.8 0 0 0-2.61 0.48z",
+                                              "fillRule": "evenodd",
+                                              "viewBox": [
+                                                0,
+                                                0,
+                                                24,
+                                                24
+                                              ],
+                                              "fill": "$color-critical-on-surface",
                                               "width": 12,
-                                              "height": 12,
-                                              "layout": "none",
-                                              "children": [
-                                                {
-                                                  "type": "path",
-                                                  "id": "ivhx7",
-                                                  "x": 0,
-                                                  "y": 0,
-                                                  "name": "Messenger mark",
-                                                  "geometry": "M0.001 11.639c0-6.69 5.24-11.639 12-11.639s11.999 4.95 11.999 11.639c0 6.689-5.24 11.638-12 11.638-1.21 0-2.38-0.16-3.47-0.46a0.96 0.96 0 0 0-0.64 0.05l-2.39 1.05a0.96 0.96 0 0 1-1.35-0.85l-0.07-2.14a0.97 0.97 0 0 0-0.32-0.68 11.39 11.389 0 0 1-3.758-8.607z m8.32-2.19l-3.52 5.6c-0.35 0.53 0.32 1.139 0.82 0.75l3.79-2.87c0.26-0.2 0.6-0.2 0.87 0l2.8 2.1c0.84 0.63 2.04 0.4 2.6-0.48l3.52-5.6c0.35-0.53-0.32-1.13-0.82-0.75l-3.79 2.87c-0.25 0.2-0.6 0.2-0.86 0l-2.8-2.1a1.8 1.8 0 0 0-2.61 0.48z",
-                                                  "fillRule": "evenodd",
-                                                  "viewBox": [
-                                                    0,
-                                                    0,
-                                                    24,
-                                                    24
-                                                  ],
-                                                  "fill": "$color-surface",
-                                                  "width": 12,
-                                                  "height": 12
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "f00dN",
-                                              "name": "time",
-                                              "fill": "$color-surface",
-                                              "content": "9:24",
-                                              "fontFamily": "$font-family",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
+                                              "height": 12
                                             }
                                           ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "f00dN",
+                                          "name": "time",
+                                          "fill": "$color-critical-on-surface",
+                                          "content": "9:24",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -438164,7 +438072,7 @@
                       "fill": "$color-text-secondary",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Ticks inside the bubble, solid white: a clock while sending, one tick when Facebook has it, two ticks when delivered, and a filled white circle with a green double tick once read. No line under the message. Hovering the ticks shows a tip (“Seen at 9:26 AM”); clicking them opens Message details with Sent, Delivered and Seen times, as WhatsApp's Message info does. Failed: a solid red circle with a white “!” sits left of the bubble (as iMessage does), and under it Facebook's reason in plain words and Retry. Changed 2026-10-23 at Jafar's request.",
+                      "content": "Ticks inside the bubble, solid white: a clock while sending, one tick when Facebook has it, two ticks when delivered, and a filled white circle with a green double tick once read. No line under the message. Hovering the ticks shows a tip (“Seen at 9:26 AM”); clicking them opens Message details with Sent, Delivered and Seen times, as WhatsApp's Message info does. Failed: the whole bubble turns soft red (critical surface, red words, thin red edge, no ticks), and under it Facebook's reason in plain words and Retry. Changed 2026-10-23 at Jafar's request.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font-family",
                       "fontSize": 12,

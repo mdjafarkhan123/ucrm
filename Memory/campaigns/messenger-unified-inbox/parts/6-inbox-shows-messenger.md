@@ -32,6 +32,9 @@ menus, list at 240, drag-line hover) and states `y2sz2l` (window closing/closed 
 texts stopped / no permission, minimized box, Message details, ticks sending→seen/failed, "Facebook user" + Link
 to a client).
 
+**Jafar's later changes (2026-10-23), in place:** Seen = filled circle with a double tick, no line under the
+message (hover tip + Message details show times); failed message = whole bubble red.
+
 **Design skill updated 2026-10-23:** `.claude/skills/design/inbox.md` (whole inbox look), channel colours in
 `colors.md`, channel pill in `chips.md`, brand-mark exception in `icon-shapes.md`.
 
