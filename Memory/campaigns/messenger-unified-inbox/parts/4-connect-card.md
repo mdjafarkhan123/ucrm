@@ -1,6 +1,6 @@
 # Part 4 — Connect and disconnect a Page
 
-**State:** Built and merged to main (8ca4d14e) 2026-10-23; live connect proven; live test and disconnect still to try.
+**State:** Built and merged to main (8ca4d14e) 2026-10-23; live connect proven; disconnect still to try.
 
 **Approved design:** Jafar chose **Option B · Connection hub** on 2026-10-23. Pencil `concept.pen`, Communications
 row, board "Concept · Communications · Messenger · Facebook Pages · Approved B · 2026-10-23" (`tEAXY`). Screen
@@ -29,4 +29,4 @@ with `config_id`, code → long-lived user token → `/me/accounts` Page tokens 
 ## Proof so far (2026-10-23)
 28 unit tests (graph, connections, crypto specs). Meta redirect URI saved ("Changes saved"). Live: Jafar finished
 Facebook's window, Choose Pages showed Uplift Contractor, Connect 1 Page → row active, default, key encrypted, login
-session deleted (org Raad LTD). Next: Jafar messages the Page → Live test "Arrived"; then Disconnect; screen check.
+session deleted (org Raad LTD). Jafar messaged the Page twice → 2 inbound rows under one new lead "Facebook user", row Receiving, banner "1 new conversation"; light and dark look right. Next: Disconnect + reconnect on live (needs Jafar's Facebook window again). Inbox labels it "Email conversation" — Part 6.
