@@ -24,7 +24,15 @@ works the requests in Texting setup (`v6Jtu`); opt-out words are set per languag
 - **5b-2 — partly built.** Done: the business tab's Email / Texting / Website chat switch (`?channel=texting`),
   `TextingSideCards` (Texting mode: Uplift override + reason only, replaces `SmsModeActions`; Twilio account via
   `sms/twilio-account`), and the Waiting on Twilio tab (`waiting`, `waiting/check` → shared `runTwilioReviewChecks`).
-  Left: **Countries & prices** belongs with Part 6. Plan it first: its price-moved notice needs stored Twilio costs. Ask Jafar before building
+  Left: **Countries & prices** (Part 6), planned 2026-10-23 against `R6mF2`/`dc8G7` in `v6Jtu`:
+  (1) table `communication_sms_twilio_prices` — Twilio cost per country, sender type and unit (segment, picture,
+  number month, setup), with `checked_at`; a check that moves a cost keeps the old row so the notice can say
+  from → to and the margin change. Read through `twilio-country-catalog.ts` (already reads Pricing API).
+  (2) Owner route listing one row per country: Twilio cost, their price (`communication_sms_retail_rates` +
+  `communication_sms_number_retail_rates`), margin, picture, number a month, businesses using it
+  (`communication_sms_destinations`), status, any price starting later. (3) Check Twilio prices (route + button,
+  spins). (4) Change price pop-up: segment, picture and number prices, Now or On a date, new rate versions only.
+  (5) Price-moved notice with Review price. (6) Remove the old SMS retail rates list. Ask Jafar before building
   the undrawn **Businesses** tab, **Add a country** and **Show its history**. Turning off does not email yet.
 - **5c — needs a Pencil drawing first.** Contractor's "Text customers in another country" link (`NbWfA`) has no
   pop-up drawn; ask Jafar. Also show the WHERE YOU CAN TEXT box from destinations.
