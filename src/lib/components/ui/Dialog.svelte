@@ -16,6 +16,7 @@
 		flush = false,
 		badge,
 		lead,
+		bare = false,
 		closeDisabled = false,
 		onClose,
 		children,
@@ -38,6 +39,8 @@
 		badge?: Snippet;
 		/** Drawn in place of the icon tile, e.g. a country's flag. */
 		lead?: Snippet;
+		/** Only the × at the top, for a centred result that names itself in its body; the title stays for screen readers. */
+		bare?: boolean;
 		/** While something can't be interrupted, the × is greyed and Escape or a click outside does nothing. */
 		closeDisabled?: boolean;
 		onClose: () => void;
@@ -68,7 +71,7 @@
 				target.focus();
 			}}
 		>
-			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} {lead} {closeDisabled} />
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} {lead} {bare} {closeDisabled} />
 			<div class="dialog__body" class:dialog__body--flush={flush}>
 				{@render children()}
 			</div>

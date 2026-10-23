@@ -12,11 +12,21 @@
 		type ReadinessSummary
 	} from '$lib/communications/number-readiness';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// "Can you text yet?" at the top of Phone & SMS (`concept.pen` board `NbWfA`): how many numbers can text
 	// today, the one line naming what needs the business, a bar with a segment per number in its status colour,
-	// and the countries the business can text.
-	let { summary, cards }: { summary: ReadinessSummary; cards: NumberCard[] } = $props();
+	// and the countries the business can text, with "Text customers in another country" under them (Part 5c).
+	let {
+		summary,
+		cards,
+		onAskCountry
+	}: {
+		summary: ReadinessSummary;
+		cards: NumberCard[];
+		/** Opens the pop-up that asks Uplift to switch on another country. */
+		onAskCountry?: () => void;
+	} = $props();
 
 	const TONES: Record<ReadinessStatus, string> = {
 		ready_to_text: 'success',
@@ -91,6 +101,17 @@
 				</li>
 			{/each}
 		</ul>
+		{#if onAskCountry}
+			<button
+				type="button"
+				class="readiness-summary__ask"
+				onclick={onAskCountry}
+			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+				<span aria-hidden="true">{@html plusIcon}</span>
+				Text customers in another country
+			</button>
+		{/if}
 	</div>
 </section>
 
@@ -217,6 +238,45 @@
 				display: flex;
 				align-items: center;
 				gap: var(--space-small);
+			}
+		}
+
+		&__ask {
+			display: inline-flex;
+			align-items: center;
+			justify-self: start;
+			gap: 6px;
+			margin-top: var(--space-smaller);
+			padding: 0;
+			border: 0;
+			border-radius: var(--radius-small);
+			color: var(--color-interactive);
+			background: transparent;
+			font: inherit;
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			cursor: pointer;
+
+			span,
+			span :global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+
+			&:hover {
+				color: var(--color-interactive--hover);
+				text-decoration: underline;
+			}
+
+			&:focus-visible {
+				outline: 0;
+				box-shadow: var(--shadow-focus);
+			}
+
+			&:active {
+				color: var(--color-interactive--hover);
+				text-decoration: none;
 			}
 		}
 
