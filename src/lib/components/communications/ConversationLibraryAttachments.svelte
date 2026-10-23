@@ -4,7 +4,7 @@
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import FilePicker from '$lib/components/files/FilePicker.svelte';
 	import type { FileListItem } from '$lib/files/api';
-	import filesIcon from '@tabler/icons/outline/files.svg?raw';
+	import filesIcon from '@tabler/icons/outline/folder-open.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// Files and Media Part 6E: the composer's other attach control, next to ConversationAttachments'

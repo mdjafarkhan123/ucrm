@@ -8,7 +8,7 @@
 		fetchCommunicationEmailTemplates,
 		type CommunicationEmailTemplateListItem
 	} from '$lib/communications/email-templates';
-	import templateIcon from '@tabler/icons/outline/template.svg?raw';
+	import templateIcon from '@tabler/icons/outline/file-text.svg?raw';
 
 	// The composer's template trigger. Unlike a snippet, a template carries both subject and body and is
 	// meant to seed the whole draft -- so this hands the caller the full template and lets the composer
