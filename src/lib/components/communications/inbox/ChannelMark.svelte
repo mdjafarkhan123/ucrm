@@ -14,9 +14,9 @@
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 
-	// Which channel a row, bubble or button belongs to (design skill inbox.md, Channel marks). Messenger, email
-	// and text show their real logos, because customers recognise them; Website chat is a small app-style tile.
-	// `inverse` is the all-white version that sits inside a green bubble.
+	// Which channel a row, bubble or button belongs to (design skill inbox.md, Channel marks): each channel's
+	// full-colour logo, because customers recognise them. `inverse` is the all-white version that sits inside a
+	// green bubble.
 	let {
 		channel,
 		size = 14,
@@ -36,10 +36,11 @@
 		website_chat: messagesIcon
 	};
 
-	const logos: Partial<Record<InboxChannel, string>> = {
+	const logos: Record<InboxChannel, string> = {
 		messenger: '/assets/messenger.png',
 		email: '/assets/mail.png',
-		sms: '/assets/sms.png'
+		sms: '/assets/sms.png',
+		website_chat: '/assets/chat.png'
 	};
 	const logo = $derived(inverse ? undefined : logos[channel]);
 </script>
@@ -95,15 +96,6 @@
 			height: 16px;
 		}
 
-		&--email {
-			background: var(--color-channel-email);
-		}
-		&--sms {
-			background: var(--color-channel-text);
-		}
-		&--website_chat {
-			background: var(--color-channel-chat);
-		}
 		&--messenger {
 			border-radius: 0;
 			color: var(--color-messenger);
