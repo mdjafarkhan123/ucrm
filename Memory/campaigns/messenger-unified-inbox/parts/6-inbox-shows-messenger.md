@@ -22,6 +22,13 @@ iMessage, Messenger): grouped bubbles, avatar on a group's last bubble, times be
 round send button, premium Dribbble polish. He likes Option B's idea of hiding the customer details behind a
 "Details" button (collapsible right panel) so the chat gets the room.
 
-**Next:** Jafar picks A, B or a mix. Then delete the unchosen option and draw states (unread row, window closing
-soon, window closed with reason, Page disconnected, new "Facebook user" lead with Link to a client pop-up,
-sent/delivered/seen). Add the brand-mark exception and channel colours to the design skill. A build session builds.
+**Jafar's addition (2026-10-23) — buttons fold when a part shrinks:** labels drop to icons (tooltip on hover),
+then the least-used buttons move into ⋯ one at a time from the right; Send, the channel switch and Details never
+hide; ⋯ gets a dot when a hidden button is on (Star, Follow). Hide order — header: Archive → Star → Mark as unread →
+Follow → Assign; reply box: emoji → files from the client → snippets; list: Filter label, then tabs fold into
+"All ▾". Followed: Gmail, Front, Slack, Office (overflow menu).
+
+**Next session:** review A/B with Jafar first. After his pick: delete the unchosen option; draw the fold-up as
+wide / medium / narrow of the chosen chat; then the states (unread row, window closing soon, window closed with
+reason, Page disconnected, new "Facebook user" lead with Link to a client pop-up, sent/delivered/seen). Add the
+brand-mark exception and channel colours to the design skill. A build session builds.
