@@ -11,14 +11,14 @@
 - [x] App "Ucrm Messaging" created (now App ID `1709471683925717` on the 2nd account; old `1419027217062214` abandoned), Messenger + Instagram messaging use cases
 - [x] `META_APP_ID`, `PUBLIC_META_APP_ID`, `META_APP_SECRET` saved in `.env` (secret never printed)
 - [x] Jafar will test with a Facebook Page he already has (2026-10-18)
-- [x] Test Page name: **Random News** (2026-10-18). [x] Confirmed 2026-10-18: Md Jafar Khan manages Page Random News (ID 1387298701130366)
+- [x] ~~Random News~~ dropped 2026-10-23 (other account)
 - [x] App roles checked 2026-10-23: Jafar Khan (2nd account) is Administrator; app is managed by business Uplift Contractor (portfolio link done). Add testers only if someone else must test
 - [x] 2026-10-23: all five permissions "Ready for testing" in the Messenger use case (added `pages_read_engagement`). Facebook Login for Business configuration "Messenger Page connect" created: General, **User access token**, those five permissions. Configuration ID `1133535439212464` (public; Part 4 passes it as `config_id`)
-- [ ] Test Page reachable: the 2nd account manages only Page **Uplift Contractor**, not Random News — waiting on Jafar's choice
+- [x] Test Page is **Uplift Contractor** (Jafar 2026-10-23). Random News belongs to his other account — never use it
 
 ## Next
 
-Jafar chooses the test Page (Uplift Contractor, or add the 2nd account to Random News). Valid OAuth redirect URIs and
+Part 1 is done. Valid OAuth redirect URIs and
 app domains are set in Part 4 when the callback route exists; the webhook URL in Part 5.
 
 ## Outside actions
