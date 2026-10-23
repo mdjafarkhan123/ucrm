@@ -9,9 +9,11 @@ import {
 	jafarOrganizationMarketingAllowanceKey,
 	jafarOrganizationMarketingDomainsKey,
 	jafarOrganizationReviewCampaignKey,
+	jafarOrganizationSmsDestinationsKey,
 	jafarOrganizationSmsModeKey,
 	jafarOrganizationSmsRegistrationsKey,
 	jafarOrganizationSmsSendersKey,
+	jafarOrganizationSmsTwilioAccountKey,
 	jafarOrganizationStripeConnectionKey,
 	jafarOrganizationWebsiteChatAllowanceKey,
 	jafarOrganizationWebsiteChatAuthorityKey
@@ -154,6 +156,22 @@ export const smsSendersQuery = <T>(organizationId: string) =>
 		15_000
 	);
 
+export const smsDestinationsQuery = <T>(organizationId: string) =>
+	read<T>(
+		jafarOrganizationSmsDestinationsKey(organizationId),
+		`${base(organizationId)}/communications/sms/destinations`,
+		'The countries could not be loaded.',
+		15_000
+	);
+
+export const smsTwilioAccountQuery = <T>(organizationId: string) =>
+	read<T>(
+		jafarOrganizationSmsTwilioAccountKey(organizationId),
+		`${base(organizationId)}/communications/sms/twilio-account`,
+		'The Twilio account could not be loaded.',
+		60_000
+	);
+
 export function prefetchOrganizationCommunications(
 	queryClient: QueryClient,
 	organizationId: string
@@ -173,7 +191,9 @@ export function prefetchOrganizationCommunications(
 		reviewCampaignQuery(organizationId),
 		smsModeQuery(organizationId),
 		smsRegistrationsQuery(organizationId),
-		smsSendersQuery(organizationId)
+		smsSendersQuery(organizationId),
+		smsDestinationsQuery(organizationId),
+		smsTwilioAccountQuery(organizationId)
 	])
 		void queryClient.prefetchQuery(options);
 }

@@ -16,7 +16,8 @@
 		errorMessage = '',
 		disabled = false,
 		placeholder = '0.00',
-		currencyCode
+		currencyCode,
+		decimals = 2
 	}: {
 		value?: number;
 		id: string;
@@ -28,6 +29,8 @@
 		disabled?: boolean;
 		placeholder?: string;
 		currencyCode?: string;
+		/** Digits after the point `value` counts in: 2 is cents; 4 suits per-text prices such as $0.0079. */
+		decimals?: number;
 	} = $props();
 
 	const currency = $derived(
@@ -38,10 +41,12 @@
 			.formatToParts(0)
 			.find((part) => part.type === 'currency')?.value ?? currency
 	);
+	const scale = $derived(10 ** decimals);
+
 	function fromMinor(minor: number) {
-		return (minor / 100).toLocaleString('en-US', {
+		return (minor / scale).toLocaleString('en-US', {
 			minimumFractionDigits: 2,
-			maximumFractionDigits: 2
+			maximumFractionDigits: decimals
 		});
 	}
 
@@ -61,7 +66,7 @@
 			draft = fromMinor(value);
 			return;
 		}
-		value = Math.round(parsed * 100);
+		value = Math.round(parsed * scale);
 		draft = fromMinor(value);
 	}
 </script>
@@ -82,7 +87,7 @@
 		bind:value={draft}
 		onfocus={() => {
 			focused = true;
-			draft = (value / 100).toFixed(2);
+			draft = fromMinor(value).replace(/,/g, '');
 		}}
 		onblur={commit}
 		onkeydown={(event: KeyboardEvent) => {

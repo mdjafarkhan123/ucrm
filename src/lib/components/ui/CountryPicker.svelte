@@ -21,6 +21,7 @@
 		invalid = false,
 		errorMessage = '',
 		only,
+		except,
 		onchange
 	}: {
 		/** ISO 3166-1 alpha-2 code, e.g. "PK". */
@@ -37,6 +38,8 @@
 		errorMessage?: string;
 		/** Offer only these ISO codes, e.g. the countries where Twilio has numbers in stock. */
 		only?: readonly string[];
+		/** Leave these ISO codes out, e.g. countries already on a list. */
+		except?: readonly string[];
 		onchange?: (code: string) => void;
 	} = $props();
 
@@ -44,10 +47,12 @@
 	// someone points at or focuses the box; a saved country is named and flagged straight from its code.
 	let warmed = $state(false);
 	let allowed = $derived(only ? new Set(only) : null);
+	let left = $derived(new Set(except ?? []));
+	const offered = (code: string) => (!allowed || allowed.has(code)) && !left.has(code);
 	let items = $derived(
 		warmed
 			? allCountryOptions()
-					.filter((country) => !allowed || allowed.has(country.code))
+					.filter((country) => offered(country.code))
 					.map((country) => ({ value: country.code, label: country.name }))
 			: []
 	);
@@ -59,8 +64,8 @@
 	// Reopening on a chosen country shows the whole list, not just that one country.
 	let results = $derived(
 		warmed
-			? searchCountries(query === selectedName ? '' : query).filter(
-					(country) => !allowed || allowed.has(country.code)
+			? searchCountries(query === selectedName ? '' : query).filter((country) =>
+					offered(country.code)
 				)
 			: []
 	);

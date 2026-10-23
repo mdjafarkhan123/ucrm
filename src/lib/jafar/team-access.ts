@@ -145,7 +145,10 @@ const AREA_PREFIXES: ReadonlyArray<readonly [JafarArea, readonly string[]]> = [
 			'/api/jafar/package-services'
 		]
 	],
-	['operations', ['/jafar/operations', '/api/jafar/operations']]
+	[
+		'operations',
+		['/jafar/operations', '/api/jafar/operations', '/jafar/texting-setup', '/api/jafar/texting-setup']
+	]
 ];
 
 /**

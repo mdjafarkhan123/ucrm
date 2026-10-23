@@ -3382,6 +3382,56 @@ export type Database = {
 					}
 				];
 			};
+			communication_messenger_login_sessions: {
+				Row: {
+					created_at: string;
+					encryption_key_id: string;
+					expires_at: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Insert: {
+					created_at?: string;
+					encryption_key_id: string;
+					expires_at?: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id?: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Update: {
+					created_at?: string;
+					encryption_key_id?: string;
+					expires_at?: string;
+					facebook_user_id?: string;
+					facebook_user_name?: string;
+					id?: string;
+					organization_id?: string;
+					user_id?: string;
+					user_token_ciphertext?: string;
+					user_token_nonce?: string;
+					user_token_tag?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_messenger_login_sessions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			communication_messenger_webhook_events: {
 				Row: {
 					body_sha256: string;
@@ -3903,6 +3953,27 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_countries: {
+				Row: {
+					changed_at: string;
+					changed_by_name: string | null;
+					country_code: string;
+					offered: boolean;
+				};
+				Insert: {
+					changed_at?: string;
+					changed_by_name?: string | null;
+					country_code: string;
+					offered?: boolean;
+				};
+				Update: {
+					changed_at?: string;
+					changed_by_name?: string | null;
+					country_code?: string;
+					offered?: boolean;
+				};
+				Relationships: [];
+			};
 			communication_sms_credit_accounts: {
 				Row: {
 					currency_code: string;
@@ -4126,6 +4197,7 @@ export type Database = {
 			communication_sms_destination_events: {
 				Row: {
 					actor: string | null;
+					actor_name: string | null;
 					destination_id: string;
 					event_kind: string;
 					id: string;
@@ -4135,6 +4207,7 @@ export type Database = {
 				};
 				Insert: {
 					actor?: string | null;
+					actor_name?: string | null;
 					destination_id: string;
 					event_kind: string;
 					id?: string;
@@ -4144,6 +4217,7 @@ export type Database = {
 				};
 				Update: {
 					actor?: string | null;
+					actor_name?: string | null;
 					destination_id?: string;
 					event_kind?: string;
 					id?: string;
@@ -4151,7 +4225,15 @@ export type Database = {
 					occurred_at?: string;
 					organization_id?: string;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_destination_events_destination_fkey';
+						columns: ['organization_id', 'destination_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_destinations';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
 			};
 			communication_sms_destinations: {
 				Row: {
@@ -4205,7 +4287,15 @@ export type Database = {
 					status?: string;
 					updated_at?: string;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_destinations_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			communication_sms_holds: {
 				Row: {
@@ -5481,6 +5571,39 @@ export type Database = {
 						referencedColumns: ['id'];
 					}
 				];
+			};
+			communication_sms_twilio_prices: {
+				Row: {
+					checked_at: string;
+					cost_changed_at: string | null;
+					cost_major: number;
+					country_code: string;
+					currency_code: string;
+					kind: string;
+					number_type: string;
+					previous_cost_major: number | null;
+				};
+				Insert: {
+					checked_at?: string;
+					cost_changed_at?: string | null;
+					cost_major: number;
+					country_code: string;
+					currency_code?: string;
+					kind: string;
+					number_type: string;
+					previous_cost_major?: number | null;
+				};
+				Update: {
+					checked_at?: string;
+					cost_changed_at?: string | null;
+					cost_major?: number;
+					country_code?: string;
+					currency_code?: string;
+					kind?: string;
+					number_type?: string;
+					previous_cost_major?: number | null;
+				};
+				Relationships: [];
 			};
 			communication_sms_usage_reconciliation_findings: {
 				Row: {
@@ -21890,6 +22013,7 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_destination_queue: { Args: never; Returns: Json };
 			communication_sms_effective_mode: {
 				Args: { p_organization_id: string };
 				Returns: string;
@@ -22008,111 +22132,6 @@ export type Database = {
 					to: 'communication_delivery_intents';
 					isOneToOne: true;
 					isSetofReturn: false;
-				};
-			};
-			communication_sms_reply_route_preview: {
-				Args: { p_client_id: string; p_organization_id: string };
-				Returns: {
-					code: string | null;
-					message: string | null;
-					mms_route: boolean;
-					ok: boolean;
-					recipient_country: string | null;
-					sender_country: string | null;
-					sender_id: string | null;
-					sender_type: string | null;
-				}[];
-			};
-			communication_sms_request_destination: {
-				Args: {
-					p_actor?: string;
-					p_country_code: string;
-					p_is_home?: boolean;
-					p_organization_id: string;
-				};
-				Returns: {
-					business_message: string | null;
-					country_code: string;
-					created_at: string;
-					id: string;
-					is_home: boolean;
-					off_at: string | null;
-					off_by: string | null;
-					off_reason: string | null;
-					organization_id: string;
-					ready_at: string | null;
-					ready_by: string | null;
-					requested_at: string;
-					requested_by: string | null;
-					status: string;
-					updated_at: string;
-				};
-			};
-			communication_sms_request_number_destinations: {
-				Args: { p_actor?: string; p_organization_id: string };
-				Returns: number;
-			};
-			communication_sms_route_preview: {
-				Args: {
-					p_client_contact_method_id: string;
-					p_organization_id: string;
-					p_sender_id?: string;
-				};
-				Returns: {
-					code: string | null;
-					message: string | null;
-					mms_route: boolean;
-					ok: boolean;
-					recipient_country: string | null;
-					sender_country: string | null;
-					sender_id: string | null;
-					sender_type: string | null;
-				}[];
-			};
-			communication_sms_switch_on_destination: {
-				Args: { p_actor: string; p_destination_id: string };
-				Returns: {
-					business_message: string | null;
-					country_code: string;
-					created_at: string;
-					id: string;
-					is_home: boolean;
-					off_at: string | null;
-					off_by: string | null;
-					off_reason: string | null;
-					organization_id: string;
-					ready_at: string | null;
-					ready_by: string | null;
-					requested_at: string;
-					requested_by: string | null;
-					status: string;
-					updated_at: string;
-				};
-			};
-			communication_sms_turn_off_destination: {
-				Args: {
-					p_actor: string;
-					p_business_message: string;
-					p_closing: boolean;
-					p_destination_id: string;
-					p_reason: string;
-				};
-				Returns: {
-					business_message: string | null;
-					country_code: string;
-					created_at: string;
-					id: string;
-					is_home: boolean;
-					off_at: string | null;
-					off_by: string | null;
-					off_reason: string | null;
-					organization_id: string;
-					ready_at: string | null;
-					ready_by: string | null;
-					requested_at: string;
-					requested_by: string | null;
-					status: string;
-					updated_at: string;
 				};
 			};
 			communication_sms_estimate_segments: {
@@ -22274,6 +22293,10 @@ export type Database = {
 				Args: { p_organization_id: string; p_since?: string };
 				Returns: number;
 			};
+			communication_sms_organization_destinations: {
+				Args: { p_organization_id: string };
+				Returns: Json;
+			};
 			communication_sms_outbound_state: {
 				Args: {
 					p_country_code: string;
@@ -22316,6 +22339,7 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_price_list: { Args: never; Returns: Json };
 			communication_sms_promotional_balance: {
 				Args: { p_organization_id: string };
 				Returns: number;
@@ -22535,6 +22559,10 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_record_twilio_prices: {
+				Args: { p_rows: Json };
+				Returns: number;
+			};
 			communication_sms_record_usage_reconciliation_finding: {
 				Args: {
 					p_organization_id: string;
@@ -22651,6 +22679,19 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_reply_route_preview: {
+				Args: { p_client_id: string; p_organization_id: string };
+				Returns: {
+					code: string;
+					message: string;
+					mms_route: boolean;
+					ok: boolean;
+					recipient_country: string;
+					sender_country: string;
+					sender_id: string;
+					sender_type: string;
+				}[];
+			};
 			communication_sms_request_credit_topup: {
 				Args: {
 					p_currency_code?: string;
@@ -22682,6 +22723,41 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			communication_sms_request_destination: {
+				Args: {
+					p_actor?: string;
+					p_country_code: string;
+					p_is_home?: boolean;
+					p_organization_id: string;
+				};
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_destinations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_request_number_destinations: {
+				Args: { p_actor?: string; p_organization_id: string };
+				Returns: number;
+			};
 			communication_sms_revoke_promotional_credit: {
 				Args: { p_credit_id: string; p_reason: string; p_revoked_by: string };
 				Returns: {
@@ -22705,6 +22781,23 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_route_preview: {
+				Args: {
+					p_client_contact_method_id: string;
+					p_organization_id: string;
+					p_sender_id?: string;
+				};
+				Returns: {
+					code: string;
+					message: string;
+					mms_route: boolean;
+					ok: boolean;
+					recipient_country: string;
+					sender_country: string;
+					sender_id: string;
+					sender_type: string;
+				}[];
 			};
 			communication_sms_save_registration_draft: {
 				Args: {
@@ -22775,6 +22868,37 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			communication_sms_set_country_offered: {
+				Args: {
+					p_actor_name: string;
+					p_country_code: string;
+					p_offered: boolean;
+				};
+				Returns: {
+					changed_at: string;
+					changed_by_name: string | null;
+					country_code: string;
+					offered: boolean;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_countries';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_set_country_price: {
+				Args: {
+					p_actor_name: string;
+					p_country_code: string;
+					p_effective_from: string;
+					p_mms: number;
+					p_number_month: number;
+					p_segment: number;
+					p_set_by: string;
+				};
+				Returns: Json;
 			};
 			communication_sms_set_default_sender: {
 				Args: {
@@ -23173,6 +23297,69 @@ export type Database = {
 				SetofOptions: {
 					from: '*';
 					to: 'communication_sms_registrations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_switch_on_destination: {
+				Args: {
+					p_actor: string;
+					p_actor_name?: string;
+					p_destination_id: string;
+				};
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_destinations';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
+			communication_sms_turn_off_destination: {
+				Args: {
+					p_actor: string;
+					p_actor_name?: string;
+					p_business_message: string;
+					p_closing: boolean;
+					p_destination_id: string;
+					p_reason: string;
+				};
+				Returns: {
+					business_message: string | null;
+					country_code: string;
+					created_at: string;
+					id: string;
+					is_home: boolean;
+					off_at: string | null;
+					off_by: string | null;
+					off_reason: string | null;
+					organization_id: string;
+					ready_at: string | null;
+					ready_by: string | null;
+					requested_at: string;
+					requested_by: string | null;
+					status: string;
+					updated_at: string;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'communication_sms_destinations';
 					isOneToOne: true;
 					isSetofReturn: false;
 				};

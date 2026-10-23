@@ -27,6 +27,7 @@
 		userId,
 		navigation = fallbackContractorNavigation,
 		supportUnread = 0,
+		textingToDo = 0,
 		ownerCanOpen = () => true,
 		ownerPhoto = null
 	}: {
@@ -48,6 +49,8 @@
 		navigation?: ContractorNavigation;
 		/** Owner only: support conversations waiting unread for Uplift, shown on the Support item. */
 		supportUnread?: number;
+		/** Owner only: countries waiting on Uplift in Texting setup, shown on its menu item. */
+		textingToDo?: number;
 		/** Owner variant: whether the signed-in person may open a page; a teammate sees only their areas. */
 		ownerCanOpen?: (href: string) => boolean;
 		/** Owner variant: the signed-in person's own photo — Jafar's, or a teammate's. */
@@ -234,6 +237,12 @@
 			items: [
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
+				{
+					label: 'Texting setup',
+					href: '/jafar/texting-setup',
+					icon: 'messageText',
+					count: textingToDo
+				},
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' }
 			]
 		},
