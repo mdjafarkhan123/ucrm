@@ -558,3 +558,21 @@ export const emailSetupCloseSchema = z.object({
 		.min(1, 'Write a note the contractor will see.')
 		.max(1000, 'Keep the note under 1,000 characters.')
 });
+
+// Settings → Messenger: connect the Pages ticked in the Choose Pages pop-up.
+const facebookPageId = z.string().regex(/^[0-9]{1,32}$/, 'Choose a Facebook Page.');
+
+export const messengerConnectPagesSchema = z
+	.object({
+		session_id: z.string().uuid('Log in with Facebook again.'),
+		page_ids: z
+			.array(facebookPageId)
+			.min(1, 'Tick at least one Page.')
+			.max(25, 'Connect up to 25 Pages at a time.')
+			.refine((ids) => new Set(ids).size === ids.length, 'Each Page can be ticked once.')
+	})
+	.strict();
+
+export const messengerConnectionUpdateSchema = z.object({ is_default: z.literal(true) }).strict();
+
+export const messengerTestQuerySchema = z.object({ since: z.string().datetime({ offset: true }) });

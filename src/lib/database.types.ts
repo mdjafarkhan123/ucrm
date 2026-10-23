@@ -3214,6 +3214,7 @@ export type Database = {
 					created_at: string;
 					disconnected_at: string | null;
 					encryption_key_id: string | null;
+					facebook_user_name: string | null;
 					id: string;
 					is_default: boolean;
 					last_checked_at: string | null;
@@ -3234,6 +3235,7 @@ export type Database = {
 					created_at?: string;
 					disconnected_at?: string | null;
 					encryption_key_id?: string | null;
+					facebook_user_name?: string | null;
 					id?: string;
 					is_default?: boolean;
 					last_checked_at?: string | null;
@@ -3254,6 +3256,7 @@ export type Database = {
 					created_at?: string;
 					disconnected_at?: string | null;
 					encryption_key_id?: string | null;
+					facebook_user_name?: string | null;
 					id?: string;
 					is_default?: boolean;
 					last_checked_at?: string | null;
@@ -3271,6 +3274,56 @@ export type Database = {
 				Relationships: [
 					{
 						foreignKeyName: 'communication_messenger_connections_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			communication_messenger_login_sessions: {
+				Row: {
+					created_at: string;
+					encryption_key_id: string;
+					expires_at: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Insert: {
+					created_at?: string;
+					encryption_key_id: string;
+					expires_at?: string;
+					facebook_user_id: string;
+					facebook_user_name: string;
+					id?: string;
+					organization_id: string;
+					user_id: string;
+					user_token_ciphertext: string;
+					user_token_nonce: string;
+					user_token_tag: string;
+				};
+				Update: {
+					created_at?: string;
+					encryption_key_id?: string;
+					expires_at?: string;
+					facebook_user_id?: string;
+					facebook_user_name?: string;
+					id?: string;
+					organization_id?: string;
+					user_id?: string;
+					user_token_ciphertext?: string;
+					user_token_nonce?: string;
+					user_token_tag?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_messenger_login_sessions_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';

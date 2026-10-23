@@ -19,11 +19,13 @@ const rawKeyringSchema = z
 	.object({ activeKeyId: keyIdSchema, keys: z.record(keyIdSchema, z.string().min(1)) })
 	.strict();
 
-export type MessengerSecretPurpose = 'page_token';
+// page_token belongs to a connection row; login_user_token to a short-lived login session row.
+export type MessengerSecretPurpose = 'page_token' | 'login_user_token';
 
 export type MessengerSecretContext = {
 	organizationId: string;
-	connectionId: string;
+	/** The row the ciphertext lives in: a connection, or a login session. */
+	recordId: string;
 	purpose: MessengerSecretPurpose;
 };
 
@@ -55,7 +57,9 @@ function decodeEncryptionKey(value: string): Uint8Array | null {
 	return new Uint8Array(decoded);
 }
 
-export function parseMessengerCredentialKeyring(raw: string | undefined): MessengerCredentialKeyring {
+export function parseMessengerCredentialKeyring(
+	raw: string | undefined
+): MessengerCredentialKeyring {
 	const invalid = () =>
 		new MessengerCredentialCryptoError(
 			'Messenger credential encryption is not configured correctly.',
@@ -92,7 +96,7 @@ function authenticatedContext(context: MessengerSecretContext): Buffer {
 			'ucrm:messenger-credential',
 			'1',
 			context.organizationId,
-			context.connectionId,
+			context.recordId,
 			context.purpose
 		].join(FIELD_SEPARATOR),
 		'utf8'
