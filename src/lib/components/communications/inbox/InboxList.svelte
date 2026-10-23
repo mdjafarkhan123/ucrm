@@ -59,10 +59,10 @@
 		)
 	);
 	// Customers waiting on the team come first (Front's "Unreplied", Intercom's "waiting on you"): the customer
-	// spoke last, or something is still unread. Opening a conversation never moves it out -- only an answer does.
-	const waitingOnTeam = (group: ConversationGroup) => group.awaitingReply || group.unreadCount > 0;
-	const needsReply = $derived(visibleGroups.filter(waitingOnTeam));
-	const earlier = $derived(visibleGroups.filter((group) => !waitingOnTeam(group)));
+	// spoke last. Opening a conversation never moves it out and an answer always does, wherever it was sent from;
+	// unread is its own signal (the green count), not a reason to wait.
+	const needsReply = $derived(visibleGroups.filter((group) => group.awaitingReply));
+	const earlier = $derived(visibleGroups.filter((group) => !group.awaitingReply));
 	const orderedGroups = $derived([...needsReply, ...earlier]);
 
 	// The list is one Tab stop, not one per row -- with hundreds of conversations a keyboard user would otherwise
