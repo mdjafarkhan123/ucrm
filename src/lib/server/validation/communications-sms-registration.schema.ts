@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const shortText = (label: string, max = 160) =>
+export const shortText = (label: string, max = 160) =>
 	z.string().trim().min(1, `Enter ${label}.`).max(max, `Keep ${label} under ${max} characters.`);
 const boundedText = (label: string, min: number, max: number) =>
 	z
@@ -8,14 +8,14 @@ const boundedText = (label: string, min: number, max: number) =>
 		.trim()
 		.min(min, `Enter at least ${min} characters for ${label}.`)
 		.max(max, `Keep ${label} under ${max} characters.`);
-const optionalText = (max = 160) =>
+export const optionalText = (max = 160) =>
 	z
 		.string()
 		.trim()
 		.max(max, `Keep this under ${max} characters.`)
 		.optional()
 		.transform((value) => value || undefined);
-const webUrl = z
+export const webUrl = z
 	.string()
 	.trim()
 	.url('Enter a complete web address, including https://.')
@@ -24,7 +24,7 @@ const webUrl = z
 		message: 'Enter a web address beginning with https:// or http://.'
 	});
 
-const addressSchema = z.object({
+export const addressSchema = z.object({
 	line1: shortText('the street address'),
 	line2: optionalText(),
 	city: shortText('the city'),
@@ -37,7 +37,7 @@ const addressSchema = z.object({
 		.refine((value) => /^[A-Z]{2}$/.test(value), 'Choose a country.')
 });
 
-const representativeSchema = z.object({
+export const representativeSchema = z.object({
 	first_name: shortText('the representative first name', 100),
 	last_name: shortText('the representative last name', 100),
 	business_title: shortText('the representative business title', 100),
@@ -53,7 +53,7 @@ const representativeSchema = z.object({
 // MessageFlow both need 40+ characters, and each MessageSample needs 20+ (max 1024) -- Stage 9C forwards these
 // answers to Twilio as-is, so a too-short attested answer must fail here rather than fail a real, billable
 // Twilio submission later.
-const messagingSchema = z.object({
+export const messagingSchema = z.object({
 	description: boundedText('how the business will use texting', 40, 2000),
 	consent_method: z.enum(['website_form', 'paper_form', 'verbal', 'text_initiated', 'other'], {
 		message: 'Choose how customers agree to receive texts.'

@@ -81,6 +81,7 @@ export type ReadinessAction =
 	| { kind: 'add_business_details'; label: string }
 	| { kind: 'fix_business_details'; label: string }
 	| { kind: 'see_business_details'; label: string }
+	| { kind: 'toll_free_check'; label: string; sender_id: string }
 	| { kind: 'update_paperwork'; label: string; paperwork_id: string }
 	| { kind: 'see_paperwork'; label: string; paperwork_id: string };
 
@@ -323,12 +324,13 @@ function band(
 		const by = check?.edit_expires_at
 			? ` Send the fix by ${shortDate(check.edit_expires_at)}.`
 			: '';
-		// The fix button arrives with the toll-free form (Part 4c).
 		return {
 			status: 'action_needed',
 			title: 'Carriers turned down your toll-free check',
 			line: `${check?.failure_reason ?? 'Carriers asked for a change.'}${by}`,
-			action: null
+			action: number.sender_id
+				? { kind: 'toll_free_check', label: 'Fix and send again', sender_id: number.sender_id }
+				: null
 		};
 	}
 	if (steps.approval.state === 'failed') {
@@ -353,7 +355,13 @@ function band(
 					status: 'business_details_needed',
 					title: 'Business details needed',
 					line: 'Toll-free numbers get a quick check before they text. Your business answers carry over.',
-					action: null
+					action: number.sender_id
+						? {
+								kind: 'toll_free_check',
+								label: 'Add business details',
+								sender_id: number.sender_id
+							}
+						: null
 				}
 			: {
 					status: 'business_details_needed',
@@ -375,7 +383,9 @@ function band(
 			status: 'under_review',
 			title: 'Under review',
 			line: 'Carriers are checking your toll-free number, usually a few working days. The answer shows here.',
-			action: null
+			action: number.sender_id
+				? { kind: 'toll_free_check', label: 'See what you sent', sender_id: number.sender_id }
+				: null
 		};
 	}
 	if (steps.approval.state === 'waiting') {

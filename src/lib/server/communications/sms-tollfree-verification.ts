@@ -103,14 +103,17 @@ const REGISTRATION_AUTHORITIES = [
 	'NEQ'
 ];
 
-function businessType(answers: SmsRegistrationAnswers): string {
+function businessType(answers: Pick<SmsRegistrationAnswers, 'business_type'>): string {
 	if (answers.business_type === 'sole_proprietorship') return 'SOLE_PROPRIETOR';
 	if (answers.business_type === 'nonprofit_corporation') return 'NON_PROFIT';
 	return 'PRIVATE_PROFIT';
 }
 
-function registrationAuthority(raw: string): string {
+// The form doesn't ask what kind of number it is: a US business's number is its EIN; elsewhere a saved kind
+// from the texting registration is used when Twilio knows it, else OTHER.
+function registrationAuthority(raw: string, country: string): string {
 	const normalized = raw.trim().toUpperCase();
+	if (!normalized && country === 'US') return 'EIN';
 	return REGISTRATION_AUTHORITIES.find((value) => value.toUpperCase() === normalized) ?? 'OTHER';
 }
 
@@ -122,6 +125,7 @@ export function tollfreeVerificationForm(
 	const business = answers.business;
 	const { messaging, business_address: address, authorized_representative: contact } = business;
 	const consent = messaging.consent_method as keyof typeof OPT_IN_TYPES;
+	const registrationCountry = business.business_registration_country ?? address.country_code;
 	return {
 		TollfreePhoneNumberSid: context.phoneNumberSid,
 		BusinessName: business.legal_business_name,
@@ -142,9 +146,10 @@ export function tollfreeVerificationForm(
 			? {
 					BusinessRegistrationNumber: business.business_registration_id,
 					BusinessRegistrationAuthority: registrationAuthority(
-						business.business_registration_id_type ?? ''
+						business.business_registration_id_type ?? '',
+						registrationCountry
 					),
-					BusinessRegistrationCountry: address.country_code
+					BusinessRegistrationCountry: registrationCountry
 				}
 			: {}),
 		NotificationEmail: context.notificationEmail,

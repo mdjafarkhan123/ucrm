@@ -5156,6 +5156,50 @@ export type Database = {
 					}
 				];
 			};
+			communication_sms_tollfree_proof_images: {
+				Row: {
+					id: string;
+					organization_id: string;
+					verification_id: string;
+					public_token: string;
+					object_key: string;
+					mime_type: string;
+					file_name: string;
+					size_bytes: number;
+					created_at: string;
+				};
+				Insert: {
+					id?: string;
+					organization_id: string;
+					verification_id: string;
+					public_token?: string;
+					object_key: string;
+					mime_type: string;
+					file_name: string;
+					size_bytes: number;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					organization_id?: string;
+					verification_id?: string;
+					public_token?: string;
+					object_key?: string;
+					mime_type?: string;
+					file_name?: string;
+					size_bytes?: number;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'communication_sms_tollfree_proof_images_check_fkey';
+						columns: ['organization_id', 'verification_id'];
+						isOneToOne: false;
+						referencedRelation: 'communication_sms_tollfree_verifications';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			communication_sms_tollfree_verifications: {
 				Row: {
 					answers: Json;

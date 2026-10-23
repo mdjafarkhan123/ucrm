@@ -199,6 +199,66 @@ describe('tollfreeVerificationForm', () => {
 		expect(paths).toContain('opt_in_image_urls');
 		expect(paths).toContain('business.messaging.consent_method');
 	});
+
+	it('accepts the form without the contact title, position or number type Twilio never reads', () => {
+		const { business_title, job_position, ...contact } = answers.business.authorized_representative;
+		void business_title;
+		void job_position;
+		const result = smsTollfreeAnswersSchema.safeParse({
+			...answers,
+			business: {
+				...answers.business,
+				business_registration_id_type: undefined,
+				authorized_representative: contact
+			}
+		});
+		expect(result.success).toBe(true);
+		const form = tollfreeVerificationForm(result.data!, {
+			phoneNumberSid: PHONE_SID,
+			notificationEmail: 'ops@x.com',
+			externalReferenceId: 'c'
+		});
+		expect(form.BusinessRegistrationAuthority).toBe('EIN');
+	});
+
+	it('files the number under the country it was registered in, not the address', () => {
+		const form = tollfreeVerificationForm(
+			{
+				...answers,
+				business: {
+					...answers.business,
+					business_registration_id_type: undefined,
+					business_registration_country: 'CA'
+				}
+			},
+			{ phoneNumberSid: PHONE_SID, notificationEmail: 'ops@x.com', externalReferenceId: 'c' }
+		);
+		expect(form.BusinessRegistrationCountry).toBe('CA');
+		expect(form.BusinessRegistrationAuthority).toBe('OTHER');
+		expect(form.BusinessCountry).toBe('US');
+	});
+
+	it('refuses a business without a registration number, and a sole trader outside the US or Canada', () => {
+		const business = smsTollfreeAnswersSchema.safeParse({
+			...answers,
+			business: { ...answers.business, business_registration_id: '' }
+		});
+		expect(business.error!.issues.map((issue) => issue.path.join('.'))).toEqual([
+			'business.business_registration_id'
+		]);
+		const abroad = smsTollfreeAnswersSchema.safeParse({
+			...answers,
+			business: {
+				...answers.business,
+				business_type: 'sole_proprietorship',
+				business_registration_id: '',
+				business_address: { ...answers.business.business_address, country_code: 'GB' }
+			}
+		});
+		expect(abroad.error!.issues.map((issue) => issue.path.join('.'))).toEqual([
+			'business.business_address.country_code'
+		]);
+	});
 });
 
 describe('sendTollfreeCheck', () => {

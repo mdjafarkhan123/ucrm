@@ -22,6 +22,8 @@
 		flag,
 		step,
 		stepHints,
+		section,
+		stepNames,
 		actions,
 		children
 	}: {
@@ -35,17 +37,23 @@
 		step: number | null;
 		/** The quiet line under each step's name. */
 		stepHints?: [string, string, string, string];
+		/** The breadcrumb step before the last; Number paperwork by default. */
+		section?: { label: string; href?: string; icon: string };
+		/** Each step's name and icon where the setup isn't paperwork's own. */
+		stepNames?: { title: string; icon: string }[];
 		actions?: Snippet;
 		children: Snippet;
 	} = $props();
 
 	const steps = $derived(
-		[
-			{ title: 'Country and kind', icon: flagIcon },
-			{ title: 'Business details', icon: buildingIcon },
-			{ title: 'Documents', icon: filesIcon },
-			{ title: 'Check and send', icon: sendIcon }
-		].map((item, index) => ({
+		(
+			stepNames ?? [
+				{ title: 'Country and kind', icon: flagIcon },
+				{ title: 'Business details', icon: buildingIcon },
+				{ title: 'Documents', icon: filesIcon },
+				{ title: 'Check and send', icon: sendIcon }
+			]
+		).map((item, index) => ({
 			n: index + 1,
 			...item,
 			hint: index + 1 === step ? 'You are here' : (stepHints?.[index] ?? '')
@@ -62,7 +70,7 @@
 				href: resolve('/(app)/settings/communications/sms'),
 				icon: messageIcon
 			},
-			{
+			section ?? {
 				label: 'Number paperwork',
 				href: resolve('/(app)/settings/communications/sms/paperwork'),
 				icon: fileCheckIcon
@@ -85,7 +93,7 @@
 	</header>
 
 	{#if step !== null}
-		<ImportStepper current={step} {steps} label="Paperwork steps" />
+		<ImportStepper current={step} {steps} label={stepNames ? `${title} steps` : 'Paperwork steps'} />
 	{/if}
 
 	{@render children()}
