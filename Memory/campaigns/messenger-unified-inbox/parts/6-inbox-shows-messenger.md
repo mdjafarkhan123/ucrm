@@ -1,6 +1,6 @@
 # Part 6 — Inbox shows Messenger
 
-**State:** Design — look chosen 2026-10-23; reply box B approved 2026-10-23; next: fold-up and states.
+**State:** Design — look chosen 2026-10-23; reply box B approved; fold-up and states drawn 2026-10-23, waiting for Jafar's yes.
 
 **Chosen (2026-10-23):** Claude reviewed A/B; Jafar repeated "timeline looks like a native messaging app people
 know, also premium" and left the pick to Claude ("you do what you want"). Chosen: a WhatsApp Desktop mix on
@@ -18,20 +18,19 @@ Tabler — design skill needs an exception.
 
 **Jafar's direction (2026-10-23):** this part also designs the unified inbox's new look (all channels, not only
 Messenger). The chat timeline must look, feel and behave like a native messaging app people know (WhatsApp,
-iMessage, Messenger): grouped bubbles, avatar on a group's last bubble, times between groups, pill reply bar with a
-round send button, premium Dribbble polish. He likes Option B's idea of hiding the customer details behind a
+iMessage, Messenger): grouped bubbles, avatar on a group's last bubble, times between groups, premium Dribbble polish. He likes Option B's idea of hiding the customer details behind a
 "Details" button (collapsible right panel) so the chat gets the room.
 
-**Jafar's addition (2026-10-23) — buttons fold when a part shrinks:** labels drop to icons (tooltip on hover),
-then the least-used buttons move into ⋯ one at a time from the right; Send, the channel switch and Details never
-hide; ⋯ gets a dot when a hidden button is on (Star, Follow). Hide order — header: Archive → Star → Mark as unread →
-Follow → Assign; reply box: emoji → files from the client → snippets; list: Filter label, then tabs fold into
-"All ▾". Followed: Gmail, Front, Slack, Office (overflow menu).
+**Jafar's addition (2026-10-23) — buttons fold when a part shrinks:** the full rule and hide order are in the
+note of fold-up section `jU783` (followed Gmail, Front, Slack, Office).
 
 **Reply box — Approved B (Jafar, 2026-10-23):** section `j93I8l` on `yjdF0` (four states), now in `np8WS`. Team inbox box: Reply / Internal comment tabs on its top edge,
 tools along the bottom, Send in words; Internal comment turns it yellow. Followed Intercom, Front, GoHighLevel.
 
-**Next session:** read `.claude/skills/design/guide.md`, then draw the fold-up (wide/medium/narrow; Details open = medium), a drag
-handle hover example, and the states (window closing/closed, Page disconnected, "Facebook user" lead + Link to a
-client, sending/sent/delivered/seen, failed). Keep from live: Message details pop-up, Minimize composer, text
-credit / no permission notices. Add brand-mark exception, channel colours and bubble rules to the design skill.
+**Drawn 2026-10-23, not yet approved:** fold-up `jU783` (medium screen with Details open, narrow chat 400 with ⋯
+menus, list at 240, drag-line hover) and states `y2sz2l` (window closing/closed + channel menu, Page disconnected,
+texts stopped / no permission, minimized box, Message details, ticks sending→seen/failed, "Facebook user" + Link
+to a client).
+
+**Next:** Jafar reviews; change in place. On yes: add brand-mark exception, channel colours, bubble and tick rules
+to the design skill; then a build session builds.
