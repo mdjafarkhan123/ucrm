@@ -54,6 +54,8 @@
 	import AddNumberDialog from '$lib/components/communications/add-number/AddNumberDialog.svelte';
 	import NumberReadinessCard from '$lib/components/communications/number-readiness/NumberReadinessCard.svelte';
 	import ReadinessSummary from '$lib/components/communications/number-readiness/ReadinessSummary.svelte';
+	import TextAnotherCountryDialog from '$lib/components/communications/text-another-country/TextAnotherCountryDialog.svelte';
+	import { fetchTextingCountries, textingCountriesKey } from '$lib/communications/sms-destinations';
 	import {
 		fetchNumberReadiness,
 		numberCard,
@@ -98,7 +100,20 @@
 			numberCard(number, readinessQuery.data?.us_registration ?? null)
 		)
 	);
-	const summary = $derived(readinessSummary(readinessQuery.data?.numbers ?? [], cards));
+	// The countries the business asked for (Part 5c) join Where you can text as Setting up until Uplift is done.
+	const countriesQuery = createQuery(() => ({
+		queryKey: textingCountriesKey,
+		queryFn: fetchTextingCountries,
+		staleTime: 60_000
+	}));
+	let askCountryOpen = $state(false);
+	const summary = $derived(
+		readinessSummary(
+			readinessQuery.data?.numbers ?? [],
+			cards,
+			countriesQuery.data?.destinations ?? []
+		)
+	);
 	let actionKey = $state<string | null>(null);
 
 	function showBusinessDetails() {
@@ -549,6 +564,14 @@
 			/>
 		{/if}
 
+		{#if askCountryOpen}
+			<TextAnotherCountryDialog
+				open
+				numbers={readinessQuery.data?.numbers ?? []}
+				onClose={() => (askCountryOpen = false)}
+			/>
+		{/if}
+
 		<div class="sms-settings__readiness" aria-busy={readinessQuery.isPending}>
 			{#if readinessQuery.isPending}
 				<div class="sms-settings__shape" aria-label="Loading your numbers">
@@ -601,7 +624,7 @@
 					</EmptyState>
 				</div>
 			{:else}
-				<ReadinessSummary {summary} {cards} />
+				<ReadinessSummary {summary} {cards} onAskCountry={() => (askCountryOpen = true)} />
 				<div class="sms-settings__cards">
 					{#each cards as card (card.key)}
 						<NumberReadinessCard

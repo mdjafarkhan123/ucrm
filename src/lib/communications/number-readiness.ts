@@ -448,9 +448,20 @@ export function numberCard(
 
 const NEEDS_YOU: ReadinessStatus[] = ['action_needed', 'business_details_needed', 'texting_paused'];
 
+/**
+ * A country the business asked Uplift to switch on (Part 5c). It is Ready once Uplift has switched it on and
+ * one of the business's numbers can text it; until then it shows Setting up.
+ */
+export type SummaryDestination = { country: string; status: 'setting_up' | 'ready' | 'off' };
+
+/** A +1 number texts both the US and Canada once the country is switched on. */
+const reachOf = (number: ReadinessNumber) =>
+	TOLL_FREE_COUNTRIES.includes(number.country_code) ? TOLL_FREE_COUNTRIES : [number.country_code];
+
 export function readinessSummary(
 	numbers: ReadinessNumber[],
-	cards: NumberCard[]
+	cards: NumberCard[],
+	destinations: SummaryDestination[] = []
 ): ReadinessSummary {
 	const counts: Partial<Record<ReadinessStatus, number>> = {};
 	for (const card of cards) {
@@ -462,6 +473,13 @@ export function readinessSummary(
 			reach.set(code, (reach.get(code) ?? false) || cards[index].can_text);
 		}
 	});
+	for (const destination of destinations) {
+		if (destination.status === 'off') continue;
+		const texts = numbers.some(
+			(number, index) => cards[index].can_text && reachOf(number).includes(destination.country)
+		);
+		reach.set(destination.country, destination.status === 'ready' && texts);
+	}
 	const countries = [...reach.entries()]
 		.map(([code, ready]) => ({ code, name: countryDisplayName(code), ready }))
 		.sort((a, b) => a.name.localeCompare(b.name));
