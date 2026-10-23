@@ -18,6 +18,6 @@ spoke last) and real channel logos. Evidence: `docs/evidence/messenger-part9/REA
 recovery runbook).
 
 **Next:** Part 10, Jafar-owned Meta App Review (privacy and data-deletion URLs, Advanced Access, Human Agent).
-Waiting on Jafar: Messenger settings header uses a phone icon; Text and Website chat logos look alike; Pencil redraw
-of channel logos. Service capacity remains unverified.
+Channel logos (`src/lib/assets/channels/`) and the Messenger heading logo are done; Flaticon credit is deferred to
+the marketing site. Service capacity remains unverified.
 **Blockers:** real customers require Meta Advanced Access (Part 10).
