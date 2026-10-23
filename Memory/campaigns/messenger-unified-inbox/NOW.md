@@ -1,15 +1,22 @@
 # Messenger in the Unified Inbox — now
 
-**Goal:** A business connects its Facebook Page; customers' Messenger messages arrive in the Conversations inbox
-like GoHighLevel does; staff reply from there; Meta's rules are respected. Messenger only (Instagram later).
-**Core agreement — read on every resume:** `docs/messenger-behavior-contract.md` (Summary, First version, Rules, Decided) and the Messenger/Instagram + Connections sections of `docs/unified-inbox-behavior-contract.md`.
-**Plan:** `docs/messenger-behavior-contract.md` and `docs/messenger-implementation-plan.md` — approved 2026-10-23, including the three product choices.
-**Stage:** Building. Parts 3–7 done; Part 8 verified, waiting to merge.
+**Goal:** Businesses connect Facebook Pages, receive customers' Messenger messages in Conversations and reply
+there, following GoHighLevel and Meta's rules. Messenger only; Instagram later.
+**Core agreement — read every resume:** `docs/messenger-behavior-contract.md` (Summary, First version, Rules,
+Decided); `docs/unified-inbox-behavior-contract.md` (Messenger/Instagram and Connections sections).
+**Approved plan:** `docs/messenger-implementation-plan.md`, Jafar 2026-10-23.
+**Stage:** Building/proving. Parts 1–8 complete 2026-10-23.
 
-**Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1709471683925717` (2nd Facebook account), development mode, portfolio Uplift Contractor 855656587107152, Business Verification **Verified** 2026-10-18. Webhook host `https://app.upliftcontractor.com`. Test Page **Uplift Contractor** (Random News is another account — never use it). Jafar logs in, types passwords and uploads; Claude drives Chrome.
+**Facts:** Meta app Ucrm Messaging `1709471683925717`, development mode, second Facebook account. Business portfolio
+Uplift Contractor `855656587107152`, verified 2026-10-18. Test Page Uplift Contractor `1121199934412688`, connected
+to Raad LTD. Never use Random News. Webhook host `https://app.upliftcontractor.com`; Login configuration
+`1133535439212464`. Credentials remain in `.env`. Jafar handles passwords/uploads.
 
-**Done:** Parts 1, 1b, 2, 3, 4, 5 (2026-10-23). Uplift Contractor connected to Raad LTD in the live app. Webhook live; test Page 1121199934412688 subscribed (see `parts/5-inbound-webhook.md`). Tables `communication_messenger_{connections,identities,webhook_events}`; save function `record_communication_messenger_inbound_message`; key `MESSENGER_CREDENTIAL_KEYRING` in `.env`. Login configuration ID `1133535439212464`.
+**Done:** Connect/reconnect/history, signed save-first webhook, inbox, replies and Seen proven live (parts 4–7).
+Part 8 adds hourly connection checks, conditional claims, reconnect warnings and phone Settings repair; migration
+`20270104090000_messenger_connection_health.sql` applied. Cron health wake proven 07:12 UTC, 2026-10-23.
+Evidence: `docs/evidence/messenger-part8/README.md`.
 
-**Active part:** 8 Hardening and performance (`parts/8-hardening.md`), `codex/messenger-part8`. Next: merge, apply the tested migration, verify cron; then Part 9 live proof.
-
-**Blockers:** none.
+**Next:** Part 9 full live walkthrough; then Part 10 Jafar-owned Meta App Review. Review the Page's own Facebook
+inbox echo, closed-window UI, and app-level webhook-disable recovery. Service capacity remains unverified.
+**Blockers:** none for Part 9; real customers require Meta Advanced Access.

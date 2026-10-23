@@ -49,3 +49,11 @@ provider rate limits and production deployment resources remain unverified. The 
 that evidence before public launch. Meta disabling the app-level callback while leaving the Page subscription
 intact cannot be proven by this Page subscription check; Part 9/10 must verify webhook dashboard recovery before
 go-live. No inference from lack of customer messages marks a Page broken. Reconnect remains an owner action.
+
+## Integration and scheduled proof
+
+Merged into main; combined focused type check again passed with zero errors/warnings, and all 81 Messenger tests
+passed again. Migration `20270104090000_messenger_connection_health.sql` applied and recorded atomically. The first
+scheduled health-only wake dispatched at **2026-10-23 07:12:00 UTC**, updated the test connection's check timestamp
+at **07:12:00.581 UTC**, and left it active with no reconnect reason. The protected route returned HTTP 200 with `health: {checked: 1, reconnect: 0, deferred: 0, skipped: 0}`; no timeout. No incoming/outgoing messages were pending.
+The migration version follows the concurrently merged SMS migrations; its earlier rollback-test filename differs.
