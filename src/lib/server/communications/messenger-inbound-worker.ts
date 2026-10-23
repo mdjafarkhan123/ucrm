@@ -1,10 +1,12 @@
+import { env } from '$env/dynamic/private';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { parseMessengerInboundMessages } from './messenger-webhook';
+import { parseMessengerInboundMessages, parseMessengerPageReports } from './messenger-webhook';
 
 // Messenger Part 5: turns saved webhook deliveries (communication_messenger_webhook_events) into inbox messages.
 // The webhook route saves first and answers Meta at once, then wakes this; the one-minute cron wakes it too, so a
 // delivery the instant wake missed is still processed. Each wake claims its own batch (SKIP LOCKED), so the two
-// can overlap safely, and the record RPC ignores a message ID it already has.
+// can overlap safely, and the record RPC ignores a message ID it already has. Part 7 adds Meta's reports about the
+// Page's own messages: echoes and delivered/read watermarks.
 
 export const MESSENGER_WORKER_NAME = 'communications-messenger-inbound';
 const BATCH_SIZE = 25;
@@ -29,6 +31,22 @@ export type MessengerInboundWorkerClient = {
 		target_text: string;
 		target_attachment_count: number;
 		target_sent_at: string | null;
+	}): Promise<{ error: DbError }>;
+	recordEcho(args: {
+		target_connection_id: string;
+		target_psid: string;
+		target_mid: string;
+		target_metadata: string | null;
+		target_text: string;
+		target_sent_at: string | null;
+		target_from_this_app: boolean;
+	}): Promise<{ error: DbError }>;
+	recordReceipt(args: {
+		target_connection_id: string;
+		target_psid: string;
+		target_kind: 'delivered' | 'read';
+		target_watermark: string;
+		target_mids: string[];
 	}): Promise<{ error: DbError }>;
 	finish(
 		id: string,
@@ -65,6 +83,18 @@ function resolveClient(client?: MessengerInboundWorkerClient): MessengerInboundW
 			});
 			return { error };
 		},
+		recordEcho: async (args) => {
+			const { error } = await owner.rpc('record_communication_messenger_echo', {
+				...args,
+				target_metadata: args.target_metadata as string,
+				target_sent_at: args.target_sent_at as string
+			});
+			return { error };
+		},
+		recordReceipt: async (args) => {
+			const { error } = await owner.rpc('record_communication_messenger_receipt', args);
+			return { error };
+		},
 		finish: async (id, claimToken, processingError) => {
 			const now = new Date().toISOString();
 			const { error } = await owner
@@ -82,16 +112,24 @@ function resolveClient(client?: MessengerInboundWorkerClient): MessengerInboundW
 	};
 }
 
-async function processEvent(client: MessengerInboundWorkerClient, event: MessengerWebhookEventRow) {
+async function processEvent(
+	client: MessengerInboundWorkerClient,
+	event: MessengerWebhookEventRow,
+	ourAppId: string | null
+) {
 	const connectionIds = new Map<string, string | null>();
-	for (const message of parseMessengerInboundMessages(event.payload)) {
-		if (!connectionIds.has(message.pageId)) {
-			const found = await client.findConnectionId(message.pageId);
+	// A Page no business has connected (or Meta's dashboard test sample): kept as a raw delivery only.
+	async function connectionFor(pageId: string) {
+		if (!connectionIds.has(pageId)) {
+			const found = await client.findConnectionId(pageId);
 			if (found.error) throw new Error(`Connection lookup failed: ${found.error.message}`);
-			connectionIds.set(message.pageId, found.data);
+			connectionIds.set(pageId, found.data);
 		}
-		// A Page no business has connected (or Meta's dashboard test sample): kept as a raw delivery only.
-		const connectionId = connectionIds.get(message.pageId);
+		return connectionIds.get(pageId) ?? null;
+	}
+
+	for (const message of parseMessengerInboundMessages(event.payload)) {
+		const connectionId = await connectionFor(message.pageId);
 		if (!connectionId) continue;
 
 		const recorded = await client.recordMessage({
@@ -104,12 +142,46 @@ async function processEvent(client: MessengerInboundWorkerClient, event: Messeng
 		});
 		if (recorded.error) throw new Error(`Recording message failed: ${recorded.error.message}`);
 	}
+
+	for (const report of parseMessengerPageReports(event.payload)) {
+		const connectionId = await connectionFor(report.pageId);
+		if (!connectionId) continue;
+
+		const recorded =
+			report.kind === 'echo'
+				? await client.recordEcho({
+						target_connection_id: connectionId,
+						target_psid: report.psid,
+						target_mid: report.mid,
+						target_metadata: report.metadata,
+						target_text: report.text,
+						target_sent_at: report.sentAt,
+						target_from_this_app: ourAppId !== null && report.appId === ourAppId
+					})
+				: await client.recordReceipt({
+						target_connection_id: connectionId,
+						target_psid: report.psid,
+						target_kind: report.kind,
+						target_watermark: report.watermark,
+						target_mids: report.mids
+					});
+		if (recorded.error)
+			throw new Error(`Recording a Page report failed: ${recorded.error.message}`);
+	}
 }
 
 export async function drainMessengerWebhookEvents(
-	options: { client?: MessengerInboundWorkerClient; batchSize?: number; maxBatches?: number } = {}
+	options: {
+		client?: MessengerInboundWorkerClient;
+		batchSize?: number;
+		maxBatches?: number;
+		// Our Meta app: an echo carrying it was sent from UCRM, anything else from the Page's own inbox.
+		ourAppId?: string | null;
+	} = {}
 ): Promise<MessengerDrainResult> {
 	const client = resolveClient(options.client);
+	const ourAppId =
+		options.ourAppId === undefined ? env.META_APP_ID?.trim() || null : options.ourAppId;
 	const batchSize = options.batchSize ?? BATCH_SIZE;
 	const result: MessengerDrainResult = { claimed: 0, processed: 0, failed: 0 };
 
@@ -124,7 +196,7 @@ export async function drainMessengerWebhookEvents(
 			if (!event.claim_token) continue;
 			let failure: string | null = null;
 			try {
-				await processEvent(client, event);
+				await processEvent(client, event, ourAppId);
 			} catch (error) {
 				failure = error instanceof Error ? error.message : String(error);
 			}

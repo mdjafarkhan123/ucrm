@@ -611,3 +611,12 @@ export async function findMessengerTestArrival(
 		}
 	};
 }
+
+/** The Page key a reply is sent with, decrypted just before the send; null when the Page holds no key. */
+export async function loadMessengerPageToken(input: {
+	organizationId: string;
+	connectionId: string;
+}): Promise<string | null> {
+	const row = await loadLiveConnection(input.organizationId, input.connectionId);
+	return row ? pageTokenOf(row) : null;
+}

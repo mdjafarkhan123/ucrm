@@ -32,6 +32,8 @@ function fakeClient(
 			error: null
 		})),
 		recordMessage: vi.fn(async () => ({ error: null as { message: string } | null })),
+		recordEcho: vi.fn(async () => ({ error: null as { message: string } | null })),
+		recordReceipt: vi.fn(async () => ({ error: null as { message: string } | null })),
 		finish: vi.fn(async () => ({ error: null }))
 	};
 	return client satisfies Client;
@@ -98,5 +100,80 @@ describe('drainMessengerWebhookEvents', () => {
 
 		expect(result.claimed).toBe(5);
 		expect(client.claim).toHaveBeenCalledTimes(3);
+	});
+
+	it('records echoes as ours or from the Page’s own inbox, and delivered/read watermarks', async () => {
+		const payload = {
+			object: 'page',
+			entry: [
+				{
+					id: '9001',
+					messaging: [
+						{
+							sender: { id: '9001' },
+							recipient: { id: '7001' },
+							timestamp: 1_790_000_000_000,
+							message: {
+								mid: 'm_ours',
+								is_echo: true,
+								app_id: 555,
+								metadata: 'intent-1',
+								text: 'Hi'
+							}
+						},
+						{
+							sender: { id: '9001' },
+							recipient: { id: '7001' },
+							timestamp: 1_790_000_001_000,
+							message: {
+								mid: 'm_fb',
+								is_echo: true,
+								app_id: 263902037430900,
+								text: 'From Facebook'
+							}
+						},
+						{
+							sender: { id: '7001' },
+							recipient: { id: '9001' },
+							delivery: { watermark: 1_790_000_002_000, mids: ['m_ours'] }
+						},
+						{
+							sender: { id: '7001' },
+							recipient: { id: '9001' },
+							read: { watermark: 1_790_000_003_000 }
+						}
+					]
+				}
+			]
+		};
+		const client = fakeClient([{ id: 'e1', payload }], { '9001': 'conn-1' });
+		const result = await drainMessengerWebhookEvents({ client, ourAppId: '555' });
+
+		expect(result).toEqual({ claimed: 1, processed: 1, failed: 0 });
+		expect(client.recordMessage).not.toHaveBeenCalled();
+		expect(client.recordEcho).toHaveBeenCalledWith(
+			expect.objectContaining({
+				target_mid: 'm_ours',
+				target_metadata: 'intent-1',
+				target_from_this_app: true
+			})
+		);
+		expect(client.recordEcho).toHaveBeenCalledWith(
+			expect.objectContaining({
+				target_mid: 'm_fb',
+				target_text: 'From Facebook',
+				target_from_this_app: false
+			})
+		);
+		expect(client.recordReceipt).toHaveBeenCalledWith({
+			target_connection_id: 'conn-1',
+			target_psid: '7001',
+			target_kind: 'delivered',
+			target_watermark: new Date(1_790_000_002_000).toISOString(),
+			target_mids: ['m_ours']
+		});
+		expect(client.recordReceipt).toHaveBeenCalledWith(
+			expect.objectContaining({ target_kind: 'read', target_mids: [] })
+		);
 	});
 });

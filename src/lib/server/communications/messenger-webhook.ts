@@ -84,10 +84,17 @@ const messagingSchema = z
 				mid: z.string().min(1).max(512),
 				text: z.string().optional(),
 				is_echo: z.boolean().optional(),
+				app_id: z.union([z.number(), z.string()]).optional(),
+				metadata: z.string().optional(),
 				attachments: z.array(z.unknown()).optional()
 			})
 			.passthrough()
-			.optional()
+			.optional(),
+		delivery: z
+			.object({ watermark: z.number(), mids: z.array(z.string()).optional() })
+			.passthrough()
+			.optional(),
+		read: z.object({ watermark: z.number() }).passthrough().optional()
 	})
 	.passthrough();
 
@@ -116,9 +123,9 @@ export type MessengerInboundMessage = {
 
 const MAX_TEXT_LENGTH = 20_000;
 
-// Pulls the customer messages out of one delivery. Echoes (the Page's own sends), delivered and read receipts
-// are left for Part 7, which records outgoing messages; anything malformed is skipped, never thrown, so one bad
-// item cannot block the rest of a batch Meta sent together.
+// Pulls the customer messages out of one delivery. Echoes (the Page's own sends) and delivered/read receipts are
+// read by parseMessengerPageReports below; anything malformed is skipped, never thrown, so one bad item cannot
+// block the rest of a batch Meta sent together.
 export function parseMessengerInboundMessages(payload: unknown): MessengerInboundMessage[] {
 	const delivery = deliverySchema.safeParse(payload);
 	if (!delivery.success || delivery.data.object !== 'page') return [];
@@ -145,4 +152,86 @@ export function parseMessengerInboundMessages(payload: unknown): MessengerInboun
 		}
 	}
 	return messages;
+}
+
+function isoTime(milliseconds: number | undefined): string | null {
+	if (milliseconds === undefined) return null;
+	const date = new Date(milliseconds);
+	return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+export type MessengerPageReport =
+	| {
+			kind: 'echo';
+			pageId: string;
+			psid: string;
+			mid: string;
+			text: string;
+			/** Our intent ID when the message was sent from UCRM. */
+			metadata: string | null;
+			appId: string | null;
+			sentAt: string | null;
+	  }
+	| {
+			kind: 'delivered' | 'read';
+			pageId: string;
+			psid: string;
+			/** Everything the Page sent this person at or before this time. */
+			watermark: string;
+			mids: string[];
+	  };
+
+// What Meta reports about the Page's own messages (Part 7): echoes of messages the Page sent, from UCRM or
+// anywhere else, and delivered/read watermarks from the customer's side.
+export function parseMessengerPageReports(payload: unknown): MessengerPageReport[] {
+	const delivery = deliverySchema.safeParse(payload);
+	if (!delivery.success || delivery.data.object !== 'page') return [];
+
+	const reports: MessengerPageReport[] = [];
+	for (const entry of delivery.data.entry) {
+		for (const raw of entry.messaging ?? []) {
+			const item = messagingSchema.safeParse(raw);
+			if (!item.success) continue;
+			const { sender, recipient, message, timestamp } = item.data;
+
+			if (message?.is_echo) {
+				// An echo runs from the Page to the customer.
+				if (sender.id !== entry.id || !metaId.safeParse(recipient.id).success) continue;
+				reports.push({
+					kind: 'echo',
+					pageId: sender.id,
+					psid: recipient.id,
+					mid: message.mid,
+					text: (message.text ?? '').slice(0, MAX_TEXT_LENGTH),
+					metadata: message.metadata ?? null,
+					appId: message.app_id === undefined ? null : String(message.app_id),
+					sentAt: isoTime(timestamp)
+				});
+				continue;
+			}
+
+			const receipt = item.data.read
+				? { kind: 'read' as const, watermark: item.data.read.watermark, mids: [] }
+				: item.data.delivery
+					? {
+							kind: 'delivered' as const,
+							watermark: item.data.delivery.watermark,
+							mids: item.data.delivery.mids ?? []
+						}
+					: null;
+			if (!receipt) continue;
+			// A receipt runs from the customer to the Page.
+			if (recipient.id !== entry.id || !metaId.safeParse(sender.id).success) continue;
+			const watermark = isoTime(receipt.watermark);
+			if (!watermark) continue;
+			reports.push({
+				kind: receipt.kind,
+				pageId: recipient.id,
+				psid: sender.id,
+				watermark,
+				mids: receipt.mids.filter((mid) => mid.length > 0 && mid.length <= 512)
+			});
+		}
+	}
+	return reports;
 }

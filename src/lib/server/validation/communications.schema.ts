@@ -315,6 +315,16 @@ export const conversationReplySmsSchema = z.object({
 		.default([])
 });
 
+// Messenger Part 7: text only, within Meta's 2,000-character limit.
+export const conversationReplyMessengerSchema = z.object({
+	body: z
+		.string()
+		.trim()
+		.min(1, 'Enter a message.')
+		.max(2000, 'A Messenger message can be at most 2,000 characters.'),
+	idempotency_key: z.string().uuid('Start a new reply attempt and try again.')
+});
+
 // Stage 6D-2: allows an empty body so the composer can resolve MMS eligibility on mount, before any text is
 // typed -- the segment/cost estimate itself still needs real text and stays gated on that in the route.
 export const conversationReplySmsEstimateSchema = z.object({

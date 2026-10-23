@@ -18,8 +18,10 @@ import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-l
 import {
 	communicationFieldErrors,
 	conversationReplyEmailSchema,
+	conversationReplyMessengerSchema,
 	conversationReplySmsSchema
 } from '$lib/server/validation/communications.schema';
+import { drainMessengerSendQueue } from '$lib/server/communications/messenger-send-worker';
 import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // A database rejection surfaced as a 422 with its own message: permission, missing recipient, sender/number
@@ -27,7 +29,7 @@ import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 // conflict. Anything else is an unexpected failure, logged and hidden behind a generic error.
 const KNOWN_REJECTION_CODES = ['42501', '23503', '55000', '23514', 'P0001', '23505'];
 
-// Sends a reply from an already-open Conversations thread, email or SMS. Unlike the client-detail manual-
+// Sends a reply from an already-open Conversations thread: email, SMS or Messenger. Unlike the client-detail manual-
 // email dialog, the recipient is never browser-chosen -- enqueue_conversation_reply_email/_sms resolve it
 // from the conversation's own most recent activity, so this route only ever passes ids and plain text.
 export const POST: RequestHandler = async (event) => {
@@ -57,11 +59,14 @@ export const POST: RequestHandler = async (event) => {
 	} catch {
 		return validationError({ form: 'Request body must be valid JSON.' });
 	}
-	const channel = (body as { channel?: unknown } | null)?.channel === 'sms' ? 'sms' : 'email';
+	const requested = (body as { channel?: unknown } | null)?.channel;
+	const channel = requested === 'sms' || requested === 'messenger' ? requested : 'email';
 
+	const messengerParsed =
+		channel === 'messenger' ? conversationReplyMessengerSchema.safeParse(body) : null;
 	const smsParsed = channel === 'sms' ? conversationReplySmsSchema.safeParse(body) : null;
 	const emailParsed = channel === 'email' ? conversationReplyEmailSchema.safeParse(body) : null;
-	const parseFailure = smsParsed ?? emailParsed;
+	const parseFailure = messengerParsed ?? smsParsed ?? emailParsed;
 	if (parseFailure && !parseFailure.success) {
 		return json(
 			{
@@ -84,6 +89,34 @@ export const POST: RequestHandler = async (event) => {
 			const response = rateLimitedResponse(limit.retryAfterSeconds);
 			response.headers.set('Cache-Control', 'no-store');
 			return response;
+		}
+
+		if (messengerParsed && messengerParsed.success) {
+			// The database checks the Page and Meta's 24-hour window and refuses with the reason staff will read.
+			const { data, error } = await ownerClient.rpc('enqueue_conversation_reply_messenger', {
+				target_organization_id: organizationId,
+				target_actor_user_id: check.auth.user.id,
+				target_client_id: clientId,
+				target_logical_send_key: messengerParsed.data.idempotency_key,
+				target_body: messengerParsed.data.body
+			});
+			if (error) {
+				const dbError = error as { code?: string; message?: string };
+				if (KNOWN_REJECTION_CODES.includes(dbError.code ?? '')) {
+					return json({ error: dbError.message }, { status: 422, headers: NO_STORE_HEADERS });
+				}
+				console.error('Could not queue a Messenger conversation reply.', error);
+				return databaseError();
+			}
+
+			// Sent straight away; the one-minute cron picks up anything this wake does not finish.
+			void drainMessengerSendQueue().catch((drainError) =>
+				console.error('Messenger instant send failed; the one-minute cron will retry.', drainError)
+			);
+			return json(
+				{ intent: { id: data.id, status: data.status, created_at: data.created_at } },
+				{ status: 201, headers: NO_STORE_HEADERS }
+			);
 		}
 
 		if (smsParsed && smsParsed.success) {
@@ -162,7 +195,7 @@ export const POST: RequestHandler = async (event) => {
 			);
 		}
 
-		// Unreachable: channel === 'email' here (the sms branch above already returned), and a failed email
+		// Unreachable: channel === 'email' here (the messenger and sms branches above already returned), and a failed email
 		// parse already returned above too -- this only narrows the type for what follows.
 		if (!emailParsed?.success) return databaseError();
 		const input = emailParsed.data;

@@ -27,7 +27,10 @@ export class MessengerGraphError extends Error {
 	constructor(
 		message: string,
 		public readonly failure: MessengerGraphFailure,
-		public readonly code: number | null = null
+		public readonly code: number | null = null,
+		// The network error when Meta never answered; a send then may or may not have reached Meta.
+		public readonly networkCause: unknown = null,
+		public readonly subcode: number | null = null
 	) {
 		super(message);
 		this.name = 'MessengerGraphError';
@@ -82,26 +85,40 @@ export function messengerLoginDialogUrl(input: { state: string; redirectUri: str
 export function classifyGraphError(
 	status: number,
 	body: unknown
-): { failure: MessengerGraphFailure; code: number | null; message: string } {
+): {
+	failure: MessengerGraphFailure;
+	code: number | null;
+	subcode: number | null;
+	message: string;
+} {
 	const error =
 		body && typeof body === 'object' && 'error' in body
-			? (body as { error?: { code?: unknown; message?: unknown } }).error
+			? (body as { error?: { code?: unknown; error_subcode?: unknown; message?: unknown } }).error
 			: undefined;
 	const code = typeof error?.code === 'number' ? error.code : null;
+	const subcode = typeof error?.error_subcode === 'number' ? error.error_subcode : null;
 	const message = typeof error?.message === 'string' ? error.message : `Graph HTTP ${status}`;
-	if (code === 190 || code === 102) return { failure: 'token_invalid', code, message };
+	// A send outside the 24-hour window or to someone who can't be reached is refused, not a permission problem.
+	if (subcode !== null && MESSENGER_CANNOT_SEND_NOW_SUBCODES.has(subcode))
+		return { failure: 'rejected', code, subcode, message };
+	if (code === 190 || code === 102) return { failure: 'token_invalid', code, subcode, message };
 	if (code === 10 || code === 200 || (code !== null && code >= 200 && code < 300))
-		return { failure: 'permission_missing', code, message };
+		return { failure: 'permission_missing', code, subcode, message };
 	if (status >= 500 || code === 1 || code === 2 || code === 4 || code === 17 || code === 32)
-		return { failure: 'unavailable', code, message };
-	return { failure: 'rejected', code, message };
+		return { failure: 'unavailable', code, subcode, message };
+	return { failure: 'rejected', code, subcode, message };
 }
+
+// Meta's "this message can't go now" answers (docs/research/messenger-transport-webhooks.md § 3): outside the
+// allowed window (10/2018278, 10/2534022) and "this person isn't available right now" (200/1545041).
+const MESSENGER_CANNOT_SEND_NOW_SUBCODES = new Set([2018278, 2534022, 1545041]);
 
 async function graphRequest<T>(
 	method: 'GET' | 'POST' | 'DELETE',
 	path: string,
 	params: Record<string, string>,
-	accessToken?: string
+	accessToken?: string,
+	jsonBody?: unknown
 ): Promise<T> {
 	const config = requireConfig();
 	const url = new URL(`https://graph.facebook.com/${config.version}/${path.replace(/^\//, '')}`);
@@ -116,9 +133,15 @@ async function graphRequest<T>(
 
 	let response: Response;
 	try {
-		response = await fetch(url, { method, signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS) });
-	} catch {
-		throw new MessengerGraphError('Facebook could not be reached.', 'unavailable');
+		response = await fetch(url, {
+			method,
+			signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS),
+			...(jsonBody === undefined
+				? {}
+				: { headers: { 'content-type': 'application/json' }, body: JSON.stringify(jsonBody) })
+		});
+	} catch (error) {
+		throw new MessengerGraphError('Facebook could not be reached.', 'unavailable', null, error);
 	}
 	let body: unknown = null;
 	try {
@@ -128,7 +151,13 @@ async function graphRequest<T>(
 	}
 	if (!response.ok || (body && typeof body === 'object' && 'error' in body)) {
 		const classified = classifyGraphError(response.status, body);
-		throw new MessengerGraphError(classified.message, classified.failure, classified.code);
+		throw new MessengerGraphError(
+			classified.message,
+			classified.failure,
+			classified.code,
+			null,
+			classified.subcode
+		);
 	}
 	return body as T;
 }
@@ -236,4 +265,28 @@ export async function subscribeMessengerPage(pageId: string, pageToken: string):
 /** Stop Meta delivering this Page's messages to us. */
 export async function unsubscribeMessengerPage(pageId: string, pageToken: string): Promise<void> {
 	await graphRequest<{ success?: boolean }>('DELETE', `${pageId}/subscribed_apps`, {}, pageToken);
+}
+
+/** A staff reply inside the 24-hour window. `metadata` comes back on Meta's echo of this message. */
+export async function sendMessengerText(input: {
+	pageId: string;
+	pageToken: string;
+	psid: string;
+	text: string;
+	metadata: string;
+}): Promise<{ messageId: string }> {
+	const result = await graphRequest<{ message_id?: unknown }>(
+		'POST',
+		`${input.pageId}/messages`,
+		{},
+		input.pageToken,
+		{
+			recipient: { id: input.psid },
+			messaging_type: 'RESPONSE',
+			message: { text: input.text, metadata: input.metadata }
+		}
+	);
+	if (typeof result.message_id !== 'string' || !result.message_id)
+		throw new MessengerGraphError('Facebook returned no message ID.', 'rejected');
+	return { messageId: result.message_id };
 }

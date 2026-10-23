@@ -38,6 +38,7 @@ describe('classifyGraphError', () => {
 		[403, { error: { code: 10, message: 'Permission denied' } }, 'permission_missing'],
 		[403, { error: { code: 230, message: 'Requires pages_messaging' } }, 'permission_missing'],
 		[400, { error: { code: 4, message: 'Too many calls' } }, 'unavailable'],
+		[400, { error: { code: 10, error_subcode: 2018278, message: 'Outside window' } }, 'rejected'],
 		[503, null, 'unavailable'],
 		[400, { error: { code: 100, message: 'Invalid parameter' } }, 'rejected']
 	])('HTTP %i %j → %s', (status, body, failure) => {
