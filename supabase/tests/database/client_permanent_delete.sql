@@ -10,7 +10,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(64);
+select plan(66);
 
 -- 1. Privileges ------------------------------------------------------------------------------------------------
 
@@ -213,6 +213,22 @@ insert into public.communication_inbound_attachments (
 ) values ('b7200000-0000-0000-0000-000000000001', 'b7840000-0000-0000-0000-000000000001', 'gate.jpg',
   'image/jpeg', 1000, 'b7200000-0000-0000-0000-000000000001/inbound/gate.jpg', 'available', 'twilio');
 
+-- Messages never linked to anyone, waiting in review: two from Pat's own email (any case) and phone, one from a
+-- stranger and one from the other customer's phone.
+insert into public.communication_inbound_messages (
+  id, organization_id, provider, provider_message_id, channel, sender_email, sender_phone, subject, text_content,
+  review_status, review_reason
+) values
+  ('b7840000-0000-0000-0000-000000000002', 'b7200000-0000-0000-0000-000000000001', 'ses', 'purge-unlinked-1',
+   'email', ' PAT.Purgeable@Example.test', null, 'Before I was on file', 'Pat here', 'pending_review',
+   'unknown_sender'),
+  ('b7840000-0000-0000-0000-000000000003', 'b7200000-0000-0000-0000-000000000001', 'twilio', 'SMpurge-unlinked-2',
+   'sms', null, '+15125550199', '', 'Pat again', 'pending_review', 'unknown_sender'),
+  ('b7840000-0000-0000-0000-000000000004', 'b7200000-0000-0000-0000-000000000001', 'ses', 'purge-unlinked-3',
+   'email', 'stranger@example.test', null, 'Hello', 'Not Pat', 'pending_review', 'unknown_sender'),
+  ('b7840000-0000-0000-0000-000000000005', 'b7200000-0000-0000-0000-000000000001', 'twilio', 'SMpurge-unlinked-4',
+   'sms', null, '+15125550100', '', 'The neighbour', 'pending_review', 'unknown_sender');
+
 insert into public.communication_conversation_read_marks (organization_id, user_id, client_id, last_read_at)
 values ('b7200000-0000-0000-0000-000000000001', 'b7100000-0000-0000-0000-000000000001',
   'b7300000-0000-0000-0000-000000000001', now());
@@ -342,8 +358,8 @@ create temporary table plan_before as
 select is((select plan -> 'blockers' from plan_before), '[]'::jsonb, 'once paid, nothing stands in the way');
 select is((select (plan -> 'counts' ->> 'jobs')::int from plan_before), 2, 'both jobs are counted');
 select is((select (plan -> 'counts' ->> 'quotes')::int from plan_before), 2, 'both quotes are counted');
-select is((select (plan -> 'counts' ->> 'messages')::int from plan_before), 3,
-  'two sent messages and one received message are counted');
+select is((select (plan -> 'counts' ->> 'messages')::int from plan_before), 5,
+  'two sent messages, one received and Pat''s two unlinked messages are counted');
 select is((select (plan -> 'counts' ->> 'draft_invoices')::int from plan_before), 1, 'the draft bill is counted');
 select is((select plan -> 'kept' from plan_before),
   '{"invoices": 1, "payments": 1, "deposits": 1, "opening_balances": 0}'::jsonb,
@@ -430,6 +446,13 @@ select is((select count(*)::int from public.communication_delivery_intents
   + (select count(*)::int from public.communication_inbound_messages
      where client_id = 'b7300000-0000-0000-0000-000000000001'),
   0, 'sent and received messages are gone');
+select is((select count(*)::int from public.communication_inbound_messages
+  where id in ('b7840000-0000-0000-0000-000000000002', 'b7840000-0000-0000-0000-000000000003')),
+  0, 'unlinked messages from Pat''s own email and phone are gone too');
+select is((select array_agg(id order by id) from public.communication_inbound_messages
+  where id in ('b7840000-0000-0000-0000-000000000004', 'b7840000-0000-0000-0000-000000000005')),
+  array['b7840000-0000-0000-0000-000000000004', 'b7840000-0000-0000-0000-000000000005']::uuid[],
+  'unlinked messages from a stranger and from another customer stay');
 select is((select count(*)::int from public.communication_conversation_read_marks
   where client_id = 'b7300000-0000-0000-0000-000000000001'), 0, 'inbox read marks are gone');
 select is((select count(*)::int from public.invoices
