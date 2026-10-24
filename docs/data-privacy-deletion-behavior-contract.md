@@ -1,7 +1,7 @@
 # Data privacy and deletion
 
-**Status:** Jafar chose all four open behaviours on 2026-10-24 (delete now, one-customer download, whole-business
-export, Jafar's privacy tool); the rest restates rules he approved earlier. Whole-plan approval pending.
+**Status:** Approved by Jafar 2026-10-24, with the build order in
+`Memory/campaigns/data-privacy-deletion/ROADMAP.md`.
 
 ## Summary
 

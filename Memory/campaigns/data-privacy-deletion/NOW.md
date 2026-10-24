@@ -5,17 +5,16 @@ their information the way top CRMs allow (HighLevel, Jobber, HubSpot), with matc
 panel. Covers all CRM data, not only Messenger.
 **Core agreement — read on every resume:** `docs/data-privacy-deletion-behavior-contract.md` § Summary, § First
 version, § Money records after any delete, § "Don't contact me" survives deletion.
-**Plan:** `docs/data-privacy-deletion-behavior-contract.md` — draft written 2026-10-23; four product choices wait on
-Jafar (§ Still unclear). Evidence: `docs/research/data-privacy-deletion-top-crms-2026-10-23.md`.
-**Stage:** Planning.
+**Plan:** `docs/data-privacy-deletion-behavior-contract.md` — whole first version and the 16-part order in
+`ROADMAP.md` approved by Jafar 2026-10-24. Evidence: `docs/research/data-privacy-deletion-top-crms-2026-10-23.md`.
+**Stage:** Design and building. Parts 3, 4, 5, 8, 11 and 13 wait on nothing and can run side by side.
 
-**In progress:**
+**In progress:** none.
 
-- 1 Plan — Jafar answers the four questions in § Still unclear, then approves the plan.
-
-**Next part:** 2 Build planning — split the approved plan into build parts and agree their order.
+**Next part:** 3 Permanent-delete engine — the hidden delete that keeps only money records and opt-out
+fingerprints; run performance-review design first. Design sessions take 4, 5, 8, 11, 13 in Pencil.
 
 **Linked:** Messenger Part 10 (`Memory/campaigns/messenger-unified-inbox/parts/10-go-live.md`): the public Data
 deletion page (`docs/marketing-site/legal-pages.md`) is updated once in-app delete ships.
 
-**Blockers:** Jafar's answers to the four plan questions.
+**Blockers:** none.

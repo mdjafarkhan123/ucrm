@@ -1,15 +1,14 @@
 # Data privacy and deletion — roadmap
 
-**Plan:** `docs/data-privacy-deletion-behavior-contract.md` — open choices answered 2026-10-24; whole plan and this
-part order proposed, waiting on Jafar's approval.
+**Plan:** `docs/data-privacy-deletion-behavior-contract.md` — plan and this part order approved by Jafar 2026-10-24.
 
 Design parts are Pencil sessions only; a separate session builds. Performance design runs before parts 3, 10 and
 14 (work grows with a business's size); verification runs in part 16.
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
-| 1 Plan | whole plan | research and four answers | — | Jafar approved the plan | In progress |
-| 2 Build planning | whole plan | these parts | 1 | Jafar approved parts and order | In progress |
+| 1 Plan | whole plan | research and four answers | — | Jafar approved the plan | Done 2026-10-24 |
+| 2 Build planning | whole plan | these parts | 1 | Jafar approved parts and order | Done 2026-10-24 |
 | 3 Permanent-delete engine | § Money records; § "Don't contact me" | one customer deleted for good, keeping only money records and opt-out fingerprints; provider copies (Twilio, files) cleaned; audit counts | 2 | tests on a test business show nothing personal left, totals unchanged, a STOP still blocks a re-import | Not started |
 | 4 Design: customer delete pop-ups | § Deleting a customer; § Delete permanently now; § Download one customer's data | one Pencil board: delete dialog with counts, money-open refusal, delete-now with typed name, receipt, download-ready notice | 2 | Jafar approved the board | Not started |
 | 5 Design: Recently Deleted page | § Deleting a customer | Pencil page | 2 | Jafar approved | Not started |
