@@ -16,9 +16,10 @@ plan section it serves is named.
   `apply_organization_purge` + `organization-closure-cron.ts` (a receipt row with pending external
   cleanup anchors, retried until done, with an owner alert on failure), and `merge_clients` (the full list
   of tables that point at a customer, including the type-and-id links with no foreign key).
-- **Twilio message delete:** `DELETE /2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json` returns 204 and
-  also deletes the message's media; bodies may stay up to 30 days in Twilio's backups (Twilio Message
-  resource docs, read 2026-10-24). Resolves the plan's "Unverified" Twilio assumption.
+- **Twilio messages are not deleted at Twilio** (Jafar, 2026-10-24: follow HighLevel, which deletes a
+  contact's conversations only in its own app and closes the LC Phone account only when a sub-account is
+  deleted). The API (`DELETE .../Messages/{Sid}.json`, 204) exists but is not used, so the restricted key keeps
+  its current permissions. The engine stops collecting Twilio message ids (3b).
 
 ## What happens to each kind of record
 
@@ -61,7 +62,7 @@ plan section it serves is named.
    protected file links, draft-invoice history) step aside for it, and the schedule-alert and
    schedule-change triggers stay quiet, so no crew alert or customer notice names a deleted person.
 3. Collect provider work into the receipt: storage object keys (files, signatures, message attachments,
-   form photos) and Twilio message ids with their subaccount.
+   form photos).
 4. Write fingerprints. Delete in dependency order (automation, notifications and type-and-id links; messages;
    jobs; quotes; requests; properties; contacts). Scrub the shells. Tombstone the client.
 5. Insert `client_deletion_receipts`: who, when, trigger (`delete_now`, `scheduled`, `platform_owner`), item
@@ -69,7 +70,7 @@ plan section it serves is named.
 
 ## Provider cleanup (server, `src/lib/server/privacy/`)
 
-After commit, a worker deletes each queued storage object and Twilio message, marks the receipt's
+After commit, a worker deletes each queued storage object, marks the receipt's
 components done, and retries on the next run. "Already gone" counts as success. A component still failing
 raises a Jafar owner alert, as the organisation purge does.
 

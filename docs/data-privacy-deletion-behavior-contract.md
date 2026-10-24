@@ -79,7 +79,9 @@ deleted.
 - Needs a new permission, `customers.permanently_delete`, held by owners and admins by default. The member types
   the customer's name to confirm. It cannot be undone.
 - Removes the same things as the day-30 delete, straight away: the customer, their work, messages, notes and
-  files, plus the copies kept by our providers (text message records at Twilio, files in storage).
+  files, plus the file copies in storage. Text messages follow HighLevel (Jafar, 2026-10-24): they leave the app,
+  but Twilio's own message log is not deleted one customer at a time; it goes when the business's Twilio account
+  is closed.
 - Ends with a short receipt: the date, what was deleted (counts), and what was kept and why. The business can
   copy it into its reply to the customer.
 
@@ -174,8 +176,9 @@ deleted information can remain in backups.
 
 - Uplift acts for each business (a processor), and the business decides about its customers' data. Confirmed
   against GDPR Art. 28 and California's law (research §6).
-- Text message records can be deleted from Twilio through its API. Unverified; checked in the first build part
-  that needs it.
+- Twilio's message log is not deleted per customer, as in HighLevel: its help centre says deleting a contact
+  removes its conversations in the app, and only deleting a sub-account closes its LC Phone (Twilio) account.
+  Twilio deletes a closed account's content after 30 days (Twilio support, "Data Retention and Deletion").
 - Backup copies age out on their own; production backup retention is not yet set
   (`docs/production-readiness-plan.md`). The Privacy page wording waits on that number.
 
