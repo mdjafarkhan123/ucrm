@@ -29,7 +29,6 @@ the Daily work row (x 37456, y 13392). Drawn 2026-10-24, light mode only.
 
 ## Next action
 
-Look recorded in `.claude/skills/design/modals.md` § Delete client pop-ups. Waiting on Jafar's Ctrl+S in Pencil,
-then commit `concept.pen`. Main's `concept.pen` had uncommitted changes from an earlier session (modified
-2026-10-23 23:19) before this board; ask Jafar before committing them together. Builds in Part 6 (delete and
+Look recorded in `.claude/skills/design/modals.md` § Delete client pop-ups. `concept.pen` saved and committed
+to main 2026-10-24 (`35b3a064`, with the earlier session's unsaved changes, Jafar "ok commit"). Builds in Part 6 (delete and
 restore), 7 (delete now, receipt) and 10 (download). Pencil tidy-up after the build.
