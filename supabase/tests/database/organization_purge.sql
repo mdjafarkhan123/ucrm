@@ -88,11 +88,12 @@ select public.apply_organization_commercial_command(
 
 insert into public.platform_onboarding_applications (
   id, business_name, main_contact_name, main_contact_email, main_contact_phone, trade, city_country,
-  time_zone, package_edition_id, billing_interval, package_snapshot
+  time_zone, package_edition_id, billing_interval, package_snapshot, proposed_other
 )
 select
   '90000000-2222-0000-0000-000000000910', '9 Purge P1 Test', 'Test Contact', '9-purge-p1-contact@example.test',
-  '+10000000000', 'plumbing', 'Testville, US', 'America/New_York', edition.id, 'month', '{}'::jsonb
+  '+10000000000', 'plumbing', 'Testville, US', 'America/New_York', edition.id, 'month', '{}'::jsonb,
+  'something_else'
 from public.package_editions edition
 join public.packages package on package.id = edition.package_id
 where package.slug = 'test-package' and edition.status = 'published';
