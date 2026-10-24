@@ -30,6 +30,7 @@
 	import ClientWorkOverview from '$lib/components/clients/ClientWorkOverview.svelte';
 	import ClientSchedule from '$lib/components/clients/ClientSchedule.svelte';
 	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
+	import ClientDeleteDialog from '$lib/components/clients/ClientDeleteDialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import MarketingConsentDialog from '$lib/components/clients/MarketingConsentDialog.svelte';
 	import PropertyDialog from '$lib/components/clients/PropertyDialog.svelte';
@@ -92,6 +93,7 @@
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
+	import deleteIcon from '@tabler/icons/outline/trash.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -129,6 +131,7 @@
 	});
 
 	let mergeOpen = $state(false);
+	let deleteOpen = $state(false);
 
 	// --- Archive and restore ------------------------------------------------------------------------
 	// The same checked endpoint the clients list uses. Archiving is refused while the client still has a
@@ -498,6 +501,18 @@
 							onSelect: () => (archiveConfirmOpen = true)
 						}
 					]
+				: []),
+			// Data privacy Part 6: Jobber and HubSpot put Delete last in the record's More menu, apart from the
+			// everyday actions; the pop-up names what goes and keeps them restorable for 30 days.
+			...(current.can_delete
+				? [
+						{
+							label: 'Delete client',
+							icon: deleteIcon,
+							destructive: true,
+							onSelect: () => (deleteOpen = true)
+						}
+					]
 				: [])
 		];
 	});
@@ -678,6 +693,17 @@
 
 {#if mergeOpen && saved}
 	<ClientMergeDialog open initialClient={saved} onClose={() => (mergeOpen = false)} />
+{/if}
+
+{#if deleteOpen && saved}
+	<ClientDeleteDialog
+		open
+		clients={[{ id: saved.id, display_name: saved.display_name }]}
+		onClose={() => (deleteOpen = false)}
+		onDeleted={(result) => {
+			if (result.deleted.length) void goto(resolve('/(app)/clients'));
+		}}
+	/>
 {/if}
 
 {#if manualEmailOpen && saved}

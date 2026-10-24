@@ -179,6 +179,16 @@ export const clientArchiveSchema = z.object({
 	archived: z.boolean()
 });
 
+// Delete clients to Recently Deleted, and restore them (data privacy Part 6).
+export const clientDeleteSchema = z.object({
+	client_ids: z.array(z.string().uuid()).min(1).max(100)
+});
+
+export const clientRestoreSchema = z.object({
+	deletion_ids: z.array(z.string().uuid()).min(1).max(100),
+	mode: z.enum(['check', 'separate', 'merge']).default('check')
+});
+
 // Merge one client into another. The primary survives; the secondary is merged in and deleted.
 export const clientMergeSchema = z
 	.object({

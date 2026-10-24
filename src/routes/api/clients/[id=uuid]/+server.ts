@@ -215,6 +215,8 @@ export const GET: RequestHandler = async (event) => {
 			can_archive: hasPermission(access.access, 'customers.archive'),
 			// Whether this member may merge another client into this one (customers.merge).
 			can_merge: hasPermission(access.access, 'customers.merge'),
+			// Whether this member may move this client to Recently Deleted (customers.delete).
+			can_delete: hasPermission(access.access, 'customers.delete'),
 			// A tile whose feature the package leaves out is not shown at all, rather than reading as a refusal.
 			work_summary: {
 				...workSummaryRow,

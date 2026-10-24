@@ -40,6 +40,8 @@ export type ClientListPage = {
 	can_archive: boolean;
 	/** Whether this member holds customers.merge, so the list can offer Merge clients. */
 	can_merge?: boolean;
+	/** Whether this member holds customers.delete, so the list can offer Delete and Recently Deleted. */
+	can_delete?: boolean;
 };
 
 export type ClientPreferences = {
@@ -151,6 +153,8 @@ export type ClientDetail = ClientWriteValues & {
 	can_archive?: boolean;
 	/** Whether this member may merge another client into this one (customers.merge). */
 	can_merge?: boolean;
+	/** Whether this member may move this client to Recently Deleted (customers.delete). */
+	can_delete?: boolean;
 	/** The header's three stat tiles. Any figure is null when this member lacks the permission that gates
 	 *  it -- the tile then says so instead of showing a wrong or missing number. */
 	work_summary: ClientWorkSummary;
@@ -554,4 +558,134 @@ export async function fetchClientSchedule(clientId: string): Promise<ClientSched
 	const response = await fetch(`/api/clients/${clientId}/schedule`);
 	if (!response.ok) throw await readError(response, "This client's schedule could not be loaded.");
 	return response.json();
+}
+
+// Data privacy Part 6: delete to Recently Deleted and restore (docs/data-privacy-client-delete-restore.md).
+
+export type ClientDeletionCounts = {
+	requests: number;
+	quotes: number;
+	jobs: number;
+	visits: number;
+	properties: number;
+	contact_methods: number;
+	messages: number;
+	notes: number;
+	files: number;
+	review_requests: number;
+	opportunities: number;
+	draft_invoices: number;
+};
+
+export type ClientDeletionKept = {
+	invoices: number;
+	payments: number;
+	deposits: number;
+	opening_balances: number;
+};
+
+export type ClientDeletionBlocker = {
+	kind: string;
+	label: string;
+	invoice_id?: string;
+	amount_minor?: number;
+	currency_code?: string;
+};
+
+export type ClientDeletePreview = {
+	clients: {
+		client_id: string;
+		display_name: string;
+		created_at: string;
+		counts: ClientDeletionCounts;
+		kept: ClientDeletionKept;
+		blockers: ClientDeletionBlocker[];
+	}[];
+	totals: Partial<ClientDeletionCounts>;
+	kept_totals: Partial<ClientDeletionKept>;
+	purge_after: string;
+};
+
+export type ClientDeleteResult = {
+	deleted: { client_id: string; deletion_id: string; display_name: string }[];
+	left_out: { client_id: string; display_name: string; blockers: ClientDeletionBlocker[] }[];
+	purge_after: string;
+};
+
+export type RecentlyDeletedClient = {
+	deletion_id: string;
+	client_id: string;
+	display_name: string;
+	deleted_at: string;
+	deleted_by: string | null;
+	deleted_by_name: string | null;
+	purge_after: string;
+	counts: ClientDeletionCounts;
+	kept: ClientDeletionKept;
+};
+
+export type ClientRestoreMatch = {
+	deletion_id: string;
+	client_id: string;
+	display_name: string;
+	other_client_id: string;
+	other_display_name: string;
+	kind: 'phone' | 'email';
+	value: string;
+};
+
+export type ClientRestoreResult = {
+	restored: { deletion_id: string; client_id: string; display_name: string; merged_into: string | null }[];
+	matches: ClientRestoreMatch[];
+};
+
+export const clientDeletePreviewKey = (clientIds: string[]) =>
+	['clients', 'delete-preview', [...clientIds].sort().join(',')] as const;
+export const recentlyDeletedClientsKey = ['clients', 'recently-deleted'] as const;
+
+async function readDeletionAnswer<T>(response: Response, fallback: string): Promise<T> {
+	const result = await response.json().catch(() => ({}));
+	if (!response.ok) throw new Error(result.error ?? fallback);
+	return result as T;
+}
+
+export async function fetchClientDeletePreview(clientIds: string[]) {
+	const params = new URLSearchParams({ ids: clientIds.join(',') });
+	return readDeletionAnswer<ClientDeletePreview>(
+		await fetch(`/api/clients/delete?${params}`),
+		'We could not count what goes with this client.'
+	);
+}
+
+export async function deleteClients(clientIds: string[]) {
+	return readDeletionAnswer<ClientDeleteResult>(
+		await fetch('/api/clients/delete', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ client_ids: clientIds })
+		}),
+		'We could not delete this client.'
+	);
+}
+
+export async function fetchRecentlyDeletedClients() {
+	const result = await readDeletionAnswer<{ clients: RecentlyDeletedClient[] }>(
+		await fetch('/api/clients/deleted'),
+		'We could not load Recently Deleted.'
+	);
+	return result.clients;
+}
+
+export async function restoreClientDeletions(
+	deletionIds: string[],
+	mode: 'check' | 'separate' | 'merge' = 'check'
+) {
+	return readDeletionAnswer<ClientRestoreResult>(
+		await fetch('/api/clients/deleted/restore', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ deletion_ids: deletionIds, mode })
+		}),
+		'We could not restore this client.'
+	);
 }

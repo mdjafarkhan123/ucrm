@@ -59,6 +59,8 @@
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
 	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
 	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
+	import ClientDeleteDialog from '$lib/components/clients/ClientDeleteDialog.svelte';
+	import deleteIcon from '@tabler/icons/outline/trash.svg?raw';
 	import usersPageIcon from '@tabler/icons/outline/users.svg?raw';
 
 	const toast = getToastManager();
@@ -82,9 +84,6 @@
 		}
 	}
 
-	// Deleting a client outright is still switched off; archiving is what the office uses instead. The
-	// reason is spelled out for screen readers too, because a disabled button never takes focus.
-	const deleteReason = 'Not ready yet — archive a client instead of deleting them.';
 
 	$effect(() => {
 		const value = search;
@@ -168,6 +167,9 @@
 	const canArchive = $derived(clientsQuery.data?.pages[0]?.can_archive === true);
 	const viewingArchived = $derived(status === 'archived');
 	const canMerge = $derived(clientsQuery.data?.pages[0]?.can_merge === true);
+	const canDelete = $derived(clientsQuery.data?.pages[0]?.can_delete === true);
+	// Data privacy Part 6: the clients the Delete pop-up is open for, from a row's menu or the picked rows.
+	let deleteTargets = $state<{ id: string; display_name: string }[] | null>(null);
 	let mergeOpen = $state(false);
 	const tagOptions = $derived([
 		{ value: '', label: 'All' },
@@ -191,6 +193,16 @@
 		},
 		...(canMerge
 			? [{ label: 'Merge clients', icon: mergeIcon, onSelect: () => (mergeOpen = true) }]
+			: []),
+		// HubSpot opens its restore page from the index's More menu, the way this does.
+		...(canDelete
+			? [
+					{
+						label: 'Recently deleted',
+						icon: deleteIcon,
+						onSelect: () => goto(resolve('/(app)/clients/deleted'))
+					}
+				]
 			: []),
 		...(canExport
 			? [
@@ -278,6 +290,16 @@
 									onSelect: () => (archiveTarget = { ids: [client.id], name: client.display_name })
 								}
 					]
+				: []),
+			...(canDelete
+				? [
+						{
+							label: 'Delete',
+							icon: deleteIcon,
+							destructive: true,
+							onSelect: () => (deleteTargets = [{ id: client.id, display_name: client.display_name }])
+						}
+					]
 				: [])
 		];
 	}
@@ -355,6 +377,15 @@
 
 {#if mergeOpen}
 	<ClientMergeDialog open onClose={() => (mergeOpen = false)} />
+{/if}
+
+{#if deleteTargets?.length}
+	<ClientDeleteDialog
+		open
+		clients={deleteTargets}
+		onClose={() => (deleteTargets = null)}
+		onDeleted={() => (selectedIds = new Set())}
+	/>
 {/if}
 
 <div class="page-scroller">
@@ -478,11 +509,18 @@
 							>
 						{/if}
 					{/if}
-					<span class="clients-bulk-bar__action" title={deleteReason}>
-						<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button
+					{#if canDelete}
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
+							onclick={() =>
+								(deleteTargets = clients
+									.filter((client) => selectedIds.has(client.id))
+									.map((client) => ({ id: client.id, display_name: client.display_name })))}
+							>Delete</Button
 						>
-						<span class="clients-bulk-bar__reason">{deleteReason}</span>
-					</span>
+					{/if}
 				</div>
 			{/if}
 
@@ -755,24 +793,6 @@
 	.clients-card__search {
 		width: 260px;
 		max-width: 100%;
-	}
-
-	.clients-bulk-bar__action {
-		display: inline-flex;
-		align-items: center;
-	}
-
-	// Read aloud beside the switched-off button; sighted users get the same words as a hover title.
-	.clients-bulk-bar__reason {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-		border: 0;
 	}
 
 	.clients-bulk-bar {
