@@ -364,6 +364,46 @@ begin
 end;
 $$;
 
+-- A purge removes the customer's note links. The old single statement named old.file_id on a note_links row,
+-- which has no such field, so every note link delete failed (deleting a note in the app included). Each
+-- table now gets its own statement, as private.link_note_files already does.
+create or replace function private.prune_note_file_links() returns trigger
+  language plpgsql security definer
+  set search_path to 'pg_catalog', 'public'
+  as $$
+begin
+  if tg_table_name = 'note_files' then
+    delete from public.file_links as link
+    where link.organization_id = old.organization_id
+      and link.role = 'note_file'
+      and link.file_id = old.file_id
+      and not exists (
+        select 1
+        from public.note_files as held
+        join public.note_links as placed on placed.note_id = held.note_id
+        where held.file_id = link.file_id
+          and placed.entity_type = link.entity_type
+          and placed.entity_id = link.entity_id
+      );
+  else
+    delete from public.file_links as link
+    where link.organization_id = old.organization_id
+      and link.role = 'note_file'
+      and link.entity_type = old.entity_type
+      and link.entity_id = old.entity_id
+      and not exists (
+        select 1
+        from public.note_files as held
+        join public.note_links as placed on placed.note_id = held.note_id
+        where held.file_id = link.file_id
+          and placed.entity_type = link.entity_type
+          and placed.entity_id = link.entity_id
+      );
+  end if;
+  return null;
+end;
+$$;
+
 
 -- ---------------------------------------------------------------------------------------------------------
 -- 3. Usage and charge records outlive the message they paid for
@@ -578,7 +618,9 @@ declare
   org uuid := target_organization_id;
   preferences public.client_communication_preferences;
   method record;
-  governing record;
+  blocked_subjects integer;
+  allowed_subjects integer;
+  last_opt_out_at timestamptz;
   marketing record;
   suppression record;
   fingerprint_value bytea;
@@ -596,22 +638,26 @@ begin
     continue when fingerprint_value is null;
 
     if method.kind = 'phone' then
-      select event_kind, occurred_at into governing
-      from public.communication_sms_consent_events
-      where organization_id = org and client_contact_method_id = method.id
-        and event_kind in ('opt_in', 'opt_out')
-      order by occurred_at desc, received_at desc, id desc
-      limit 1;
+      -- An opt-in names the kinds of text it allows, so a STOP still in force for any one kind is kept, and it
+      -- is cleared only once every kind was opted back into. The carried opt-out blocks every kind until then.
+      select count(*) filter (where status = 'opted_out'), count(*) filter (where status = 'opted_in')
+      into blocked_subjects, allowed_subjects
+      from unnest(array['service', 'work_updates', 'billing_updates']) as subject,
+        lateral public.communication_sms_consent_status(org, method.id, subject) as status;
 
-      if governing.event_kind = 'opt_out' then
+      if blocked_subjects > 0 then
+        select max(occurred_at) into last_opt_out_at
+        from public.communication_sms_consent_events
+        where organization_id = org and client_contact_method_id = method.id and event_kind = 'opt_out';
+
         insert into public.contact_opt_out_fingerprints (organization_id, channel, fingerprint, kind, opted_out_at)
-        values (org, 'phone', fingerprint_value, 'sms_opt_out', governing.occurred_at)
+        values (org, 'phone', fingerprint_value, 'sms_opt_out', last_opt_out_at)
         on conflict (organization_id, channel, fingerprint, kind) do update
         set opted_out_at = greatest(contact_opt_out_fingerprints.opted_out_at, excluded.opted_out_at);
-      elsif governing.event_kind = 'opt_in' then
+      elsif allowed_subjects = 3 then
         delete from public.contact_opt_out_fingerprints
         where organization_id = org and channel = 'phone' and fingerprint = fingerprint_value and kind = 'sms_opt_out';
-      elsif preferences.sms_opt_out_at is not null
+      elsif allowed_subjects = 0 and preferences.sms_opt_out_at is not null
         and (preferences.sms_opt_in_at is null or preferences.sms_opt_in_at < preferences.sms_opt_out_at) then
         insert into public.contact_opt_out_fingerprints (organization_id, channel, fingerprint, kind, opted_out_at)
         values (org, 'phone', fingerprint_value, 'sms_opt_out', preferences.sms_opt_out_at)
@@ -795,8 +841,9 @@ begin
   select coalesce(array_agg(distinct property_id), '{}') into shell_property_ids
   from public.quotes where organization_id = org and id = any(shell_quote_ids);
 
-  select coalesce(array_agg(id order by id) filter (where issued_at is null), '{}'),
-         coalesce(array_agg(id order by id) filter (where issued_at is not null), '{}')
+  -- A settled bill is kept even if it was never issued, as delete_invoice_draft refuses it too.
+  select coalesce(array_agg(id order by id) filter (where issued_at is null and recognized_at is null), '{}'),
+         coalesce(array_agg(id order by id) filter (where issued_at is not null or recognized_at is not null), '{}')
   into draft_invoice_ids, kept_invoice_ids
   from public.invoices where organization_id = org and client_id = c;
 
@@ -859,6 +906,23 @@ begin
     ) as applied on true
     where invoice.organization_id = org and invoice.client_id = c and invoice.is_effective_receivable
       and invoice.total_minor - coalesce(applied.amount_minor, 0) > 0
+
+    -- A payment or deposit applied to a draft is the customer's money on a bill that was never issued, so the
+    -- draft cannot go with them; delete_invoice_draft refuses it the same way.
+    union all
+    select jsonb_build_object(
+      'sort', 'a' || lpad(invoice.invoice_number::text, 12, '0'),
+      'kind', 'draft_invoice_holds_money',
+      'label', 'Draft invoice #' || invoice.invoice_number
+        || ' has money on it. Return it to client credit, then apply it to an invoice or refund it.',
+      'invoice_id', invoice.id,
+      'amount_minor', private.invoice_allocated_minor(org, invoice.id),
+      'currency_code', invoice.currency_code
+    )
+    from public.invoices as invoice
+    where invoice.organization_id = org and invoice.client_id = c
+      and invoice.id = any(draft_invoice_ids)
+      and private.invoice_allocated_minor(org, invoice.id) <> 0
 
     union all
     select jsonb_build_object(
@@ -1163,7 +1227,8 @@ begin
   union all select 'opportunity', unnest(opportunity_ids), false
   union all select 'review_feedback', unnest(review_feedback_ids), false
   union all select 'inbound_message', unnest(inbound_message_ids), false
-  union all select 'message', unnest(inbound_message_ids), false
+  -- A library file sent with a message is linked to the send record (the delivery intent).
+  union all select 'message', unnest(intent_ids), false
   union all select 'website_chat_session', unnest(chat_session_ids), false
   union all select 'form_submission', unnest(form_submission_ids), false;
 
