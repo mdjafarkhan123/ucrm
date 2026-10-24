@@ -13,7 +13,8 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 `claude/data-privacy-part3`, merged to main together with the planning branch. Follow-ups done the same day; AWS and Twilio
 retention checked in the consoles: both already 30 days (`parts/03-delete-engine.md` § Provider checks).
 
-**Next part:** design sessions take 4, 5, 8, 11, 13 in Pencil (they wait on nothing). Part 6 builds after 3, 4, 5.
+**Next part:** Part 4 approved B 2026-10-24 (`concept.pen` `WEpOG`; Ctrl+S and commit of `concept.pen` pending,
+`parts/04-design-customer-delete-popups.md`). Design sessions can take 5, 8, 11, 13. Part 6 builds after 3, 4, 5.
 
 **Linked:** Messenger Part 10 (`Memory/campaigns/messenger-unified-inbox/parts/10-go-live.md`): public Data deletion
 page text is updated once in-app delete ships.
