@@ -732,7 +732,8 @@ Jafar 2026-10-24, with every state). Full page frame with Clients current in the
   (invoice `shield-check`): rows with a 32 tile (invoice `receipt`; conversation `message-circle-off`), title
   14/600 over a 12 quiet why, then a small secondary "See kept invoices" (`arrow-up-right`) under a hairline.
 - **Picking several:** a tick box takes the ring's place on hover; once one is ticked every row shows it and
-  picked rows fill `--color-surface--active`. A floating bar (white, radius 12, `--shadow-high`, padding 10 10 10
+  picked rows fill `--color-informative--surface` (not `--color-surface--active`, which is the page colour and
+  looked like a hole in the card; Jafar, 2026-10-24). A floating bar (white, radius 12, `--shadow-high`, padding 10 10 10
   16): a 24 `--color-interactive` count circle, "2 clients picked" 14/600, Clear (quiet), Restore 2 (main).
 - **⋯ menu** (`inputs.md` action menu): Restore, then on the danger strip Delete permanently now (`shield-x`),
   which opens the Delete permanently pop-up (`modals.md`).
