@@ -894,7 +894,6 @@ export type Database = {
 					last_error: string | null;
 					organization_id: string;
 					pending_storage_object_keys: string[] | null;
-					pending_twilio_message_sids: string[] | null;
 					reason: string | null;
 					requested_by: string | null;
 					requested_by_owner_email: string | null;
@@ -913,7 +912,6 @@ export type Database = {
 					last_error?: string | null;
 					organization_id: string;
 					pending_storage_object_keys?: string[] | null;
-					pending_twilio_message_sids?: string[] | null;
 					reason?: string | null;
 					requested_by?: string | null;
 					requested_by_owner_email?: string | null;
@@ -932,7 +930,6 @@ export type Database = {
 					last_error?: string | null;
 					organization_id?: string;
 					pending_storage_object_keys?: string[] | null;
-					pending_twilio_message_sids?: string[] | null;
 					reason?: string | null;
 					requested_by?: string | null;
 					requested_by_owner_email?: string | null;

@@ -19,7 +19,7 @@ plan section it serves is named.
 - **Twilio messages are not deleted at Twilio** (Jafar, 2026-10-24: follow HighLevel, which deletes a
   contact's conversations only in its own app and closes the LC Phone account only when a sub-account is
   deleted). The API (`DELETE .../Messages/{Sid}.json`, 204) exists but is not used, so the restricted key keeps
-  its current permissions. The engine stops collecting Twilio message ids (3b).
+  its current permissions, and the engine collects no Twilio message ids.
 
 ## What happens to each kind of record
 

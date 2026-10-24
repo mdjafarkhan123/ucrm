@@ -719,9 +719,9 @@ revoke all on function private.record_client_opt_out_fingerprints(uuid, uuid) fr
 -- 5. The receipt
 -- ---------------------------------------------------------------------------------------------------------
 
--- What a permanent delete removed and kept, as counts only. The two pending arrays are the provider copies
--- still to remove (storage objects, Twilio message records); the cleanup worker clears each when it is done,
--- and the receipt is completed only when both are.
+-- What a permanent delete removed and kept, as counts only. The pending array holds the stored file copies
+-- still to remove; the cleanup worker clears it when they are gone, and only then is the receipt completed.
+-- Twilio's message log is not deleted (HighLevel deletes a contact's conversations only in its own app).
 create table public.client_deletion_receipts (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations (id) on delete cascade,
@@ -737,7 +737,6 @@ create table public.client_deletion_receipts (
   status text not null check (status in ('in_progress', 'completed', 'failed_partial')),
   component_results jsonb not null default '{}'::jsonb check (jsonb_typeof(component_results) = 'object'),
   pending_storage_object_keys text[],
-  pending_twilio_message_sids text[],
   retry_count integer not null default 0 check (retry_count >= 0),
   last_error text check (last_error is null or char_length(last_error) <= 2000),
   created_at timestamptz not null default now(),
@@ -1139,10 +1138,8 @@ declare
   removed_note_ids uuid[];
   touched_file_ids uuid[];
   storage_keys text[];
-  twilio_sids text[];
   receipt public.client_deletion_receipts;
   storage_pending boolean;
-  twilio_pending boolean;
 begin
   if purge_trigger_kind not in ('delete_now', 'scheduled', 'platform_owner') then
     raise exception 'An invalid purge trigger kind was supplied.' using errcode = 'check_violation';
@@ -1301,21 +1298,6 @@ begin
   update public.communication_email_capacity_reservations
   set reservation_state = 'released', settled_at = now()
   where delivery_intent_id = any(intent_ids) and reservation_state in ('reserved', 'submission_unknown');
-
-  select coalesce(array_agg(distinct sid) filter (where sid is not null), '{}') into twilio_sids
-  from (
-    select intent.provider_message_id as sid
-    from public.communication_delivery_intents as intent
-    where intent.organization_id = org and intent.id = any(intent_ids) and intent.channel = 'sms'
-    union all
-    select attempt.provider_message_id
-    from public.communication_sms_submission_attempts as attempt
-    where attempt.organization_id = org and attempt.delivery_intent_id = any(intent_ids)
-    union all
-    select inbound.provider_message_id
-    from public.communication_inbound_messages as inbound
-    where inbound.organization_id = org and inbound.id = any(inbound_message_ids) and inbound.channel = 'sms'
-  ) as provider_messages;
 
   select coalesce(array_agg(distinct object_key) filter (where object_key is not null), '{}') into storage_keys
   from (
@@ -1643,25 +1625,22 @@ begin
   -- 12. The receipt.
   select coalesce(array_agg(distinct key), '{}') into storage_keys from unnest(storage_keys) as key;
   storage_pending := cardinality(storage_keys) > 0;
-  twilio_pending := cardinality(twilio_sids) > 0;
 
   insert into public.client_deletion_receipts (
     organization_id, client_id, trigger_kind, requested_by, requested_by_owner_email, reason,
     deleted_counts, kept_counts, status, completed_at, component_results,
-    pending_storage_object_keys, pending_twilio_message_sids
+    pending_storage_object_keys
   ) values (
     org, c, purge_trigger_kind, requested_by_user, nullif(btrim(requested_by_owner_email), ''),
     nullif(btrim(purge_reason), ''),
     plan -> 'counts', plan -> 'kept',
-    case when storage_pending or twilio_pending then 'in_progress' else 'completed' end,
-    case when storage_pending or twilio_pending then null else now() end,
+    case when storage_pending then 'in_progress' else 'completed' end,
+    case when storage_pending then null else now() end,
     jsonb_build_object(
       'database', 'succeeded',
-      'storage_objects', case when storage_pending then 'pending' else 'not_applicable' end,
-      'twilio_messages', case when twilio_pending then 'pending' else 'not_applicable' end
+      'storage_objects', case when storage_pending then 'pending' else 'not_applicable' end
     ),
-    case when storage_pending then storage_keys end,
-    case when twilio_pending then twilio_sids end
+    case when storage_pending then storage_keys end
   ) returning * into receipt;
 
   perform set_config('app.client_purge_in_progress', 'false', true);

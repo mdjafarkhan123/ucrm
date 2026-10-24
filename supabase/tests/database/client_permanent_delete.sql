@@ -395,9 +395,9 @@ select ok(not ((select pending_storage_object_keys from receipt) && array[
     'b7200000-0000-0000-0000-000000000001/files/price-list.pdf',
     'b7200000-0000-0000-0000-000000000001/files/warranty.pdf']),
   'library files that were only linked to Pat stay in storage');
-select is((select array(select unnest(pending_twilio_message_sids) order by 1) from receipt),
-  array['SMpurge00000000000000000000000001', 'SMpurge00000000000000000000000002'],
-  'both Twilio message records are queued for deletion at Twilio');
+select is((select component_results from receipt),
+  '{"database": "succeeded", "storage_objects": "pending"}'::jsonb,
+  'only stored file copies wait for cleanup; Twilio''s message log is left alone, as in HighLevel');
 select ok(position('Pat' in (select r::text from receipt as r)) = 0
   and position('Forget' in (select r::text from receipt as r)) = 0,
   'the receipt holds no name and no address');
