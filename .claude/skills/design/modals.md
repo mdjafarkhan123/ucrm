@@ -480,3 +480,57 @@ WHERE YOU CAN TEXT (`concept.pen` board `xGLYB`, "Text customers in another coun
   with Cancel, × and the box at 45%; couldn't ask, a critical notice strip at the top of the body; asked, a
   centred result (40 success tile, the title 24/700, a Setting up pill, a 14 quiet line, the number band, Done);
   no match, a centred empty state in the list (32 subtle `search-x` tile, 14/600 title, 12 quiet line).
+
+## Delete client pop-ups
+
+Delete client, delete permanently, the receipt and Download client data (`concept.pen` board `WEpOG`, "Customer
+delete pop-ups · Approved B", Jafar 2026-10-24, with every state). Danger parts use `--color-critical`; the client
+panel uses `--color-client`.
+
+- **Delete client:** large pop-up (940). Header: 40 critical `trash-2` tile, "Delete <name>?", a 12 quiet line
+  ("Client since Mar 2024 · 1 property"; many: "12 picked on the Clients list · 2 left out"). Footer: at the left a
+  quiet red button (16 `shield-x`, 14/600 `--color-critical`, 14 `chevron-right`) for the permanent delete, hidden
+  without that permission and for many clients; Cancel, then Delete client (danger main, `trash-2`).
+- Body splits in two, no padding. Left (padding 20, gap 14): a 16 critical `trash-2` with "Goes with <name>"
+  16/600, then one list box (radius 12, 1px `--color-border`, clipped), a row per kind (padding 10 14, gap 12, a
+  hairline above): a 28 tile in the record's colour (request `inbox`, quote `file-text`, job `hammer`, messages
+  `message-circle` conversation, notes `sticky-note` inactive, files `file` informative, review request `star`
+  review, opportunity `target` growth, property `house` client), the kind 14/500 and the count 14/700 at the right.
+- Right, a 360 panel, `--color-client--surface` with a 1px `--surface-edge` line on its left, padding 20, gap 14: a
+  16 `shield-check` with "What stays" 16/600; white cards (radius 12, 1px `--surface-edge`, padding 12 14, gap 12),
+  a 32 tile, title 14/600 over a 12 quiet why (invoices `receipt` invoice; a "stop texting" choice
+  `message-circle-off` conversation, only when there is one). Then "WHAT HAPPENS NEXT" 12/600 `--onSurface` and
+  three steps: a 28 white circle (1px `--surface-edge`, 14 icon) on a 2 wide `--surface-edge` line, the when 14/600
+  over a 12 line in `--onSurface` (`eye-off` Today, `rotate-ccw` Until <date>; the last, `trash-2` "Deleted for
+  good", in `--color-critical`).
+- **Many clients:** the same pop-up with totals; clients with open money are named in a warning notice strip
+  (`circle-dollar-sign`) under the heading.
+- **Money still open:** default pop-up (600), 40 warning `circle-dollar-sign` tile, "<name> can't be deleted yet".
+  A 14 quiet intro, then one list box, a row per open item: a 32 invoice tile (`receipt`, `credit-card`, `wallet`),
+  the item 14/600 · the amount 14/600 `--color-warning--onSurface`, the way to settle 12 quiet, and an Open
+  secondary button (`arrow-up-right`). Footer: one main button, Got it.
+- **Delete permanently:** default pop-up (600), 40 critical `shield-x` tile, "Delete <name> permanently", 12 quiet
+  "Because they asked us to delete their information". Body: a critical notice strip (`triangle-alert`) that it
+  can't be undone; "DELETED NOW" 12/600 quiet over pill chips (subtle fill, 1px border, padding 4 10 4 4, a 22
+  round tile in the record colour with a 12 icon, words 12/600 heading); a 16 invoice `receipt` with the kept line
+  14; the field "Type <name> to confirm" (the name 14/700 `--color-critical`), a green `circle-check` in the box
+  once it matches, a 12 quiet hint. Footer: Back (quiet) at the left; Cancel, Delete permanently (danger main,
+  `shield-x`) at 45% until the name matches.
+- **Receipt:** default pop-up (600), 40 success `circle-check` tile, "<name> was deleted", 12 quiet "Permanently ·
+  <date and time> · by <member>". Body: one paper card (subtle fill, 1px border, radius 12, padding 4 16) with two
+  sections 14 apart, split by a 1px `--color-border--interactive` line: "DELETED" (14 critical `trash-2`), lines
+  14 with counts 14/600 at the right; "KEPT, AND WHY" (14 invoice `shield-check`), the item 14/600 in a 200 column
+  beside its why 14 quiet. Footer: Copy receipt (secondary, `copy`), Done (main, `check`).
+- **Download client data:** default pop-up (600), 40 client `download` tile, "Download <name>'s data". "WHAT'S IN
+  THE FILE" then subtle boxes two to a row (radius 12, 1px border, padding 12, gap 10): a 32 record tile, the part
+  14/600 over a 12 quiet detail, a 16 `circle-check` in `--color-success`. Then a 16 quiet `circle-minus` with the
+  left-out line 14 quiet, and an informative notice strip (`clock-3`). Footer: Cancel, Prepare download (main,
+  `download`).
+- **Toasts** (bottom right, 420): white, radius 12, 1px border, shadow 0 12 32 black 14%, padding 12 12 12 14, gap
+  12: a 36 tile (preparing: the spinner in a client tile; ready: success `file-archive`; failed: critical
+  `circle-alert`), title 14/600 over a 12 quiet line, an optional main button (Download), a 28 quiet ×. The bell
+  shows the ready file as a client `download` row.
+- **States:** counting, bone rows in the list and a bone card in the panel, Delete client and the red link at 45%;
+  couldn't count, a critical notice strip with Try again in place of the list, the panel says only "Invoices and
+  payments always stay."; deleting, the pressed button's spinner with Cancel, × and the link at 45% (permanent:
+  the box goes subtle); couldn't delete, a critical notice strip above the list, counts kept.
