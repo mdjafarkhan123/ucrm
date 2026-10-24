@@ -19,7 +19,7 @@ reservation `22a159eee4c9`, branched from the planning branch) — migration dra
 **Next part:** 3 Permanent-delete engine — the hidden delete that keeps only money records and opt-out
 fingerprints; run performance-review design first. Design sessions take 4, 5, 8, 11, 13 in Pencil.
 
-**Linked:** Messenger Part 10 (`Memory/campaigns/messenger-unified-inbox/parts/10-go-live.md`): the public Data
-deletion page (`docs/marketing-site/legal-pages.md`) is updated once in-app delete ships.
+**Linked:** Messenger Part 10 (`Memory/campaigns/messenger-unified-inbox/parts/10-go-live.md`): public Data deletion
+page text is updated once in-app delete ships.
 
 **Blockers:** none.
