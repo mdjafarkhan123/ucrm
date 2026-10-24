@@ -10,8 +10,8 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 **Stage:** Design and building. Parts 3, 4, 5, 8, 11 and 13 wait on nothing and can run side by side.
 
 **Done:** Part 3 built 2026-10-24 (engine, stored-file cleanup, business closure closes Twilio) on branch
-`claude/data-privacy-part3`, merged to main together with the planning branch. Follow-ups done the same day; only
-Jafar's AWS and Twilio console checks remain (`parts/03-delete-engine.md` § Still with Jafar).
+`claude/data-privacy-part3`, merged to main together with the planning branch. Follow-ups done the same day; AWS and Twilio
+retention checked in the consoles: both already 30 days (`parts/03-delete-engine.md` § Provider checks).
 
 **Next part:** design sessions take 4, 5, 8, 11, 13 in Pencil (they wait on nothing). Part 6 builds after 3, 4, 5.
 

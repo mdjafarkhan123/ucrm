@@ -88,8 +88,9 @@ plan section it serves is named.
   edit them, as HubSpot's delete does not reach free-form files. The import's own rows are scrubbed.
 - **Marketing event bodies:** emptied 30 days after processing (`20270109095000`), the event history SendGrid and
   Mailgun keep, so a stray event never holds an address for long.
-- **Still open (Jafar checks):** raw inbound emails in the S3 bucket `ucrm-ses-inbound-mime`, whose expiry rule could
-  not be read with the app's key; the Twilio console's closed-subaccount data setting.
+- **Provider retention (checked 2026-10-24):** S3 `ucrm-ses-inbound-mime` expires raw inbound email on day 30 (rule
+  `expire-raw-reply-mime-30d`, account 881776924275); Twilio deletes a closed subaccount's data 30 days after closure
+  (on by default for this account).
 
 ## Performance design
 

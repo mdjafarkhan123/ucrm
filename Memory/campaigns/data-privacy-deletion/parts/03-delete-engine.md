@@ -28,11 +28,14 @@ Branch `claude/data-privacy-part3-followups`, reservation `e4949b98c6b7`.
   business trashes them (Jafar's answers); `20270109096000`, pgTAP 8/8, import vitest 102/102. Six earlier dev
   imports filed by a one-off run. On dev they stay "pending" because no virus scanner runs there.
 
-## Still with Jafar
+## Provider checks (Jafar and Claude in his consoles, 2026-10-24)
 
-- AWS console: an expiry rule (proposed 30 days) on S3 `ucrm-ses-inbound-mime`; the number feeds Part 15.
-- Twilio console: delete closed subaccounts' data after 30 days.
-- Possible later: same 30-day body rule for `communication_provider_callback_events` (the inbound attachment
+- AWS: the inbound-email bucket lives in member account `UCRM Production Workloads` (881776924275; sign in through the
+  access portal as `jafar.admin`, AdministratorAccess). Lifecycle rule `expire-raw-reply-mime-30d` already expires
+  every object on day 30, whole bucket, enabled. Part 15's wording can say raw inbound email is kept 30 days.
+- Twilio: account created 2026-04-30; Twilio enables automatic deletion of closed subaccounts' data 30 days after
+  closure by default for accounts created after 2018-07-05, and the One Console has no switch for it. Nothing to do.
+- Possible later: the same 30-day body rule for `communication_provider_callback_events` (the inbound attachment
   worker reads SES callback bodies, so check it first). Not raised with Jafar yet.
 
 ## Found while mapping (for later parts)
