@@ -9,6 +9,10 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 `ROADMAP.md` approved by Jafar 2026-10-24. Evidence: `docs/research/data-privacy-deletion-top-crms-2026-10-23.md`.
 **Stage:** Design and building. Parts 3, 4, 5, 8, 11 and 13 wait on nothing and can run side by side.
 
+**Waiting to merge:** planning branch `claude/data-privacy-planning` (folder `.worktrees/data-privacy-planning`,
+reservation `7e0488eb9224`) — research, plan, approval and roadmap; main was held by `standalone/typecheck-fixes`
+on 2026-10-24. Merge it before Part 3 starts, then release the reservation and remove the folder.
+
 **In progress:** none.
 
 **Next part:** 3 Permanent-delete engine — the hidden delete that keeps only money records and opt-out
