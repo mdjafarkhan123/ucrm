@@ -708,3 +708,42 @@ The chat a visitor opens on the contractor's own website (Pencil: "Batch 66 · W
   "Start a new conversation" button (radius 12, `message-circle-plus`).
 - **Not available or not set up:** the welcome top stays; the card holds a 48 inactive `message-circle-off` tile
   and the message 14/600; no footer.
+
+## Recently deleted page
+
+Deleted clients waiting out their 30 days (`concept.pen` board `Wf0tP`, "Recently Deleted page · Approved B",
+Jafar 2026-10-24, with every state). Full page frame with Clients current in the sidebar.
+
+- **Top:** the breadcrumb (Clients › `trash-2` Recently deleted), the page header with a 40 client `trash-2` tile
+  and no buttons, then a toolbar: search (300), the Deleted by filter chip, and at the right a 14/500 quiet count
+  ("6 deleted clients · 15 invoices kept").
+- **Columns:** main column plus the 360 side column. Main holds two section cards, 24 apart: "Deleted for good this
+  week" (critical `alarm-clock` tile, a critical count pill) for clients with 3 days or fewer, then "Can still be
+  restored" (client `rotate-ccw` tile, an inactive count pill). A card with nobody in it is hidden.
+- **Row** (edge to edge, padding 16 20, gap 16, a hairline above): a 48 days ring (track `--color-border`, the arc
+  for the days left out of 30 from the top, clockwise; `--color-critical` in the urgent card, `--color-client`
+  otherwise; the number 16/700 over "days" 12 quiet), then the name 14/600 with "Deleted <date> by <member>" 14
+  quiet beside it, and under them count pills of what comes back (pill corners, padding 3 9 3 7, a 1px
+  `--surface-edge`, a 12 record icon, 12/600 `--onSurface`; "Only the client record" 12 quiet when there is
+  nothing). At the right "GOES FOR GOOD" 12/600 quiet over the date 14/600 (critical `--onSurface` and the
+  weekday in the urgent card), a small secondary Restore (client `rotate-ccw`) and the 32 ⋯ button.
+- **Side column:** "How the 30 days work" (client `hourglass`): three steps, a 28 circle (1px client
+  `--surface-edge`; the last critical) on a 2 wide edge-colour line, the when 14/600 over 12 quiet. "Always kept"
+  (invoice `shield-check`): rows with a 32 tile (invoice `receipt`; conversation `message-circle-off`), title
+  14/600 over a 12 quiet why, then a small secondary "See kept invoices" (`arrow-up-right`) under a hairline.
+- **Picking several:** a tick box takes the ring's place on hover; once one is ticked every row shows it and
+  picked rows fill `--color-surface--active`. A floating bar (white, radius 12, `--shadow-high`, padding 10 10 10
+  16): a 24 `--color-interactive` count circle, "2 clients picked" 14/600, Clear (quiet), Restore 2 (main).
+- **⋯ menu** (`inputs.md` action menu): Restore, then on the danger strip Delete permanently now (`shield-x`),
+  which opens the Delete permanently pop-up (`modals.md`).
+- **Restoring:** the spinner takes Restore's icon, ⋯ at 45%. Toasts as in `modals.md` § Delete client pop-ups:
+  success `rotate-ccw` "<name> is back" with Open client; many, "<n> clients are back"; failed, critical
+  `circle-alert` with Try again.
+- **Same phone or email pop-up:** default pop-up (600), 40 client `users` tile, "Another <name> is in Clients", 12
+  quiet "Same phone number: …". Body: the intro 14 quiet; two cards side by side (radius 12, 1px `--surface-edge`,
+  clipped) with a top band (client `rotate-ccw` "Coming back"; informative `user-check` "Already in Clients"),
+  then a 28 avatar, name 14/600 over 12 quiet, and count pills; then radio tiles (`inputs.md`): Restore and merge
+  them (chosen) / Restore as a separate client. Footer: Cancel, Restore and merge (main, `git-merge`).
+- **States** (`page-states.md`), in the main column's place: empty (client `trash-2`, "Nothing deleted in the last
+  30 days", Back to Clients); loading (header shapes and bone rows with a 48 round bone and an 80×32 button bone);
+  couldn't load (critical, Try again); search with no match (client `search`, Clear search as a quiet button).
