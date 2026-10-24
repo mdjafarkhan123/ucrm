@@ -186,9 +186,9 @@
 
 		range.deleteContents();
 		const nodes = nodesFor(text);
-		range.insertNode(
-			nodes.reduce((all, node) => (all.append(node), all), document.createDocumentFragment() as DocumentFragment)
-		);
+		const fragment = document.createDocumentFragment();
+		fragment.append(...nodes);
+		range.insertNode(fragment);
 		// The caret goes after what was put in. After text it is placed now, before the tidy-up below merges
 		// that text into its neighbours (the range moves with the merge; the node it named would not survive).
 		const last = nodes.at(-1);
