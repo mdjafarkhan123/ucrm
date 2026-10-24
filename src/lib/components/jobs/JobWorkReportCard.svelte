@@ -190,19 +190,6 @@
 			}
 		}
 
-		&__summary {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-smaller);
-			align-items: flex-start;
-		}
-
-		&__detail {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
 		&__stale {
 			display: flex;
 			flex-direction: column;

@@ -148,8 +148,8 @@
 	function addressLine(property: {
 		address_line1: string;
 		city: string;
-		state_region: string | null;
-		postal_code: string | null;
+		state_region?: string | null;
+		postal_code?: string | null;
 	}) {
 		const region = [property.state_region, property.postal_code].filter(Boolean).join(' ');
 		return [property.address_line1, property.city, region].filter(Boolean).join(', ');
@@ -543,12 +543,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
-
-		&__fields {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-medium);
-		}
 
 		&__client {
 			display: flex;

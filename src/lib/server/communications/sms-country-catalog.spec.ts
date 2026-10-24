@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createSmsCountryCatalog } from './sms-country-catalog';
 import type {
 	AvailableNumber,
+	CatalogCountry,
 	NumberSearchInput,
 	TwilioCountryCatalogClient
 } from './twilio-country-catalog';
@@ -27,7 +28,7 @@ function number(
 
 function fakeClient(overrides: Partial<TwilioCountryCatalogClient> = {}) {
 	const client: TwilioCountryCatalogClient = {
-		listCountries: vi.fn(async () => [
+		listCountries: vi.fn(async (): Promise<CatalogCountry[]> => [
 			{ countryCode: 'GB', name: 'United Kingdom', beta: false, numberTypes: ['local', 'mobile'] },
 			{ countryCode: 'BR', name: 'Brazil', beta: false, numberTypes: ['local'] }
 		]),

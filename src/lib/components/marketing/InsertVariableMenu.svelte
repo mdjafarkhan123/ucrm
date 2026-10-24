@@ -103,12 +103,13 @@
 			outline: none;
 			box-shadow: var(--shadow-focus);
 		}
-		// Open: the Marketing colour fills the button.
-		&[data-state='open'] {
-			border-color: var(--color-growth);
-			color: var(--color-text--reverse);
-			background: var(--color-growth);
-		}
+	}
+
+	// Open: the Marketing colour fills the button.
+	:global(.variable-button[data-state='open']) {
+		border-color: var(--color-growth);
+		color: var(--color-text--reverse);
+		background: var(--color-growth);
 	}
 
 	:global(.variable-button--icon) {
@@ -125,8 +126,8 @@
 		:global(svg) {
 			color: var(--color-growth);
 		}
-		&[data-state='open'] :global(svg) {
-			color: inherit;
-		}
+	}
+	:global(.variable-button--labelled[data-state='open'] svg) {
+		color: inherit;
 	}
 </style>

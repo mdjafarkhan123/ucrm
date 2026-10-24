@@ -182,16 +182,6 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
-
-		&__button-icon {
-			display: inline-grid;
-			place-items: center;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
 	}
 
 	.section-editor__add {

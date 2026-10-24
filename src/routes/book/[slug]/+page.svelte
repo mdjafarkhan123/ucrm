@@ -146,6 +146,8 @@
 		</BookingStatus>
 	</BookingFrame>
 {:else if step === 'booked' && booked}
+	<!-- Snippets don't keep the narrowing above, so they read this non-null copy. -->
+	{@const confirmed = booked}
 	<BookingFrame>
 		<BookingStatus
 			icon={requested ? hourglassIcon : circleCheckIcon}
@@ -162,14 +164,14 @@
 			</p>
 			{#snippet facts()}
 				<BookingFacts
-					startsAt={booked.starts_at}
-					endsAt={booked.ends_at}
+					startsAt={confirmed.starts_at}
+					endsAt={confirmed.ends_at}
 					{zone}
 					{locale}
-					hostName={booked.host_name}
+					hostName={confirmed.host_name}
 					phone={form.phone}
-					locationKind={booked.location_kind}
-					videoJoinUrl={booked.video_join_url}
+					locationKind={confirmed.location_kind}
+					videoJoinUrl={confirmed.video_join_url}
 				/>
 			{/snippet}
 			{#snippet hint()}Need a different time? Use the link in that email to change or cancel.{/snippet}

@@ -577,10 +577,6 @@
 			flex-wrap: nowrap;
 			gap: var(--space-slim);
 			padding: var(--space-small) 0;
-
-			& + & {
-				padding-top: var(--space-small);
-			}
 		}
 
 		&__stage-name,

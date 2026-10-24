@@ -87,7 +87,7 @@
 			notes
 				.flatMap((note) => [note.created_by, note.edited_by, ...note.mention_user_ids])
 				.concat(
-					compact && pending.some((change) => change.kind === 'create') ? [currentUserId] : []
+					compact && pending.some((change) => change.kind === 'create') ? [currentUserId ?? null] : []
 				)
 				.filter((id): id is string => Boolean(id))
 		)
