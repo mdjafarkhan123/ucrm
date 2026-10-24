@@ -6,6 +6,7 @@ import { z } from 'zod';
 // TwilioProvisioningClient interface, so unit tests drive the saga against a fake and no test ever contacts
 // Twilio. Every method verified against current Twilio docs (2026):
 //   - Subaccounts:            POST/GET https://api.twilio.com/2010-04-01/Accounts.json
+//   - Subaccount close:       POST .../2010-04-01/Accounts/{sid}.json (Status=closed; master credential only)
 //   - Restricted API keys:    POST https://iam.twilio.com/v1/Keys (KeyType=restricted + Policy)
 //   - API key list/delete:    GET/DELETE .../2010-04-01/Accounts/{sid}/Keys[/{keySid}].json
 //   - Messaging Service:      POST/GET https://messaging.twilio.com/v1/Services  (Services REST API: Public Beta)
@@ -15,7 +16,8 @@ import { z } from 'zod';
 //   - the platform MAIN API KEY (deployment secret) lists subaccounts and performs subaccount-scoped reads that
 //     do not return a subaccount's own Auth Token;
 //   - the platform MASTER Account SID + AUTH TOKEN (deployment secret) is used ONLY for the two operations that
-//     must read back a fresh subaccount's plaintext Auth Token -- creating a subaccount and fetching one by SID.
+//     must read back a fresh subaccount's plaintext Auth Token -- creating a subaccount and fetching one by SID --
+//     and for closing a purged business's subaccount, which Twilio allows to no other credential.
 //     Verified live (2026-09-14) and confirmed against Twilio docs: Twilio returns a subaccount's `auth_token`
 //     only to a request authenticated with the parent's real Account SID + Auth Token, never to any API key.
 //     This is the standard Twilio ISV pattern for a Standard-edition account; the API-key-only alternative
@@ -847,6 +849,39 @@ export function createTwilioProvisioningClient(
 			}
 		}
 	};
+}
+
+/**
+ * Permanently closes a purged business's subaccount (Twilio Subaccounts docs: closing releases every number,
+ * cannot be undone, and only the parent's real Account SID + Auth Token may do it). Idempotent for the closure
+ * worker's retries: an already closed or missing subaccount counts as done, since the goal is that it be gone.
+ */
+export async function closeTwilioSubaccount(
+	subaccountSid: string,
+	platform: TwilioPlatformEnv = getTwilioPlatformEnv()
+): Promise<void> {
+	requireSid(subaccountSid, SUBACCOUNT_SID, 'twilio_bad_subaccount_sid');
+	const masterAuth = basicAuthHeader(platform.TWILIO_ACCOUNT_SID, platform.TWILIO_AUTH_TOKEN);
+	const path = `/2010-04-01/Accounts/${subaccountSid}.json`;
+	try {
+		const { body } = await twilioRequest({
+			base: TWILIO_API_BASE,
+			path,
+			method: 'GET',
+			auth: masterAuth
+		});
+		if (readString(body, 'status') === 'closed') return;
+	} catch (error) {
+		if (error instanceof TwilioProvisioningError && error.status === 404) return;
+		throw error;
+	}
+	await twilioRequest({
+		base: TWILIO_API_BASE,
+		path,
+		method: 'POST',
+		auth: masterAuth,
+		form: { Status: 'closed' }
+	});
 }
 
 // -----------------------------------------------------------------------------------------------------------------

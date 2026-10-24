@@ -31,13 +31,18 @@ branch), reservation `22a159eee4c9`. Pushed.
 
 ## Found while mapping (for later parts)
 
-- **Business closure vs HighLevel (Jafar 2026-10-24 said follow HighLevel for Twilio):** deleting a HighLevel
-  sub-account closes its LC Phone (Twilio) account and releases its numbers; our closure
-  (`organization-closure-cron.ts`) cleans Auth users and SES only and leaves the Twilio subaccount open. Extra
-  fix: raise with Jafar, don't build without his yes.
-- **Big test (Part 16, 1M-message business):** won't fit the 500 MB free dev database. Options put to Jafar
-  2026-10-24: local copy via Docker (recommended), Supabase Pro, or a 200k test online. Dev database cleaned
-  1018 → 124 MB the same day (index rebuild + cron log trimmed to 7 days); a nightly cron-log trim awaits his yes.
+- **3c Business closure closes Twilio — done 2026-10-24** (Jafar: follow the top products). Migration
+  `20270109091000` parks `{kind: 'twilio_subaccount', provider_id: <SID>}` on the purge receipt;
+  `closeTwilioSubaccount` (`twilio.ts`, master credential, closed/404 = done) runs from
+  `organization-closure-cron.ts`, which now retries only the resources that failed. Tests: vitest 24/24
+  (`twilio-subaccount-close.spec.ts`, closure cron spec), pgTAP `organization_purge_twilio.sql` 6/6, org purge
+  42/42 (patched copy), client delete 64/64. Jafar to check the Twilio console setting that deletes closed
+  subaccounts' data after 30 days.
+- **Dev database cleanup 2026-10-24:** 1018 → 124 MB (index rebuild; cron log trimmed to 7 days). Migration
+  `20270109090000` adds the nightly `cron-run-history-trim-nightly` job (Supabase's recommendation), applied.
+- **Big test (Part 16, 1M-message business):** won't fit the 500 MB free dev database. Jafar chose the top-industry
+  way: a separate local copy (Supabase local stack in Docker, the same stack production uses). Waiting on Jafar
+  to install Docker (needs his password); then `npx supabase start` from this worktree.
 
 - **Part 6:** `client_contact_methods_org_value_unique_idx` (one phone/email per business) blocks a new
   contact with the same phone while a soft-deleted client still holds it. Every send and creation path must
@@ -51,4 +56,5 @@ branch), reservation `22a159eee4c9`. Pushed.
 
 ## Next action
 
-Start 3b: remove Twilio id collection from the engine, then the storage worker.
+Start 3b: remove Twilio id collection from the engine, then the storage worker. Once Docker is installed, set up
+the local database for the big test.

@@ -179,6 +179,9 @@ deleted information can remain in backups.
 - Twilio's message log is not deleted per customer, as in HighLevel: its help centre says deleting a contact
   removes its conversations in the app, and only deleting a sub-account closes its LC Phone (Twilio) account.
   Twilio deletes a closed account's content after 30 days (Twilio support, "Data Retention and Deletion").
+  Built to match (2026-10-24): when a closed business's data is purged, its Twilio subaccount is closed too,
+  which releases its numbers; Twilio deletes the subaccount's data 30 days later when the parent account's
+  "delete closed subaccounts" setting is on (Twilio Subaccounts docs).
 - Backup copies age out on their own; production backup retention is not yet set
   (`docs/production-readiness-plan.md`). The Privacy page wording waits on that number.
 

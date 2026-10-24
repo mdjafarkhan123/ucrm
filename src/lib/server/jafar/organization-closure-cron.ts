@@ -5,6 +5,7 @@ import { recordOperationOutcome } from '$lib/server/events/outbox';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { renderTemplate, htmlToPlainText } from '$lib/server/jafar/message-templates';
 import { purgeOrganizationSesResources } from '$lib/server/communications/ses-organization-cleanup';
+import { closeTwilioSubaccount } from '$lib/server/communications/twilio';
 
 type NoticeKind =
 	'closure_started' | 'fourteen_day_reminder' | 'three_day_reminder' | 'closure_completed';
@@ -25,8 +26,9 @@ const NOTICE_TEMPLATE_KEYS: Record<NoticeKind, string> = {
 
 type ClosureRecordRow = { id: string; organization_id: string; deadline_at: string };
 type PendingAuthCleanupRow = { operation_id: string; pending_auth_user_ids: string[] };
-// Carries the organization id: the SES tenant is found from it, so no domain name is ever stored.
-type ProviderResource = { kind: 'ses_organization'; provider_id: string };
+// SES carries the organization id (the tenant is found from it, so no domain name is ever stored); Twilio
+// carries the business's subaccount SID, closed with the parent credential.
+type ProviderResource = { kind: 'ses_organization' | 'twilio_subaccount'; provider_id: string };
 type PendingProviderCleanupRow = {
 	operation_id: string;
 	pending_provider_resources: ProviderResource[];
@@ -49,9 +51,9 @@ export type ClosureCronResult = {
 
 /**
  * The receipt's top-level status reflects the WHOLE purge, including its two external cleanup legs
- * (Auth users and Amazon SES provider resources). It is complete only once every applicable component has
- * succeeded; a single failed leg makes it failed_partial, and anything still pending keeps it
- * in_progress. Components neither leg touched are absent from the map, which counts as done. Only the
+ * (Auth users, and provider resources: Amazon SES and the Twilio subaccount). It is complete only once every
+ * applicable component has succeeded; a single failed leg makes it failed_partial, and anything still pending
+ * keeps it in_progress. Components neither leg touched are absent from the map, which counts as done. Only the
  * completed state carries a completed_at, matching the receipt table's own check constraint.
  */
 function nextReceiptState(components: Record<string, string>): {
@@ -221,9 +223,9 @@ async function finishAuthCleanup(
 /**
  * Deletes the given provider resources and reconciles the receipt's "provider_resources" component. Twin of
  * finishAuthCleanup: shared by the happy path (right after a successful purge) and the resume path (a later
- * sweep finding a receipt whose pending_provider_resources was never cleared). SES cleanup treats "already
- * gone" as success, since the goal is that the resource be gone. Any other error keeps the anchor so the next
- * sweep retries, and never lets the receipt reach completed.
+ * sweep finding a receipt whose pending_provider_resources was never cleared). SES and Twilio cleanup treat
+ * "already gone" as success, since the goal is that the resource be gone. Any other error keeps that resource's
+ * anchor so the next sweep retries only what failed, and never lets the receipt reach completed.
  */
 async function finishProviderCleanup(
 	client: SupabaseClient<Database>,
@@ -233,12 +235,15 @@ async function finishProviderCleanup(
 	const target = { targetKind: 'platform' as const, targetId: null };
 
 	const failures: string[] = [];
+	const stillPending: ProviderResource[] = [];
 	for (const resource of params.resources) {
 		try {
-			await purgeOrganizationSesResources(resource.provider_id);
+			if (resource.kind === 'twilio_subaccount') await closeTwilioSubaccount(resource.provider_id);
+			else await purgeOrganizationSesResources(resource.provider_id);
 		} catch (error) {
 			const reason = error instanceof Error ? error.message : 'unknown error';
 			failures.push(`${resource.kind} ${resource.provider_id}: ${reason}`);
+			stillPending.push(resource);
 		}
 	}
 
@@ -257,7 +262,7 @@ async function finishProviderCleanup(
 		.from('organization_deletion_receipts')
 		.update({
 			component_results: mergedComponents,
-			pending_provider_resources: failures.length === 0 ? null : params.resources,
+			pending_provider_resources: failures.length === 0 ? null : stillPending,
 			status: receiptState.status,
 			completed_at: receiptState.completed_at
 		})
@@ -294,8 +299,8 @@ async function finishProviderCleanup(
 }
 
 /**
- * Runs the SQL-side purge and, on success, its two external cleanup legs (Auth users and Amazon SES
- * provider resources). The completion notice is sent first: organization_closure_records and
+ * Runs the SQL-side purge and, on success, its two external cleanup legs (Auth users, and provider resources:
+ * Amazon SES and the Twilio subaccount). The completion notice is sent first: organization_closure_records and
  * organization_closure_notices both cascade away the moment the purge RPC commits, so that is the
  * last point either can be read or claimed.
  */
@@ -409,7 +414,7 @@ export async function retryReceiptCleanup(
  * Three independent passes:
  *  1. Open closure windows -- send due reminders, and purge anything past its deadline.
  *  2. Deletion receipts whose Auth cleanup never finished last time.
- *  3. Deletion receipts whose provider (Amazon SES) cleanup never finished last time.
+ *  3. Deletion receipts whose provider (Amazon SES, Twilio) cleanup never finished last time.
  * The receipt anchors (pending_auth_user_ids, pending_provider_resources) are the only remaining
  * handles once the organization -- and its closure record -- is already gone. Every pass is safe to
  * run again from scratch: every notice is claimed exactly once via a unique index, every purge call
