@@ -9,7 +9,12 @@
 
 - **6a Database** — `client_deletions`, `client_deleted_at` marks, policies, write guard, contact index, send and
   marketing gates, inbound match, `delete_clients`, `client_delete_preview`, `restore_client_deletions`,
-  `recently_deleted_clients`; pgTAP. Not started.
+  `recently_deleted_clients`; pgTAP. **Done 2026-10-24:** migration `20270110090000` applied to dev; pgTAP
+  `client_delete_restore.sql` 44/44; `client_permanent_delete` 66/66, `organization_purge` 42/42 and
+  `communications_sms_inbound_media` 9/9 still pass. `client_create_edit.sql` fails 7 of 21 with or without this
+  migration (`mark_property_for_geocoding`: permission denied for schema private) — older problem, not raised yet.
+  Same-phone restore: the clashing value stays hidden on the restored client (its message history points at it);
+  merge moves that history onto the newer client's value first.
 - **6b Read sweep** — security-definer lists, boards, reports, schedule (`client_schedule_rows`,
   `schedule_calendar_context`, `job_schedule_stages`), pipeline, financial pages, `ready_to_bill_page`, quote list,
   customer links (quote, job report); server modules reading with the service key (inbox, Files, search,
@@ -27,4 +32,5 @@
 
 ## Next action
 
-Write migration 6a.
+6b read sweep. Known gaps: Messenger identities of a deleted client (inbound Messenger would still attach to them),
+messenger send claim, inbox (`/api/communications/email-history` reads with the service key), Files page, notes.
