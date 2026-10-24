@@ -99,3 +99,45 @@ Verification plan : EXPLAIN (ANALYZE, BUFFERS) of the purge on a seeded heavy te
 Open decisions    : none.
 Overall           : Ready
 ```
+
+## Performance verification (2026-10-24)
+
+Measured on the dev database inside rolled-back transactions. Seeded customer: 5,000 texts (2 events and a
+provider callback each), 1,000 texts in, 300 jobs, 3,000 assigned visits, 1,000 files, 500 notes, 2,000
+activity rows (≈ 30,000 rows). `pg_stat_xact_user_tables` before and after the purge showed which tables were
+read whole; a second pass with `enable_seqscan = off` separated "no usable index" from "table is tiny".
+
+```text
+Performance Verification – permanent customer delete
+Workload contract : heavy customer as above; organisations up to ~1M message rows; background, no user waiting
+Layers reviewed   : database (purge transaction, plan preview, referential checks), API time limit
+
+Layer | Evidence | Result
+------|----------|-------
+Referential checks | Before: each deleted provider callback read every inbound message on the platform
+  (5,000 × whole table); each deleted text read the SMS reconciliation table; each deleted job read the
+  organisation's checklist items. After 3 indexes: no per-row whole-table reads (enable_seqscan off) | ✅
+Purge statements | Before: provider callbacks (OR of two keys), campaign recipients (×2), recipient events and
+  import rows each read their platform-wide table once per purge. After: two indexed deletes, lookups through
+  the organisation's campaigns and import batches, 1 index for recipient events. Only the customer's own
+  subject list (temp table) is read whole | ✅
+Contact-method references | Recipients' contact-method link now indexed (also helps every existing contact
+  removal). Delivery intents, inbound messages and reply aliases check by organisation prefix: ≤ a few
+  contact methods × the organisation's rows | ✅ bounded
+Purge time | 5.8–6.6 s in a quiet period; old and new function A/B back to back in a busy period:
+  9.6/10.1 s vs 9.3/9.6 s (load, not the change) | ✅ background
+Plan preview | 62–133 ms on the heavy customer | ✅
+API time limit | Server RPCs inherit the authenticator's 8 s (Supabase Timeouts docs); run_client_purge now
+  sets statement_timeout 60s | ✅
+Money | pgTAP: payments, allocations, deposit byte-identical; a sent text awaiting its price is charged at the
+  send-time price, not released | ✅
+
+Changes made       : 5 indexes (inbound callback link, SMS reconciliation intent, job checklist job,
+                     recipient contact method, recipient event message id); 3 statement rewrites; 60 s limit
+Unverified/deferred: timing at a real 1M-row organisation (dev data is small; structure verified instead).
+                     Smaller org-prefix referential scans (attachment access links, purge log, tasks,
+                     draft-invoice replacement) are bounded by small per-customer counts. Owner: none.
+Capacity statement : one heavy customer per transaction in ≤ 10 s on the dev database; batch throughput for
+                     day-30 runs not established
+Overall            : ✅ Supported
+```

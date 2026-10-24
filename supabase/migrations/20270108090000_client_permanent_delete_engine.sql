@@ -1071,6 +1071,29 @@ comment on function private.client_deletion_plan(uuid, uuid) is
 -- 7. The delete
 -- ---------------------------------------------------------------------------------------------------------
 
+-- Postgres checks every deleted row's references one by one. A customer with thousands of messages or hundreds
+-- of jobs needs these lookups indexed, or each check reads the whole table (measured: the callback link read
+-- every inbound message on the platform once per deleted callback).
+create index communication_inbound_messages_callback_event_idx
+  on public.communication_inbound_messages (provider_callback_event_id)
+  where provider_callback_event_id is not null;
+
+create index communication_sms_reconciliation_items_intent_idx
+  on public.communication_sms_reconciliation_items (delivery_intent_id)
+  where delivery_intent_id is not null;
+
+create index job_checklist_items_job_idx
+  on public.job_checklist_items (organization_id, job_id);
+
+create index marketing_campaign_recipients_contact_method_idx
+  on public.marketing_campaign_recipients (client_contact_method_id)
+  where client_contact_method_id is not null;
+
+-- The raw marketing email events are found only by the provider's message id.
+create index marketing_campaign_recipient_events_message_idx
+  on public.marketing_campaign_recipient_events (provider_message_id)
+  where provider_message_id is not null;
+
 create or replace function private.plan_uuids(plan jsonb, plan_key text) returns uuid[]
   language sql immutable
   set search_path to 'pg_catalog', 'public'
@@ -1305,13 +1328,15 @@ begin
     where attachment.organization_id = org and attachment.inbound_message_id = any(inbound_message_ids)
   ) as message_objects;
 
-  -- The raw provider callbacks behind these messages hold the same phone numbers and text.
+  -- The raw provider callbacks behind these messages hold the same phone numbers and text. Two deletes, so each
+  -- uses its index; the platform-wide table is never read whole.
   delete from public.communication_provider_callback_events
-  where delivery_intent_id = any(intent_ids)
-     or id in (
-       select provider_callback_event_id from public.communication_inbound_messages
-       where organization_id = org and id = any(inbound_message_ids) and provider_callback_event_id is not null
-     );
+  where delivery_intent_id = any(intent_ids);
+  delete from public.communication_provider_callback_events
+  where id in (
+    select provider_callback_event_id from public.communication_inbound_messages
+    where organization_id = org and id = any(inbound_message_ids) and provider_callback_event_id is not null
+  );
 
   delete from public.communication_forward_events
   where organization_id = org
@@ -1478,14 +1503,22 @@ begin
   delete from public.review_requests where organization_id = org and client_id = c;
   delete from public.file_shares where organization_id = org and client_id = c;
 
+  -- Campaign send records are reached through the business's campaigns, which the campaign-and-customer index
+  -- serves; the recipients table is shared by every business.
   delete from public.marketing_campaign_recipient_events as event
   where event.organization_id = org
     and event.provider_message_id in (
-      select provider_message_id from public.marketing_campaign_recipients
-      where organization_id = org and client_id = c and provider_message_id is not null
+      select recipient.provider_message_id
+      from public.marketing_campaigns as campaign
+      join public.marketing_campaign_recipients as recipient
+        on recipient.organization_id = campaign.organization_id and recipient.campaign_id = campaign.id
+      where campaign.organization_id = org and recipient.client_id = c and recipient.provider_message_id is not null
     );
   delete from public.marketing_campaign_result_credits where organization_id = org and client_id = c;
-  delete from public.marketing_campaign_recipients where organization_id = org and client_id = c;
+  delete from public.marketing_campaign_recipients as recipient
+  using public.marketing_campaigns as campaign
+  where campaign.organization_id = org
+    and recipient.organization_id = org and recipient.campaign_id = campaign.id and recipient.client_id = c;
 
   -- Draft invoices were never issued, so nothing requires keeping them.
   delete from public.invoice_events where organization_id = org and invoice_id = any(draft_invoice_ids);
@@ -1562,9 +1595,12 @@ begin
   -- (and their photos), and the names and emails stored on the kept invoice and receipt links.
   delete from public.client_merges where organization_id = org and surviving_client_id = c;
 
-  update public.import_rows
+  update public.import_rows as import_row
   set raw = '{}'::jsonb, resolved_payload = null, error_message = null
-  where organization_id = org and (match_client_id = c or result_client_id = c);
+  from public.import_batches as batch
+  where batch.organization_id = org
+    and import_row.organization_id = org and import_row.batch_id = batch.id
+    and (import_row.match_client_id = c or import_row.result_client_id = c);
 
   select storage_keys || coalesce(array_agg(photo_key) filter (where photo_key is not null), '{}')
   into storage_keys
@@ -1662,6 +1698,9 @@ create or replace function public.run_client_purge(
 ) returns jsonb
   language sql security definer
   set search_path to 'pg_catalog', 'public'
+  -- Server calls otherwise inherit the API's 8-second limit; a customer with years of messages and jobs took
+  -- 6-10 s on the dev database, and a cut-off delete rolls back and never finishes.
+  set statement_timeout to '60s'
   as $$
   select private.apply_client_purge(
     p_organization_id, p_client_id, p_trigger_kind, p_requested_by, p_requested_by_owner_email, p_reason
