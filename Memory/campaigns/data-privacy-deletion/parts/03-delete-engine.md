@@ -1,61 +1,46 @@
 # Part 3 — Permanent-delete engine
 
 **Plan:** `docs/data-privacy-deletion-behavior-contract.md` § Money records, § "Don't contact me", § Delete
-permanently now. **Design (read first):** `docs/data-privacy-deletion-engine.md` — record-by-record result,
-fingerprints, transaction order, performance design and its verification (2026-10-24, Supported).
+permanently now. **Design (read first):** `docs/data-privacy-deletion-engine.md`.
 **Branch:** `claude/data-privacy-part3`, folder `.worktrees/data-privacy-part3` (branched from the planning
-branch), reservation `22a159eee4c9`. Pushed.
+branch), reservation `ee89c1c453ce`. Pushed.
 
 ## Slices
 
-- **3a Database engine — done** (migration `20270108090000`, applied to the dev database; later edits to its
-  functions and indexes were re-applied by hand from the file, so file and database match).
-  `supabase/tests/database/client_permanent_delete.sql`: 64/64. Organisation purge still passes 42/42 using a
-  patched fixture copy (see Ask Jafar). A sent text still waiting for Twilio's price is now charged at its
-  send-time price, not refunded. Types for the engine spliced into `src/lib/database.types.ts` (only its own
-  tables, columns and `run_client_purge`; the remote has other branches' changes).
-- **3b Provider cleanup — next, not started.** Storage only. Twilio follows HighLevel (Jafar, 2026-10-24):
-  no per-message delete at Twilio, no key permission change, no key rotation. First remove the engine's
-  Twilio id collection (`pending_twilio_message_sids` / `twilio_messages` component) from
-  `20270108090000`'s functions, re-apply by hand, update its pgTAP checks. Then a `src/lib/server/privacy/`
-  worker modelled on `src/lib/server/jafar/organization-closure-cron.ts` (`finishProviderCleanup`,
-  `retryReceiptCleanup`, the sweep): read `client_deletion_receipts` with pending
-  `pending_storage_object_keys`; delete with `deleteObject` (`src/lib/server/storage/r2.ts`); merge
-  `component_results` (`storage_objects`), clear done anchors, `completed` / `failed_partial`, owner alert on
-  failure; vitest spec; internal cron route like `/api/jafar/internal/closure-cron`.
+- **3a Database engine — done.** Migration `20270108090000` (applied to dev; later function edits re-applied by
+  hand from the file, so file and database match). pgTAP `client_permanent_delete.sql` 64/64. Big test on a
+  1M-text local copy done (index fix `20270109092000`).
+- **3b Stored-file cleanup — done 2026-10-24.** Engine no longer collects Twilio ids (column dropped).
+  `src/lib/server/privacy/client-deletion-cleanup.ts` (`cleanUpClientDeletion` right after a delete, daily
+  sweep), `deleteObjects` in `r2.ts`, route `/api/internal/privacy/client-deletion-cleanup`, job
+  `client-deletion-cleanup-daily` (migration `20270109093000`, applied; dev Vault URL and secret set;
+  `CLIENT_DELETION_CRON_SECRET` added to main `.env`). Evidence: vitest 7/7; live R2 multi-delete; branch dev
+  server: wrong secret 401, right secret deleted two real R2 files and completed a test receipt (removed after).
+- **3c Business closure closes Twilio — done.** Migration `20270109091000`; vitest 24/24, pgTAP 6/6.
 
-## Ask Jafar (word for word, in plain English when asked)
+## Ask Jafar (in plain English; each is an extra fix that waits for his yes)
 
-1. Fixing the checked-in `organization_purge.sql` fixture (line ~89 needs `proposed_other = 'something_else'`)
-   is an extra fix and waits for his yes.
+1. Fix the checked-in `organization_purge.sql` fixture (line ~89 needs `proposed_other = 'something_else'`).
+2. Emails from the customer's address that never got linked to them stay after delete. Proposed: the engine also
+   deletes the business's unlinked inbound messages whose sender is one of the customer's emails or phones.
+3. Original import spreadsheets stay in storage after import, listing deleted customers. Proposed: delete the
+   original once its import finishes (only the review step reads it); the error file follows the same rule.
+4. Raw inbound emails sit in AWS S3 `ucrm-ses-inbound-mime`. The app's key cannot read the bucket's expiry rule;
+   Jafar checks the AWS console for one (proposed 30 days). Its number also feeds Part 15's wording.
+5. Stray marketing provider events with no recipient row keep an email in
+   `marketing_campaign_recipient_events.payload`; proven fix is a retention sweep for raw provider events.
+6. Twilio console: turn on deleting closed subaccounts' data after 30 days.
 
 ## Found while mapping (for later parts)
 
-- **3c Business closure closes Twilio — done 2026-10-24** (Jafar: follow the top products). Migration
-  `20270109091000` parks `{kind: 'twilio_subaccount', provider_id: <SID>}` on the purge receipt;
-  `closeTwilioSubaccount` (`twilio.ts`, master credential, closed/404 = done) runs from
-  `organization-closure-cron.ts`, which now retries only the resources that failed. Tests: vitest 24/24
-  (`twilio-subaccount-close.spec.ts`, closure cron spec), pgTAP `organization_purge_twilio.sql` 6/6, org purge
-  42/42 (patched copy), client delete 64/64. Jafar to check the Twilio console setting that deletes closed
-  subaccounts' data after 30 days.
-- **Dev database cleanup 2026-10-24:** 1018 → 124 MB (index rebuild; cron log trimmed to 7 days). Migration
-  `20270109090000` adds the nightly `cron-run-history-trim-nightly` job (Supabase's recommendation), applied.
-- **Big test done 2026-10-24** (local Docker copy, see engine doc § Performance verification at a large test
-  business): found and fixed whole-table reads in the contact-method RESTRICT checks (migration
-  `20270109092000`, applied to dev); heavy customer 1.2 s, ordinary customers ≈ 0.1–0.2 s each. Rerun with
-  `scripts/perf/client-purge/README.md`. Containers stopped after the test.
-
-- **Part 6:** `client_contact_methods_org_value_unique_idx` (one phone/email per business) blocks a new
-  contact with the same phone while a soft-deleted client still holds it. Every send and creation path must
-  check `deleted_at`.
-- **Check in 3b:** inbound messages never matched to the client, original import files in storage, any stored
-  raw inbound email.
-- **Ask Jafar later:** stray marketing provider events (a test send with no recipient row) keep the email in
-  `marketing_campaign_recipient_events.payload`. The proven fix is a retention sweep for raw provider events.
-- **For the delete-now API part:** call `run_client_purge` from the server; it allows 60 s (heavy customer
-  took 6–10 s on dev). The preview (`client_deletion_plan`) took 62–133 ms.
+- **Part 6:** `client_contact_methods_org_value_unique_idx` blocks a new contact with the same phone while a
+  soft-deleted client still holds it. Every send and creation path must check `deleted_at`.
+- **Delete-now API (Part 7) and day-30 delete (Part 6):** call `run_client_purge` from the server (60 s limit;
+  heavy customer 1.2–10 s), then `cleanUpClientDeletion(receipt_id)` after the response is sent. Preview
+  (`client_deletion_plan`) 27–133 ms.
+- Dev database cleanup 2026-10-24: 1018 → 124 MB; nightly `cron-run-history-trim-nightly` (`20270109090000`).
 
 ## Next action
 
-Start 3b: remove Twilio id collection from the engine, then the storage worker. Once Docker is installed, set up
-the local database for the big test.
+Part 3 is built. Merge the planning branch and this branch to main, then wait for Jafar's answers above. Any yes
+becomes a small follow-up slice on the engine.

@@ -9,15 +9,11 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 `ROADMAP.md` approved by Jafar 2026-10-24. Evidence: `docs/research/data-privacy-deletion-top-crms-2026-10-23.md`.
 **Stage:** Design and building. Parts 3, 4, 5, 8, 11 and 13 wait on nothing and can run side by side.
 
-**Waiting to merge:** planning branch `claude/data-privacy-planning` (folder `.worktrees/data-privacy-planning`,
-reservation `7e0488eb9224`) — main free again 2026-10-24. Merge with Part 3.
+**Done:** Part 3 built 2026-10-24 (engine, stored-file cleanup, business closure closes Twilio) on branch
+`claude/data-privacy-part3`, merged to main together with the planning branch. Six questions for Jafar wait in
+`parts/03-delete-engine.md` § Ask Jafar.
 
-**In progress:** Part 3 on branch `claude/data-privacy-part3` (folder `.worktrees/data-privacy-part3`,
-reservation `22a159eee4c9`) — 3a engine done and speed-checked 2026-10-24; next is 3b provider cleanup, and
-no Twilio key change (texts follow HighLevel); 3c business closure closes Twilio done; 1M-text big test done
-on a local Docker copy (one index fix). See `parts/03-delete-engine.md`.
-
-**Next part:** finish 3. Design sessions take 4, 5, 8, 11, 13 in Pencil.
+**Next part:** design sessions take 4, 5, 8, 11, 13 in Pencil (they wait on nothing). Part 6 builds after 3, 4, 5.
 
 **Linked:** Messenger Part 10 (`Memory/campaigns/messenger-unified-inbox/parts/10-go-live.md`): public Data deletion
 page text is updated once in-app delete ships.

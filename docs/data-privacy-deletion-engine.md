@@ -68,11 +68,23 @@ plan section it serves is named.
 5. Insert `client_deletion_receipts`: who, when, trigger (`delete_now`, `scheduled`, `platform_owner`), item
    counts, what was kept and why, and pending provider anchors. No names, addresses or message content.
 
-## Provider cleanup (server, `src/lib/server/privacy/`)
+## Provider cleanup (server, `src/lib/server/privacy/client-deletion-cleanup.ts`)
 
-After commit, a worker deletes each queued storage object, marks the receipt's
-components done, and retries on the next run. "Already gone" counts as success. A component still failing
-raises a Jafar owner alert, as the organisation purge does.
+- **Right after the delete:** the caller of `run_client_purge` passes the returned `receipt_id` to
+  `cleanUpClientDeletion`. It deletes the receipt's `pending_storage_object_keys` from R2 with `deleteObjects`
+  (S3 multi-delete, 1,000 keys a request; "already gone" counts as deleted), keeps only the keys that failed,
+  and sets the `storage_objects` component and the receipt status (`completed` or `failed_partial`, with
+  `last_error`).
+- **Daily retry:** pg_cron job `client-deletion-cleanup-daily` (06:40 UTC, migration `20270109093000`) calls
+  `POST /api/internal/privacy/client-deletion-cleanup` with the Vault secret `client_deletion_cron_secret`,
+  which must match the app's `CLIENT_DELETION_CRON_SECRET`. The sweep takes up to 50 unfinished receipts older
+  than 15 minutes (so it never races the delete's own cleanup) through the partial index on unfinished rows,
+  and bumps `retry_count`.
+- **Failure:** an in-app owner alert `client_deletion_cleanup_failed` on the business, repeated each day the
+  retry still fails, as the organisation purge does.
+- **Not cleaned yet (waiting on Jafar):** inbound messages from the customer's address that were never linked
+  to them; original import files (`import_batches.storage_object_key`, kept after import) that list them; raw
+  inbound emails in the S3 bucket `ucrm-ses-inbound-mime`, whose expiry rule could not be read with the app's key.
 
 ## Performance design
 

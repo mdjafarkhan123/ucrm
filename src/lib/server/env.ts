@@ -18,6 +18,7 @@ const serverEnvSchema = z.object({
 	TRUST_HUB_EVENTS_WEBHOOK_SECRET: z.string().trim().min(32).optional(),
 	SMS_PRICE_RECONCILIATION_CRON_SECRET: z.string().trim().min(32).optional(),
 	SMS_USAGE_RECONCILIATION_CRON_SECRET: z.string().trim().min(32).optional(),
+	CLIENT_DELETION_CRON_SECRET: z.string().trim().min(32).optional(),
 	FILES_PROCESSING_WORKER_SECRET: z.string().trim().min(32).optional(),
 	// Host and port of the ClamAV daemon the upload pipeline streams to. Unset means no scanner, and the
 	// pipeline then leaves uploads pending rather than publishing content nothing has checked.
@@ -55,6 +56,7 @@ export function getServerEnv(): ServerEnv {
 		TRUST_HUB_EVENTS_WEBHOOK_SECRET: env.TRUST_HUB_EVENTS_WEBHOOK_SECRET,
 		SMS_PRICE_RECONCILIATION_CRON_SECRET: env.SMS_PRICE_RECONCILIATION_CRON_SECRET,
 		SMS_USAGE_RECONCILIATION_CRON_SECRET: env.SMS_USAGE_RECONCILIATION_CRON_SECRET,
+		CLIENT_DELETION_CRON_SECRET: env.CLIENT_DELETION_CRON_SECRET,
 		FILES_PROCESSING_WORKER_SECRET: env.FILES_PROCESSING_WORKER_SECRET,
 		FILES_SCANNER_HOST: env.FILES_SCANNER_HOST,
 		FILES_SCANNER_PORT: env.FILES_SCANNER_PORT,

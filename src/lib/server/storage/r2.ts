@@ -3,6 +3,7 @@ import {
 	PutObjectCommand,
 	GetObjectCommand,
 	DeleteObjectCommand,
+	DeleteObjectsCommand,
 	HeadObjectCommand
 } from '@aws-sdk/client-s3';
 import type { Readable } from 'node:stream';
@@ -351,4 +352,40 @@ export async function uploadStream(
 export async function deleteObject(objectKey: string): Promise<void> {
 	const { client, env } = getR2();
 	await client.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET, Key: objectKey }));
+}
+
+// S3's multi-delete takes at most 1,000 keys per request, and R2 follows the same limit.
+const DELETE_OBJECTS_BATCH_SIZE = 1000;
+
+/**
+ * Deletes many objects in batched requests and returns the keys that could not be deleted, with the reason.
+ * A key that is already gone counts as deleted, as it does for a single DeleteObject. A batch whose whole
+ * request fails reports every key in it, so the caller can keep them for a later retry.
+ */
+export async function deleteObjects(
+	objectKeys: string[]
+): Promise<Array<{ key: string; reason: string }>> {
+	const { client, env } = getR2();
+	const failures: Array<{ key: string; reason: string }> = [];
+
+	for (let start = 0; start < objectKeys.length; start += DELETE_OBJECTS_BATCH_SIZE) {
+		const batch = objectKeys.slice(start, start + DELETE_OBJECTS_BATCH_SIZE);
+		try {
+			const result = await client.send(
+				new DeleteObjectsCommand({
+					Bucket: env.R2_BUCKET,
+					Delete: { Objects: batch.map((key) => ({ Key: key })), Quiet: true }
+				})
+			);
+			for (const error of result.Errors ?? []) {
+				if (!error.Key || error.Code === 'NoSuchKey') continue;
+				failures.push({ key: error.Key, reason: error.Code ?? error.Message ?? 'unknown error' });
+			}
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : 'unknown error';
+			for (const key of batch) failures.push({ key, reason });
+		}
+	}
+
+	return failures;
 }
