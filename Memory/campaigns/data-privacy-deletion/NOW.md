@@ -13,7 +13,9 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 reservation `7e0488eb9224`) — main was busy 2026-10-24. Merge before Part 3,
 then release the reservation and remove the folder.
 
-**In progress:** none.
+**In progress:** Part 3 on branch `claude/data-privacy-part3` (folder `.worktrees/data-privacy-part3`,
+reservation `22a159eee4c9`, branched from the planning branch) — design done, migration drafted but not applied;
+next step in `parts/03-delete-engine.md`.
 
 **Next part:** 3 Permanent-delete engine — the hidden delete that keeps only money records and opt-out
 fingerprints; run performance-review design first. Design sessions take 4, 5, 8, 11, 13 in Pencil.

@@ -33,7 +33,7 @@ plan section it serves is named.
 | Draft invoices | Deleted with their history rows. |
 | Messages on every channel | Deleted: send records and their events, inbound messages and attachments, forwards, reply aliases, Messenger identities, website chat, read marks, assignees, followers, and the raw provider callback rows behind them. |
 | The business's text and email usage and charges | Kept: SMS credit reservations, email usage events and capacity reservations lose their link to the deleted message instead of being deleted with it (foreign keys become `ON DELETE SET NULL`), so the business's bill and allowance counts never change. |
-| Marketing campaign send records | Kept as anonymous rows (no email, name "Deleted client") so campaign totals do not change, as HubSpot keeps anonymous totals. |
+| Marketing campaign send records | Deleted with their provider events. The campaign's stored launch counts stay; its live delivered/opened figures drop by this one person (a sent row cannot hold no address under its existing check). |
 | Pipeline cards, tasks, call logs, review requests and feedback, shared-file links, campaign attribution | Deleted. |
 | Notes, tags, files, activity, bell notifications, automation enrollments and events, form submissions, import rows, merge snapshots | Deleted when they belong to the customer or a deleted record. A note or file also linked to a record that stays keeps living there. File objects are queued for storage deletion. |
 
