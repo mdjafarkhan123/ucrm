@@ -1,7 +1,7 @@
 # Data privacy and deletion
 
-**Status:** Draft for Jafar's approval (2026-10-23). Sections marked **Proposal** wait on the questions in
-**Still unclear**; everything else restates rules Jafar already approved or follows directly from them.
+**Status:** Jafar chose all four open behaviours on 2026-10-24 (delete now, one-customer download, whole-business
+export, Jafar's privacy tool); the rest restates rules he approved earlier. Whole-plan approval pending.
 
 ## Summary
 
@@ -27,11 +27,11 @@ the Medspa edition gets them too. Evidence: `docs/research/data-privacy-deletion
 
 1. Delete a customer, with 30 days to restore from Recently Deleted, after which everything except money
    records is permanently deleted.
-2. Delete a customer permanently at once, for a privacy request. **Proposal**
+2. Delete a customer permanently at once, for a privacy request.
 3. Permanently delete a conversation.
-4. Download everything about one customer. **Proposal**
-5. Export all of a business's data in one package. **Proposal**
-6. A privacy-request tool in the Jafar panel. **Proposal**
+4. Download everything about one customer.
+5. Export all of a business's data in one package.
+6. A privacy-request tool in the Jafar panel.
 7. Updated public Data deletion and Privacy pages that describe the new tools.
 
 ## Deleting a customer
@@ -69,9 +69,10 @@ inactive. The details below follow Jobber (what goes with the customer, the coun
   a deleted customer. The customer's own receipt and invoice links keep working.
 - The business's own Stripe account keeps Stripe's copy of card payments. The business manages that in Stripe.
 
-## Delete permanently now — Proposal
+## Delete permanently now
 
-Following HubSpot's permanent delete, for when the customer asked to have their information deleted.
+Following HubSpot's permanent delete (Jafar, 2026-10-24), for when the customer asked to have their information
+deleted.
 
 - Offered in the delete dialog ("They asked us to delete their information") and from Recently Deleted. One
   customer at a time, never in bulk.
@@ -104,9 +105,10 @@ member, time, reason, customer and item counts without keeping message content.
   member gives a short reason.
 - The customer's record stays. A new message from them starts a fresh conversation.
 
-## Download one customer's data — Proposal
+## Download one customer's data
 
-Following HubSpot's "Export contact data", for when a customer asks for a copy of their information.
+Following HubSpot's "Export contact data" (Jafar, 2026-10-24), for when a customer asks for a copy of their
+information.
 
 - **Where:** the client page's `…` menu (**Download client data**). Needs `customers.import_export` (owners and
   admins).
@@ -117,9 +119,9 @@ Following HubSpot's "Export contact data", for when a customer asks for a copy o
 - Built in the background; the member is told when it is ready, and the link works for 7 days. Each download is
   recorded in the audit history.
 
-## Export all business data — Proposal
+## Export all business data
 
-Today a business can download its clients, Price Book, financial package and files separately. Requests,
+Jafar, 2026-10-24: in the first version, built last. Today a business can download its clients, Price Book, financial package and files separately. Requests,
 quotes, jobs, visits and messages cannot be exported at all.
 
 - **Where:** a new **Data & privacy** page in Settings, with **Export all business data**. Owner only, as with
@@ -129,7 +131,9 @@ quotes, jobs, visits and messages cannot be exported at all.
 - When Jafar closes a business, the owner is offered this export first, and Jafar can produce it for them
   during the 30-day closure window.
 
-## Privacy requests in the Jafar panel — Proposal
+## Privacy requests in the Jafar panel
+
+Jafar, 2026-10-24: find, forward, and delete.
 
 - **Log a request:** who asked; how to find them (email, phone, Facebook name and Page); whether they want a
   copy or deletion; when it arrived. The due date is set 30 days later, and Jafar is reminded 7 days before it.
@@ -162,7 +166,7 @@ deleted information can remain in backups.
 - A member without the permission → sees no delete action, and the server refuses a direct request.
 - A conversation is deleted → it is gone for every member; the audit shows who, when, why and counts; the
   client record remains.
-- (Proposals, if approved) Delete now completes with a receipt; a one-customer download contains their
+- Delete now completes with a receipt; a one-customer download contains their
   messages and files; the business export opens with a readme; Jafar's search finds a test person across two
   businesses and "Ask the business" reaches the owner.
 
@@ -177,12 +181,9 @@ deleted information can remain in backups.
 
 ## Still unclear
 
-1. Should a business be able to delete a customer permanently at once for a privacy request, and who?
-   Recommended: yes, owners and admins, one customer at a time (HubSpot).
-2. Include **Download one customer's data** in the first version? Recommended: yes (HubSpot).
-3. Include **Export all business data** in the first version? Recommended: yes, as the last part.
-4. Jafar's privacy-request tool: forward to the business only, or forward and also delete on its behalf?
-   Recommended: both, with forwarding as the normal path.
+None for the first version. Jafar's 2026-10-24 answers: delete now for owners and admins, one customer at a
+time; one-customer download in the first version; whole-business export as the last part; the Jafar tool finds,
+forwards and deletes.
 
 ## Not doing
 
@@ -198,7 +199,7 @@ deleted information can remain in backups.
 ## Sources and design decisions
 
 - [Research: how top CRMs handle deletion, export and privacy requests](research/data-privacy-deletion-top-crms-2026-10-23.md)
-  — every Proposal above.
+  — the delete-now, download, export and Jafar-tool behaviour.
 - `docs/client-property-behavior-contract.md` § Archive, deletion, and retention — the 30-day delete and kept
   money history (approved).
 - `docs/unified-inbox-behavior-contract.md` § Inbox handling — permanent conversation delete (approved).
