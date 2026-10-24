@@ -10,7 +10,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(63);
+select plan(64);
 
 -- 1. Privileges ------------------------------------------------------------------------------------------------
 
@@ -167,10 +167,10 @@ insert into public.client_communication_preferences (organization_id, client_id,
 values ('b7200000-0000-0000-0000-000000000001', 'b7300000-0000-0000-0000-000000000001', 'do_not_disturb')
 on conflict (organization_id, client_id) do update set contact_policy = excluded.contact_policy;
 
--- Messages: a text the business paid for, an email that used its allowance and carried a library file, and a
--- text Pat sent in with a photo.
-insert into public.communication_sms_credit_accounts (organization_id)
-values ('b7200000-0000-0000-0000-000000000001');
+-- Messages: a text Twilio accepted that still waits for its final price (its credit is held, not yet charged),
+-- an email that used its allowance and carried a library file, and a text Pat sent in with a photo.
+insert into public.communication_sms_credit_accounts (organization_id, settled_balance_minor, reserved_balance_minor)
+values ('b7200000-0000-0000-0000-000000000001', 10, 4);
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, channel, logical_send_key, recipient_phone, status,
@@ -180,10 +180,10 @@ insert into public.communication_delivery_intents (
   '+15125550199', 'submitted', now(), 'SMpurge00000000000000000000000001');
 
 insert into public.communication_sms_credit_reservations (
-  organization_id, delivery_intent_id, channel, source_key, amount_minor, segment_count, state, settled_at,
+  organization_id, delivery_intent_id, channel, source_key, amount_minor, segment_count,
   reserved_promotional_minor, reserved_purchased_minor
 ) values ('b7200000-0000-0000-0000-000000000001', 'b7830000-0000-0000-0000-000000000001', 'sms',
-  'purge-sms-1', 4, 1, 'settled', now(), 0, 4);
+  'purge-sms-1', 4, 1, 0, 4);
 
 insert into public.communication_delivery_intents (
   id, organization_id, client_id, client_contact_method_id, channel, logical_send_key, recipient_email, subject,
@@ -513,6 +513,15 @@ select is(
    from public.communication_sms_credit_reservations where organization_id = 'b7200000-0000-0000-0000-000000000001'),
   row(1::bigint, 4::numeric, 0::bigint)::text,
   'the text charge stays on the business''s bill, without a link to the deleted message');
+select is(
+  (select row(reservation.state, entry.amount_minor, account.settled_balance_minor, account.reserved_balance_minor)::text
+   from public.communication_sms_credit_reservations as reservation
+   join public.communication_sms_credit_ledger_entries as entry
+     on entry.reservation_id = reservation.id and entry.entry_kind = 'charge'
+   join public.communication_sms_credit_accounts as account on account.organization_id = reservation.organization_id
+   where reservation.organization_id = 'b7200000-0000-0000-0000-000000000001'),
+  row('settled'::text, -4::bigint, 6::bigint, 0::bigint)::text,
+  'a sent text still waiting for its final price is charged at its send-time price, not given back');
 select is(
   (select row(count(*), count(delivery_intent_id))::text
    from public.communication_email_usage_events where organization_id = 'b7200000-0000-0000-0000-000000000001'),

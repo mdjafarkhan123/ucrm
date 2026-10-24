@@ -1258,7 +1258,17 @@ begin
     and ((booking_type = 'job' and booking_id = any(job_ids))
       or (booking_type = 'assessment' and booking_id = any(assessment_ids)));
 
-  -- 3. Messages on every channel. A send still waiting gives its reserved credit and allowance back first.
+  -- 3. Messages on every channel. A text Twilio already accepted is charged at its send-time price, because its
+  -- final price can no longer reach a deleted message; a send still waiting gives its credit and allowance back.
+  perform public.communication_sms_settle_reservation_price(reservation.delivery_intent_id, null, null, null)
+  from public.communication_sms_credit_reservations as reservation
+  join public.communication_delivery_intents as intent
+    on intent.organization_id = reservation.organization_id and intent.id = reservation.delivery_intent_id
+  where reservation.organization_id = org
+    and reservation.delivery_intent_id = any(intent_ids)
+    and reservation.state = 'reserved'
+    and intent.status = 'submitted';
+
   perform private.communication_sms_release_reservation(reservation.delivery_intent_id)
   from public.communication_sms_credit_reservations as reservation
   where reservation.organization_id = org

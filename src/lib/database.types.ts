@@ -882,6 +882,81 @@ export type Database = {
 					}
 				];
 			};
+			client_deletion_receipts: {
+				Row: {
+					client_id: string;
+					completed_at: string | null;
+					component_results: Json;
+					created_at: string;
+					deleted_counts: Json;
+					id: string;
+					kept_counts: Json;
+					last_error: string | null;
+					organization_id: string;
+					pending_storage_object_keys: string[] | null;
+					pending_twilio_message_sids: string[] | null;
+					reason: string | null;
+					requested_by: string | null;
+					requested_by_owner_email: string | null;
+					retry_count: number;
+					status: string;
+					trigger_kind: string;
+				};
+				Insert: {
+					client_id: string;
+					completed_at?: string | null;
+					component_results?: Json;
+					created_at?: string;
+					deleted_counts: Json;
+					id?: string;
+					kept_counts: Json;
+					last_error?: string | null;
+					organization_id: string;
+					pending_storage_object_keys?: string[] | null;
+					pending_twilio_message_sids?: string[] | null;
+					reason?: string | null;
+					requested_by?: string | null;
+					requested_by_owner_email?: string | null;
+					retry_count?: number;
+					status: string;
+					trigger_kind: string;
+				};
+				Update: {
+					client_id?: string;
+					completed_at?: string | null;
+					component_results?: Json;
+					created_at?: string;
+					deleted_counts?: Json;
+					id?: string;
+					kept_counts?: Json;
+					last_error?: string | null;
+					organization_id?: string;
+					pending_storage_object_keys?: string[] | null;
+					pending_twilio_message_sids?: string[] | null;
+					reason?: string | null;
+					requested_by?: string | null;
+					requested_by_owner_email?: string | null;
+					retry_count?: number;
+					status?: string;
+					trigger_kind?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_deletion_receipts_client_fk';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_deletion_receipts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			client_marketing_consent_events: {
 				Row: {
 					client_contact_method_id: string;
@@ -1315,6 +1390,7 @@ export type Database = {
 					lifecycle_status: string;
 					next_follow_up_at: string | null;
 					organization_id: string;
+					purged_at: string | null;
 					updated_at: string;
 				};
 				Insert: {
@@ -1340,6 +1416,7 @@ export type Database = {
 					lifecycle_status?: string;
 					next_follow_up_at?: string | null;
 					organization_id: string;
+					purged_at?: string | null;
 					updated_at?: string;
 				};
 				Update: {
@@ -1365,6 +1442,7 @@ export type Database = {
 					lifecycle_status?: string;
 					next_follow_up_at?: string | null;
 					organization_id?: string;
+					purged_at?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [
@@ -1914,7 +1992,7 @@ export type Database = {
 					allowance_class: string;
 					allowance_period_id: string;
 					created_at: string;
-					delivery_intent_id: string;
+					delivery_intent_id: string | null;
 					id: string;
 					organization_id: string;
 					recipient_count: number;
@@ -1927,7 +2005,7 @@ export type Database = {
 					allowance_class: string;
 					allowance_period_id: string;
 					created_at?: string;
-					delivery_intent_id: string;
+					delivery_intent_id?: string | null;
 					id?: string;
 					organization_id: string;
 					recipient_count?: number;
@@ -1940,7 +2018,7 @@ export type Database = {
 					allowance_class?: string;
 					allowance_period_id?: string;
 					created_at?: string;
-					delivery_intent_id?: string;
+					delivery_intent_id?: string | null;
 					id?: string;
 					organization_id?: string;
 					recipient_count?: number;
@@ -2620,7 +2698,7 @@ export type Database = {
 				Row: {
 					allowance_class: string | null;
 					allowance_period_id: string | null;
-					delivery_intent_id: string;
+					delivery_intent_id: string | null;
 					event_kind: string;
 					id: string;
 					occurred_at: string;
@@ -2630,7 +2708,7 @@ export type Database = {
 				Insert: {
 					allowance_class?: string | null;
 					allowance_period_id?: string | null;
-					delivery_intent_id: string;
+					delivery_intent_id?: string | null;
 					event_kind?: string;
 					id?: string;
 					occurred_at?: string;
@@ -2640,7 +2718,7 @@ export type Database = {
 				Update: {
 					allowance_class?: string | null;
 					allowance_period_id?: string | null;
-					delivery_intent_id?: string;
+					delivery_intent_id?: string | null;
 					event_kind?: string;
 					id?: string;
 					occurred_at?: string;
@@ -4011,7 +4089,7 @@ export type Database = {
 				Row: {
 					amount_minor: number;
 					channel: string;
-					delivery_intent_id: string;
+					delivery_intent_id: string | null;
 					id: string;
 					organization_id: string;
 					price_check_attempts: number;
@@ -4032,7 +4110,7 @@ export type Database = {
 				Insert: {
 					amount_minor: number;
 					channel?: string;
-					delivery_intent_id: string;
+					delivery_intent_id?: string | null;
 					id?: string;
 					organization_id: string;
 					price_check_attempts?: number;
@@ -4053,7 +4131,7 @@ export type Database = {
 				Update: {
 					amount_minor?: number;
 					channel?: string;
-					delivery_intent_id?: string;
+					delivery_intent_id?: string | null;
 					id?: string;
 					organization_id?: string;
 					price_check_attempts?: number;
@@ -6019,6 +6097,44 @@ export type Database = {
 				Relationships: [
 					{
 						foreignKeyName: 'communications_snippets_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			contact_opt_out_fingerprints: {
+				Row: {
+					channel: string;
+					created_at: string;
+					fingerprint: string;
+					id: string;
+					kind: string;
+					opted_out_at: string;
+					organization_id: string;
+				};
+				Insert: {
+					channel: string;
+					created_at?: string;
+					fingerprint: string;
+					id?: string;
+					kind: string;
+					opted_out_at: string;
+					organization_id: string;
+				};
+				Update: {
+					channel?: string;
+					created_at?: string;
+					fingerprint?: string;
+					id?: string;
+					kind?: string;
+					opted_out_at?: string;
+					organization_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'contact_opt_out_fingerprints_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -30091,6 +30207,17 @@ export type Database = {
 					p_organization_id: string;
 					p_reason: string;
 					p_widget_id: string;
+				};
+				Returns: Json;
+			};
+			run_client_purge: {
+				Args: {
+					p_client_id: string;
+					p_organization_id: string;
+					p_reason?: string;
+					p_requested_by?: string;
+					p_requested_by_owner_email?: string;
+					p_trigger_kind: string;
 				};
 				Returns: Json;
 			};
