@@ -40,9 +40,10 @@ branch), reservation `22a159eee4c9`. Pushed.
   subaccounts' data after 30 days.
 - **Dev database cleanup 2026-10-24:** 1018 → 124 MB (index rebuild; cron log trimmed to 7 days). Migration
   `20270109090000` adds the nightly `cron-run-history-trim-nightly` job (Supabase's recommendation), applied.
-- **Big test (Part 16, 1M-message business):** won't fit the 500 MB free dev database. Jafar chose the top-industry
-  way: a separate local copy (Supabase local stack in Docker, the same stack production uses). Waiting on Jafar
-  to install Docker (needs his password); then `npx supabase start` from this worktree.
+- **Big test done 2026-10-24** (local Docker copy, see engine doc § Performance verification at a large test
+  business): found and fixed whole-table reads in the contact-method RESTRICT checks (migration
+  `20270109092000`, applied to dev); heavy customer 1.2 s, ordinary customers ≈ 0.1–0.2 s each. Rerun with
+  `scripts/perf/client-purge/README.md`. Containers stopped after the test.
 
 - **Part 6:** `client_contact_methods_org_value_unique_idx` (one phone/email per business) blocks a new
   contact with the same phone while a soft-deleted client still holds it. Every send and creation path must

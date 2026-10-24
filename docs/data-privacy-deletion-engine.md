@@ -135,10 +135,45 @@ Money | pgTAP: payments, allocations, deposit byte-identical; a sent text awaiti
 
 Changes made       : 5 indexes (inbound callback link, SMS reconciliation intent, job checklist job,
                      recipient contact method, recipient event message id); 3 statement rewrites; 60 s limit
-Unverified/deferred: timing at a real 1M-row organisation (dev data is small; structure verified instead).
+Unverified/deferred: timing at a real 1M-row organisation — done below (2026-10-24, large test business).
                      Smaller org-prefix referential scans (attachment access links, purge log, tasks,
                      draft-invoice replacement) are bounded by small per-customer counts. Owner: none.
-Capacity statement : one heavy customer per transaction in ≤ 10 s on the dev database; batch throughput for
-                     day-30 runs not established
+Capacity statement : one heavy customer per transaction in ≤ 10 s on the dev database
+Overall            : ✅ Supported
+```
+
+## Performance verification at a large test business (2026-10-24)
+
+Local copy, not the 500 MB dev database (the data is 3.2 GB): Supabase CLI 2.120.0 local stack (Postgres
+17.11) in Docker, capped at 2 CPUs and 2 GB RAM; schema from `supabase db dump` of the dev database, so the
+engine is the applied one. Data: the heavy customer above inside a business of 2,000 more customers with 500
+texts each (1,005,000 texts), plus five neighbour businesses of 100,000 texts each. Platform totals: 1.5M texts,
+3M message events, 1.5M provider callbacks, 301,000 replies, 35,300 jobs, 73,000 visits. Every run rolled back.
+
+```text
+Performance Verification – permanent customer delete at a 1M-text business
+Workload contract : heavy customer (≈ 30,000 rows) in a 1M-text business; 1.5M texts platform-wide;
+                    day-30 batch of ordinary customers (500 texts, 100 replies, 5 jobs, 10 visits each)
+Layers reviewed   : database (purge transaction, plan preview, referential checks)
+
+Layer | Evidence | Result
+------|----------|-------
+Referential checks | Before: each deleted contact method's RESTRICT check read all delivery intents and all
+  inbound messages (2 × 1.5M + 2 × 300k rows per purge) — the FK (organization_id, client_contact_method_id)
+  had no index and the business held most rows. After 2 partial indexes: no reads of either table; with
+  enable_seqscan off only the customer's own subject list is read whole (files/file_links were small-table
+  choices) | ✅
+Purge time | heavy customer 1.6–2.2 s before, 1.2 s after (3 runs each) | ✅ background
+Plan preview | 27–34 ms (warm) | ✅
+Day-30 batch | 20 ordinary customers back to back: 2.3–3.5 s (≈ 0.1–0.2 s each) | ✅
+Memory | database container ≈ 200 MB during runs (2 GB cap) | ✅
+Correctness | client_permanent_delete pgTAP 64/64 on dev after the index migration | ✅
+
+Changes made       : migration 20270109092000 — 2 partial indexes (delivery intents and inbound messages by
+                     organization + contact method); 11 MB + 2.4 MB at this size
+Unverified/deferred: hosted-database timing at this size (the free dev plan cannot hold it); production
+                     hardware is not chosen yet. Owner: Part 16 final check.
+Capacity statement : on a 2-CPU / 2 GB Postgres 17: one heavy customer in ≈ 1.2 s and ordinary customers at
+                     ≈ 6–9 per second, with 1.5M texts platform-wide. Not established beyond that data size.
 Overall            : ✅ Supported
 ```
