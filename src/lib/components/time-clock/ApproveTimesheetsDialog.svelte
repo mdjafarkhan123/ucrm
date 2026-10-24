@@ -283,27 +283,6 @@
 			}
 		}
 
-		&__retry {
-			margin-left: var(--space-smaller);
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-small);
-			background: none;
-			color: var(--color-interactive);
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-		}
-
 		&__all {
 			padding: 0 var(--space-base);
 		}

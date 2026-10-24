@@ -63,7 +63,7 @@
 	// Each question's place in the whole form, counted on across sections, for its number tile.
 	const questionNumbers = $derived(
 		new Map(
-			data.content.sections
+			(data.available ? data.content.sections : [])
 				.flatMap((section) => section.questions)
 				.map((question, index) => [question.id, index + 1])
 		)

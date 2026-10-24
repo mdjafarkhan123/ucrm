@@ -9,7 +9,7 @@ describe('CalendarPicker quick dates', () => {
 		const current = today(getLocalTimeZone());
 		const onchange = vi.fn();
 		render(CalendarPicker, {
-			props: { id: 'date', label: 'Date', weekStartsOn: getDayOfWeek(current, 'en-US'), onchange }
+			props: { id: 'date', label: 'Date', weekStartsOn: getDayOfWeek(current, 'en-US') as 0 | 1 | 2 | 3 | 4 | 5 | 6, onchange }
 		});
 		await page.getByRole('button', { name: 'Open date calendar' }).click();
 		await page.getByRole('button', { name: 'Next week', exact: true }).click();

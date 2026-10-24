@@ -39,7 +39,7 @@ function fakeClient(tables: Record<string, unknown>) {
 
 function pictureEvent(bytes: Uint8Array, revision: number, type = 'image/png') {
 	const form = new FormData();
-	form.set('picture', new File([bytes], 'signup.png', { type }));
+	form.set('picture', new File([new Uint8Array(bytes)], 'signup.png', { type }));
 	form.set('expected_revision', String(revision));
 	return {
 		params: { senderId },

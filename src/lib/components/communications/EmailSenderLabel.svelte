@@ -46,6 +46,7 @@
 {:else if sender}
 	<Tooltip text="{sender.display_name} · {sender.email_address}" disabled={!cutOff}>
 		{#snippet children(props)}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -- a cut-off name takes focus so keyboard users can open its tooltip -->
 			<span
 				{...props}
 				{@attach watchCutOff}

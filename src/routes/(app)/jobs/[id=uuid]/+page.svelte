@@ -191,12 +191,12 @@
 		if (!saved) return null;
 		if (saved.job.job_type === 'recurring') return describeRecurrence(saved.recurrence) || null;
 		const days = saved.visits
-			.map((visit) => visit.starts_at)
-			.filter((start): start is string => Boolean(start))
+			.map((visit) => visit.visit_date)
+			.filter((day): day is string => Boolean(day))
 			.sort();
 		if (days.length === 0) return null;
-		const first = dayFormat.format(new Date(days[0]));
-		const last = dayFormat.format(new Date(days[days.length - 1]));
+		const first = dayFormat.format(new Date(`${days[0]}T00:00:00`));
+		const last = dayFormat.format(new Date(`${days[days.length - 1]}T00:00:00`));
 		return first === last ? first : `${first} \u2192 ${last}`;
 	});
 

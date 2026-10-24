@@ -192,10 +192,6 @@
 			border: 1.5px solid var(--timer-accent);
 			background: var(--color-surface);
 		}
-		&--long &__tile {
-			background: var(--color-warning--surface);
-			color: var(--color-warning);
-		}
 		&__copy {
 			display: grid;
 			gap: 2px;

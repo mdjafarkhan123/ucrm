@@ -375,7 +375,7 @@
 			align-items: center;
 			gap: var(--space-small);
 
-			> :first-child {
+			> :global(:first-child) {
 				flex: 1 1 auto;
 				min-width: 0;
 			}

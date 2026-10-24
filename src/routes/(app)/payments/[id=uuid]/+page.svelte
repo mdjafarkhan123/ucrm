@@ -116,6 +116,13 @@
 		saved?.client?.company_name || saved?.client?.display_name || 'No client'
 	);
 
+	// The bills this payment is still on, each with what it would owe once this payment is taken off.
+	const liveAllocations = $derived(
+		(saved?.applied_to ?? []).filter(
+			(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
+		)
+	);
+
 	// Paid on · Method · Reference # · For invoice #, as Jobber shows them.
 	const headerFacts = $derived([
 		{
@@ -279,13 +286,6 @@
 	// --- Fix payment / Mark as never received (D7) --------------------------------------------------------
 	let fixOpen = $state(false);
 	let withdrawOpen = $state(false);
-
-	// The bills this payment is still on, each with what it would owe once this payment is taken off.
-	const liveAllocations = $derived(
-		(saved?.applied_to ?? []).filter(
-			(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
-		)
-	);
 
 	// The receipt card draws what the customer's email says, from this payment's own figures.
 	const clientFirstName = $derived(
