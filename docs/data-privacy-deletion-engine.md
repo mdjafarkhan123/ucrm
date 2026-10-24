@@ -82,9 +82,14 @@ plan section it serves is named.
   and bumps `retry_count`.
 - **Failure:** an in-app owner alert `client_deletion_cleanup_failed` on the business, repeated each day the
   retry still fails, as the organisation purge does.
-- **Not cleaned yet (waiting on Jafar):** inbound messages from the customer's address that were never linked
-  to them; original import files (`import_batches.storage_object_key`, kept after import) that list them; raw
-  inbound emails in the S3 bucket `ucrm-ses-inbound-mime`, whose expiry rule could not be read with the app's key.
+- **Unlinked messages:** messages from the customer's own email or phone that were never linked to them go too
+  (migration `20270109094000`), as HubSpot's permanent delete removes the contact's conversations.
+- **Import spreadsheets:** filed in the business's Files (`20270109096000`) and managed there; the delete does not
+  edit them, as HubSpot's delete does not reach free-form files. The import's own rows are scrubbed.
+- **Marketing event bodies:** emptied 30 days after processing (`20270109095000`), the event history SendGrid and
+  Mailgun keep, so a stray event never holds an address for long.
+- **Still open (Jafar checks):** raw inbound emails in the S3 bucket `ucrm-ses-inbound-mime`, whose expiry rule could
+  not be read with the app's key; the Twilio console's closed-subaccount data setting.
 
 ## Performance design
 

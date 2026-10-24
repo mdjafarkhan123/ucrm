@@ -284,9 +284,15 @@ Every manageable business file uploaded through an approved CRM flow appears aut
 uploads, operational attachments, photos and videos, customer-supplied files, document media, message attachments,
 catalog images, logos, and marketing assets.
 
+**Import spreadsheets** are Files too (Jafar, 2026-10-24: whatever a business imports belongs to its Files, so it
+can manage it; HubSpot keeps an import's original file in its file storage). Each customer or opening-balance import
+files its uploaded spreadsheet in an ordinary **Imports** folder with origin **Import**, visible to everyone who can
+see Files, checked by the same processing pipeline, and kept until the business moves it to Trash. The per-row
+error file stays on the import page. (`supabase/migrations/20270109096000_import_spreadsheets_in_files.sql`.)
+
 Security evidence and identity assets that are unsafe or meaningless to reuse—drawn signatures, avatars, internal
-delivery payloads, temporary imports, and processing artifacts—remain in their owning feature and do not appear as
-ordinary library Files. Their storage still follows the same private-object and retention safeguards.
+delivery payloads, and processing artifacts—remain in their owning feature and do not appear as ordinary library
+Files. Their storage still follows the same private-object and retention safeguards.
 
 Direct File Manager uploads are allowed without an immediate CRM link. They show File Manager as their origin and
 may be attached later.

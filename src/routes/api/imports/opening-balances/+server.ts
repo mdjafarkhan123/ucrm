@@ -5,6 +5,7 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { buildOpeningBalanceImportObjectKey, putObject } from '$lib/server/storage/r2';
+import { fileImportSpreadsheet } from '$lib/server/imports/import-spreadsheet-file';
 
 // Onboarding & Data Portability, Part 4, step 1: read an opening-balances CSV and remember it -- nothing is
 // written to client_opening_balances yet. Mirrors the client importer's upload route exactly (same caps, same
@@ -111,6 +112,13 @@ export const POST: RequestHandler = async (event) => {
 		}
 	);
 	if (error) return databaseError();
+
+	await fileImportSpreadsheet({
+		organizationId,
+		batchId: batch.id,
+		uploadedBy: access.auth.user.id,
+		sizeBytes: file.size
+	});
 
 	return json(
 		{

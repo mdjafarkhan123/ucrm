@@ -18,18 +18,22 @@ branch), reservation `ee89c1c453ce`. Pushed.
   server: wrong secret 401, right secret deleted two real R2 files and completed a test receipt (removed after).
 - **3c Business closure closes Twilio — done.** Migration `20270109091000`; vitest 24/24, pgTAP 6/6.
 
-## Ask Jafar (in plain English; each is an extra fix that waits for his yes)
+## Follow-ups done 2026-10-24 (Jafar: "solve those others following top industries")
 
-1. Fix the checked-in `organization_purge.sql` fixture (line ~89 needs `proposed_other = 'something_else'`).
-2. Emails from the customer's address that never got linked to them stay after delete. Proposed: the engine also
-   deletes the business's unlinked inbound messages whose sender is one of the customer's emails or phones.
-3. Original import spreadsheets stay in storage after import, listing deleted customers. Proposed: delete the
-   original once its import finishes (only the review step reads it); the error file follows the same rule.
-4. Raw inbound emails sit in AWS S3 `ucrm-ses-inbound-mime`. The app's key cannot read the bucket's expiry rule;
-   Jafar checks the AWS console for one (proposed 30 days). Its number also feeds Part 15's wording.
-5. Stray marketing provider events with no recipient row keep an email in
-   `marketing_campaign_recipient_events.payload`; proven fix is a retention sweep for raw provider events.
-6. Twilio console: turn on deleting closed subaccounts' data after 30 days.
+Branch `claude/data-privacy-part3-followups`, reservation `e4949b98c6b7`.
+- Org purge fixture fixed: pgTAP `organization_purge.sql` 42/42 on the checked-in file.
+- Unlinked messages from the customer's email/phone go with them (`20270109094000`); pgTAP 66/66.
+- Marketing SES event bodies emptied 30 days after processing, nightly (`20270109095000`); pgTAP 6/6.
+- Import spreadsheets filed in Files › Imports, origin "Import", everyone with Files sees them, kept until the
+  business trashes them (Jafar's answers); `20270109096000`, pgTAP 8/8, import vitest 102/102. Six earlier dev
+  imports filed by a one-off run. On dev they stay "pending" because no virus scanner runs there.
+
+## Still with Jafar
+
+- AWS console: an expiry rule (proposed 30 days) on S3 `ucrm-ses-inbound-mime`; the number feeds Part 15.
+- Twilio console: delete closed subaccounts' data after 30 days.
+- Possible later: same 30-day body rule for `communication_provider_callback_events` (the inbound attachment
+  worker reads SES callback bodies, so check it first). Not raised with Jafar yet.
 
 ## Found while mapping (for later parts)
 
@@ -42,5 +46,4 @@ branch), reservation `ee89c1c453ce`. Pushed.
 
 ## Next action
 
-Part 3 is built. Merge the planning branch and this branch to main, then wait for Jafar's answers above. Any yes
-becomes a small follow-up slice on the engine.
+Part 3 and its follow-ups are done. Next: Pencil design parts 4, 5, 8, 11, 13.

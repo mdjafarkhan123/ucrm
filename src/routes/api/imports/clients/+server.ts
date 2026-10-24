@@ -5,6 +5,7 @@ import { requireClientPermission } from '$lib/server/access/clients';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { buildClientImportObjectKey, putObject } from '$lib/server/storage/r2';
+import { fileImportSpreadsheet } from '$lib/server/imports/import-spreadsheet-file';
 
 // Step 2 of the client import: take one CSV, look at it, and remember it -- nothing is imported yet. The
 // caps are the load boundary for the whole feature: because the file is small enough to hold in memory, the
@@ -116,6 +117,13 @@ export const POST: RequestHandler = async (event) => {
 		}
 	});
 	if (error) return databaseError();
+
+	await fileImportSpreadsheet({
+		organizationId,
+		batchId: batch.id,
+		uploadedBy: access.auth.user.id,
+		sizeBytes: file.size
+	});
 
 	return json(
 		{

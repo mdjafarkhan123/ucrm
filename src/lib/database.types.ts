@@ -29345,6 +29345,49 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			register_import_file: {
+				Args: {
+					target_batch_id: string;
+					target_organization_id: string;
+					target_size_bytes: number;
+					target_uploaded_by: string;
+				};
+				Returns: {
+					caption: string | null;
+					checksum_sha256: string | null;
+					claim_token: string | null;
+					claimed_at: string | null;
+					created_at: string;
+					display_name: string;
+					folder_id: string | null;
+					id: string;
+					kind: string | null;
+					mime_type: string;
+					object_key: string | null;
+					organization_id: string;
+					origin_id: string | null;
+					origin_role: string;
+					origin_type: string;
+					processing_attempts: number;
+					processing_error: string | null;
+					processing_state: string;
+					purged_at: string | null;
+					scanned_at: string | null;
+					size_bytes: number;
+					thumbnail_object_key: string | null;
+					trashed_at: string | null;
+					trashed_by: string | null;
+					updated_at: string;
+					upload_completed_at: string | null;
+					uploaded_by: string | null;
+				};
+				SetofOptions: {
+					from: '*';
+					to: 'files';
+					isOneToOne: true;
+					isSetofReturn: false;
+				};
+			};
 			register_pending_file: {
 				Args: {
 					target_display_name: string;

@@ -593,7 +593,8 @@ const ORIGIN_LABELS: Record<string, string> = {
 	job_expense: 'Job expense',
 	visit: 'Visit',
 	marketing_campaign: 'Marketing campaign',
-	catalog_item: 'Price list item'
+	catalog_item: 'Price list item',
+	import: 'Import'
 };
 
 export function formatOrigin(originType: string): string {

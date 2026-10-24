@@ -3,6 +3,7 @@ import { POST as uploadImport } from './+server';
 import { requireClientPermission } from '$lib/server/access/clients';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import { putObject } from '$lib/server/storage/r2';
+import { fileImportSpreadsheet } from '$lib/server/imports/import-spreadsheet-file';
 
 vi.mock('$lib/server/access/clients', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/clients')>(
@@ -24,7 +25,10 @@ vi.mock('$lib/server/storage/r2', () => ({
 	putObject: vi.fn()
 }));
 
+vi.mock('$lib/server/imports/import-spreadsheet-file', () => ({ fileImportSpreadsheet: vi.fn() }));
+
 const mockedRequire = vi.mocked(requireClientPermission);
+const mockedFileSpreadsheet = vi.mocked(fileImportSpreadsheet);
 const mockedRateLimit = vi.mocked(checkRateLimit);
 const mockedPutObject = vi.mocked(putObject);
 
@@ -80,6 +84,7 @@ describe('POST /api/imports/clients', () => {
 		expect(response.status).toBe(422);
 		expect(mockedPutObject).not.toHaveBeenCalled();
 		expect(event.__rpc).not.toHaveBeenCalled();
+		expect(mockedFileSpreadsheet).not.toHaveBeenCalled();
 	});
 
 	it('rejects a file over the byte cap before parsing it', async () => {
@@ -143,6 +148,12 @@ describe('POST /api/imports/clients', () => {
 			source_filename: 'clients.csv',
 			storage_object_key: `${ORGANIZATION_ID}/client-imports/fixed-uuid-clients.csv`,
 			file_row_count: 25
+		});
+		expect(mockedFileSpreadsheet).toHaveBeenCalledWith({
+			organizationId: ORGANIZATION_ID,
+			batchId: 'batch-1',
+			uploadedBy: 'user-1',
+			sizeBytes: expect.any(Number)
 		});
 	});
 
