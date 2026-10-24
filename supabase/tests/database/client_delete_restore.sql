@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(44);
+select plan(48);
 
 -- 1. Privileges ------------------------------------------------------------------------------------------------
 
@@ -252,8 +252,26 @@ select is((select count(*)::int from public.client_contact_methods
 create temporary table deleted_again as
   select public.delete_clients(array['c6300000-0000-0000-0000-000000000001'::uuid]) as result;
 
+set local role postgres;
+update public.client_deletions set purge_after = now() - interval '1 minute'
+where client_id = 'c6300000-0000-0000-0000-000000000001' and restored_at is null;
+
 select set_config('request.jwt.claim.sub', '', true);
 set local role service_role;
+select is((select count(*)::int from public.claim_due_client_deletions(5)
+  where client_id = 'c6300000-0000-0000-0000-000000000001'), 1, 'the hourly job finds Ann once her 30 days are up');
+select is((select count(*)::int from public.claim_due_client_deletions(5)
+  where client_id = 'c6300000-0000-0000-0000-000000000001'), 0, 'and a second run does not take her while she is leased');
+select is(public.record_client_deletion_purge_failure((select id from public.client_deletions
+  where client_id = 'c6300000-0000-0000-0000-000000000001' and restored_at is null), 'Test refusal'), false,
+  'a first refusal is kept without an alert');
+set local role postgres;
+update public.client_deletions set purge_failed_since = now() - interval '2 days'
+where client_id = 'c6300000-0000-0000-0000-000000000001' and restored_at is null;
+set local role service_role;
+select is(public.record_client_deletion_purge_failure((select id from public.client_deletions
+  where client_id = 'c6300000-0000-0000-0000-000000000001' and restored_at is null), 'Test refusal'), true,
+  'after a day of refusals one alert is due');
 create temporary table purged as
   select public.run_client_purge('c6200000-0000-0000-0000-000000000001', 'c6300000-0000-0000-0000-000000000001',
     'scheduled', null, null, null) as result;

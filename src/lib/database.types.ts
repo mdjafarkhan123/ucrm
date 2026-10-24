@@ -154,6 +154,7 @@ export type Database = {
 			};
 			assessments: {
 				Row: {
+					client_deleted_at: string | null;
 					all_day: boolean;
 					completed_at: string | null;
 					created_at: string;
@@ -167,6 +168,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					all_day?: boolean;
 					completed_at?: string | null;
 					created_at?: string;
@@ -180,6 +182,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					all_day?: boolean;
 					completed_at?: string | null;
 					created_at?: string;
@@ -766,6 +769,7 @@ export type Database = {
 			};
 			client_contact_methods: {
 				Row: {
+					client_deleted_at: string | null;
 					client_contact_id: string | null;
 					client_id: string;
 					created_at: string;
@@ -780,6 +784,7 @@ export type Database = {
 					value: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					client_contact_id?: string | null;
 					client_id: string;
 					created_at?: string;
@@ -794,6 +799,7 @@ export type Database = {
 					value: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					client_contact_id?: string | null;
 					client_id?: string;
 					created_at?: string;
@@ -947,6 +953,78 @@ export type Database = {
 					},
 					{
 						foreignKeyName: 'client_deletion_receipts_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			client_deletions: {
+				Row: {
+					client_id: string;
+					counts: Json;
+					deleted_at: string;
+					deleted_by: string | null;
+					id: string;
+					kept: Json;
+					organization_id: string;
+					purge_after: string;
+					purge_alerted_at: string | null;
+					purge_attempted_at: string | null;
+					purge_failed_since: string | null;
+					purge_failure: string | null;
+					purged_at: string | null;
+					receipt_id: string | null;
+					restored_at: string | null;
+					restored_by: string | null;
+				};
+				Insert: {
+					client_id: string;
+					counts?: Json;
+					deleted_at?: string;
+					deleted_by?: string | null;
+					id?: string;
+					kept?: Json;
+					organization_id: string;
+					purge_after: string;
+					purge_alerted_at?: string | null;
+					purge_attempted_at?: string | null;
+					purge_failed_since?: string | null;
+					purge_failure?: string | null;
+					purged_at?: string | null;
+					receipt_id?: string | null;
+					restored_at?: string | null;
+					restored_by?: string | null;
+				};
+				Update: {
+					client_id?: string;
+					counts?: Json;
+					deleted_at?: string;
+					deleted_by?: string | null;
+					id?: string;
+					kept?: Json;
+					organization_id?: string;
+					purge_after?: string;
+					purge_alerted_at?: string | null;
+					purge_attempted_at?: string | null;
+					purge_failed_since?: string | null;
+					purge_failure?: string | null;
+					purged_at?: string | null;
+					receipt_id?: string | null;
+					restored_at?: string | null;
+					restored_by?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'client_deletions_client_fkey';
+						columns: ['organization_id', 'client_id'];
+						isOneToOne: false;
+						referencedRelation: 'clients';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'client_deletions_organization_id_fkey';
 						columns: ['organization_id'];
 						isOneToOne: false;
 						referencedRelation: 'organizations';
@@ -1595,6 +1673,7 @@ export type Database = {
 			};
 			communication_delivery_intents: {
 				Row: {
+					client_deleted_at: string | null;
 					accepted_at: string | null;
 					allowance_class: string;
 					channel: string;
@@ -1635,6 +1714,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					accepted_at?: string | null;
 					allowance_class?: string;
 					channel?: string;
@@ -1675,6 +1755,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					accepted_at?: string | null;
 					allowance_class?: string;
 					channel?: string;
@@ -2841,6 +2922,7 @@ export type Database = {
 			};
 			communication_forward_events: {
 				Row: {
+					client_deleted_at: string | null;
 					accepted_at: string | null;
 					attempt_count: number;
 					available_at: string;
@@ -2867,6 +2949,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					accepted_at?: string | null;
 					attempt_count?: number;
 					available_at?: string;
@@ -2893,6 +2976,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					accepted_at?: string | null;
 					attempt_count?: number;
 					available_at?: string;
@@ -3020,6 +3104,7 @@ export type Database = {
 			};
 			communication_inbound_messages: {
 				Row: {
+					client_deleted_at: string | null;
 					attachment_count: number;
 					automation_suppressed: boolean;
 					cc_recipients: Json;
@@ -3056,6 +3141,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					attachment_count?: number;
 					automation_suppressed?: boolean;
 					cc_recipients?: Json;
@@ -3092,6 +3178,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					attachment_count?: number;
 					automation_suppressed?: boolean;
 					cc_recipients?: Json;
@@ -7611,6 +7698,7 @@ export type Database = {
 			};
 			invoices: {
 				Row: {
+					client_deleted_at: string | null;
 					billing_address_snapshot: Json;
 					client_id: string;
 					contract_disclaimer: string | null;
@@ -7665,6 +7753,7 @@ export type Database = {
 					written_off_by: string | null;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					billing_address_snapshot?: Json;
 					client_id: string;
 					contract_disclaimer?: string | null;
@@ -7719,6 +7808,7 @@ export type Database = {
 					written_off_by?: string | null;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					billing_address_snapshot?: Json;
 					client_id?: string;
 					contract_disclaimer?: string | null;
@@ -9180,6 +9270,7 @@ export type Database = {
 			};
 			job_visits: {
 				Row: {
+					client_deleted_at: string | null;
 					all_day: boolean;
 					completed_at: string | null;
 					completed_by: string | null;
@@ -9202,6 +9293,7 @@ export type Database = {
 					visit_date: string | null;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					all_day?: boolean;
 					completed_at?: string | null;
 					completed_by?: string | null;
@@ -9224,6 +9316,7 @@ export type Database = {
 					visit_date?: string | null;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					all_day?: boolean;
 					completed_at?: string | null;
 					completed_by?: string | null;
@@ -9271,6 +9364,7 @@ export type Database = {
 			};
 			jobs: {
 				Row: {
+					client_deleted_at: string | null;
 					arrival_window_minutes: number | null;
 					arrival_window_style: string | null;
 					billing_timing: string;
@@ -9314,6 +9408,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					arrival_window_minutes?: number | null;
 					arrival_window_style?: string | null;
 					billing_timing?: string;
@@ -9357,6 +9452,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					arrival_window_minutes?: number | null;
 					arrival_window_style?: string | null;
 					billing_timing?: string;
@@ -10343,6 +10439,7 @@ export type Database = {
 			};
 			opportunities: {
 				Row: {
+					client_deleted_at: string | null;
 					board_column: string | null;
 					client_id: string;
 					created_at: string;
@@ -10368,6 +10465,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					board_column?: string | null;
 					client_id: string;
 					created_at?: string;
@@ -10393,6 +10491,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					board_column?: string | null;
 					client_id?: string;
 					created_at?: string;
@@ -16919,6 +17018,7 @@ export type Database = {
 			};
 			properties: {
 				Row: {
+					client_deleted_at: string | null;
 					access_notes: string | null;
 					address_line1: string;
 					address_line2: string | null;
@@ -16942,6 +17042,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					access_notes?: string | null;
 					address_line1: string;
 					address_line2?: string | null;
@@ -16965,6 +17066,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					access_notes?: string | null;
 					address_line1?: string;
 					address_line2?: string | null;
@@ -17945,6 +18047,7 @@ export type Database = {
 			};
 			quotes: {
 				Row: {
+					client_deleted_at: string | null;
 					archive_reason: string | null;
 					archived_at: string | null;
 					client_id: string;
@@ -17972,6 +18075,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					archive_reason?: string | null;
 					archived_at?: string | null;
 					client_id: string;
@@ -17999,6 +18103,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					archive_reason?: string | null;
 					archived_at?: string | null;
 					client_id?: string;
@@ -18181,6 +18286,7 @@ export type Database = {
 			};
 			requests: {
 				Row: {
+					client_deleted_at: string | null;
 					client_id: string;
 					created_at: string;
 					description: string | null;
@@ -18197,6 +18303,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					client_id: string;
 					created_at?: string;
 					description?: string | null;
@@ -18213,6 +18320,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					client_id?: string;
 					created_at?: string;
 					description?: string | null;
@@ -18340,6 +18448,7 @@ export type Database = {
 			};
 			review_requests: {
 				Row: {
+					client_deleted_at: string | null;
 					cancelled_at: string | null;
 					cancelled_by: string | null;
 					channel: string;
@@ -18366,6 +18475,7 @@ export type Database = {
 					style: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					cancelled_at?: string | null;
 					cancelled_by?: string | null;
 					channel: string;
@@ -18392,6 +18502,7 @@ export type Database = {
 					style?: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					cancelled_at?: string | null;
 					cancelled_by?: string | null;
 					channel?: string;
@@ -19897,6 +20008,7 @@ export type Database = {
 			};
 			website_chat_messages: {
 				Row: {
+					client_deleted_at: string | null;
 					body: string;
 					client_id: string | null;
 					created_at: string;
@@ -19910,6 +20022,7 @@ export type Database = {
 					session_id: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					body: string;
 					client_id?: string | null;
 					created_at?: string;
@@ -19923,6 +20036,7 @@ export type Database = {
 					session_id: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					body?: string;
 					client_id?: string | null;
 					created_at?: string;
@@ -20003,6 +20117,7 @@ export type Database = {
 			};
 			website_chat_sessions: {
 				Row: {
+					client_deleted_at: string | null;
 					attribution: Json;
 					candidate_client_id_by_email: string | null;
 					candidate_client_id_by_phone: string | null;
@@ -20029,6 +20144,7 @@ export type Database = {
 					widget_id: string;
 				};
 				Insert: {
+					client_deleted_at?: string | null;
 					attribution?: Json;
 					candidate_client_id_by_email?: string | null;
 					candidate_client_id_by_phone?: string | null;
@@ -20055,6 +20171,7 @@ export type Database = {
 					widget_id: string;
 				};
 				Update: {
+					client_deleted_at?: string | null;
 					attribution?: Json;
 					candidate_client_id_by_email?: string | null;
 					candidate_client_id_by_phone?: string | null;
@@ -20384,6 +20501,60 @@ export type Database = {
 			};
 		};
 		Functions: {
+			restore_client_deletions: {
+				Args: { restore_mode?: string; target_deletion_ids: string[] };
+				Returns: Json;
+			};
+			record_client_deletion_purge_failure: {
+				Args: { failure: string; target_deletion_id: string };
+				Returns: boolean;
+			};
+			recently_deleted_clients: {
+				Args: never;
+				Returns: {
+					client_id: string;
+					counts: Json;
+					deleted_at: string;
+					deleted_by: string;
+					deleted_by_name: string;
+					deletion_id: string;
+					display_name: string;
+					kept: Json;
+					purge_after: string;
+				}[];
+			};
+			delete_clients: { Args: { target_client_ids: string[] }; Returns: Json };
+			client_delete_preview: {
+				Args: { target_client_ids: string[] };
+				Returns: Json;
+			};
+			claim_due_client_deletions: {
+				Args: { batch_size?: number };
+				Returns: {
+					client_id: string;
+					counts: Json;
+					deleted_at: string;
+					deleted_by: string | null;
+					id: string;
+					kept: Json;
+					organization_id: string;
+					purge_after: string;
+					purge_alerted_at: string | null;
+					purge_attempted_at: string | null;
+					purge_failed_since: string | null;
+					purge_failure: string | null;
+					purged_at: string | null;
+					receipt_id: string | null;
+					restored_at: string | null;
+					restored_by: string | null;
+				}[];
+				SetofOptions: {
+					from: '*';
+					to: 'client_deletions';
+					isOneToOne: false;
+					isSetofReturn: true;
+				};
+			};
 			accept_ownership_transfer: {
 				Args: { accepting_user_id: string; target_transfer_id: string };
 				Returns: {
