@@ -32,8 +32,9 @@ file is the implementation plan; it changes no promised behaviour. The permanent
 1. **Member reads:** each marked table's SELECT policy gains `client_deleted_at is null`; `clients` gains
    `deleted_at is null`. A column on the row itself, so no join per row.
 2. **Security-definer reads** (lists, boards, reports, schedule, inbox, search, customer links) bypass row
-   security, so each gains the same filter. The sweep list is in the part note; a pgTAP test lists every definer
-   function reading a marked table so a new one cannot be missed silently.
+   security, so each reads `(select * from public.<table> where client_deleted_at is null)` instead of the table
+   (`20270110091000`). Server code that reads with the service key (inbox, conversation search) adds
+   `.is('client_deleted_at', null)`. **A new definer list or report over these tables must do the same.**
 3. **Writes:** one trigger on each marked table refuses an insert or update for a deleted client, except inside
    the delete, restore and purge (transaction flag, as the engine does). Creating new work for a deleted client
    (direct API call, booking, import) fails the same way.
@@ -61,10 +62,14 @@ file is the implementation plan; it changes no promised behaviour. The permanent
 
 ## Day 30
 
-A cron job every hour calls `/api/internal/privacy/client-deletion-scheduled` (secret, as the cleanup route). The
-route claims due rows (`purge_after <= now()`, `for update skip locked`, 20 at a time), calls `run_client_purge`
-with trigger `scheduled`, stores the receipt id, then runs `cleanUpClientDeletion`. A refusal (new open money, a
-message mid-send) records `failure` and retries next hour; after a day of failures the owner gets a bell alert.
+The existing client-deletion job (`client-deletion-hourly`, formerly daily) calls the same internal route with the
+same secret, so no new Vault entry is needed. The route first runs `runScheduledClientDeletions`
+(`src/lib/server/privacy/client-deletion-scheduled.ts`): it leases due rows for 30 minutes
+(`claim_due_client_deletions`, skip-locked, five at a time, 40 s budget), calls `run_client_purge` with trigger
+`scheduled`, and cleans up stored files straight away. The purge's trigger on `clients.purged_at` closes the delete
+record. A refusal (new open money, a message mid-send) is kept on the row and retried next hour
+(`record_client_deletion_purge_failure`); after a day of failures Jafar gets one alert. Then the Part 3 file-cleanup
+sweep runs as before.
 
 ## Performance design
 

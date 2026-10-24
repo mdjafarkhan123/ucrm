@@ -15,11 +15,15 @@
   migration (`mark_property_for_geocoding`: permission denied for schema private) — older problem, not raised yet.
   Same-phone restore: the clashing value stays hidden on the restored client (its message history points at it);
   merge moves that history onto the newer client's value first.
-- **6b Read sweep** — security-definer lists, boards, reports, schedule (`client_schedule_rows`,
-  `schedule_calendar_context`, `job_schedule_stages`), pipeline, financial pages, `ready_to_bill_page`, quote list,
-  customer links (quote, job report); server modules reading with the service key (inbox, Files, search,
-  automation and review workers). Invoices show "Deleted client" where the client join is now empty.
-- **6c Day 30** — hourly job and route, retries, owner alert.
+- **6b Read sweep — done 2026-10-24.** `20270110091000`: 41 definer lists/reports/customer links read filtered
+  work tables (47 related pgTAP files: same results before and after). `20270110092000`: forwards marked, Messenger
+  reply claim cancels. Inbox (`email-history`) and conversation search filter the mark. Messenger inbound already
+  starts a new lead for a deleted client (`record_communication_messenger_inbound_message`); after restore the
+  Messenger identity stays with that new lead. **Open:** Files page still lists a deleted client's files
+  (`list_files` shows every file to `files.view`); invoices whose client is hidden must show "Deleted client" (6d).
+- **6c Day 30 — done 2026-10-24.** `20270110093000` (job now `client-deletion-hourly`), `client-deletion-scheduled.ts`,
+  vitest 12/12 (privacy folder), pgTAP 48/48. Types added by hand to `database.types.ts` (regenerating from dev would
+  drop other branches' tables).
 - **6d API and screens** — `/api/clients/delete`, `/api/clients/deleted` (list, restore); Delete client pop-up
   (one and many, money-open refusal, counting/failed states), Undo toast, Clients list bulk action, Recently
   Deleted page with every state, same-phone pop-up.
@@ -32,5 +36,5 @@
 
 ## Next action
 
-6b read sweep. Known gaps: Messenger identities of a deleted client (inbound Messenger would still attach to them),
-messenger send claim, inbox (`/api/communications/email-history` reads with the service key), Files page, notes.
+6d: API routes, then the Delete client pop-up and Recently Deleted page (read the live client page `…` menu and
+Clients list bulk bar first).
