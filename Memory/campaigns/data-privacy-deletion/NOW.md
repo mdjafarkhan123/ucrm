@@ -13,8 +13,8 @@ version, § Money records after any delete, § "Don't contact me" survives delet
 reservation `7e0488eb9224`) — main free again 2026-10-24. Merge with Part 3.
 
 **In progress:** Part 3 on branch `claude/data-privacy-part3` (folder `.worktrees/data-privacy-part3`,
-reservation `22a159eee4c9`) — engine applied to the dev database 2026-10-24, 63 checks pass; next is the
-organisation-purge check, types, EXPLAIN, then 3b provider cleanup. See `parts/03-delete-engine.md`.
+reservation `22a159eee4c9`) — 3a engine done and speed-checked 2026-10-24; next is 3b provider cleanup, and
+one Twilio key question for Jafar. See `parts/03-delete-engine.md`.
 
 **Next part:** finish 3. Design sessions take 4, 5, 8, 11, 13 in Pencil.
 
