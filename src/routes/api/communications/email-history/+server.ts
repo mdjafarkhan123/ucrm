@@ -206,6 +206,8 @@ export const GET: RequestHandler = async (event) => {
 			'id, client_id, channel, recipient_email, recipient_phone, quote_id, subject, text_content, status, failure_code, failure_message, created_at, resent_from_intent_id, send_kind, created_by, delivery_outcome, delivery_outcome_at'
 		)
 		.eq('organization_id', organizationId)
+		// A customer in Recently Deleted leaves the inbox with their messages (data privacy Part 6).
+		.is('client_deleted_at', null)
 		.order('created_at', { ascending: false })
 		.order('id', { ascending: false });
 	if (requestedClientId) outboundQuery = outboundQuery.eq('client_id', requestedClientId);
@@ -234,6 +236,7 @@ export const GET: RequestHandler = async (event) => {
 					'id, client_id, channel, sender_email, sender_phone, sender_name, subject, text_content, created_at, in_reply_to_intent_id, message_kind, review_status, review_reason, automation_suppressed, attachment_count, provider, provider_message_id, messenger_identity_id'
 				)
 				.eq('organization_id', organizationId)
+				.is('client_deleted_at', null)
 				// A dismissed guarded message is triaged away, not deleted -- it keeps its audit row but
 				// leaves the inbox for good (Part 5C-i).
 				.neq('review_status', 'dismissed')
@@ -269,6 +272,7 @@ export const GET: RequestHandler = async (event) => {
 					'id, client_id, recipient_emails, subject, text_content, status, failure_message, created_at, created_by'
 				)
 				.eq('organization_id', organizationId)
+				.is('client_deleted_at', null)
 				.order('created_at', { ascending: false })
 				.order('id', { ascending: false })
 		: null;
@@ -296,6 +300,7 @@ export const GET: RequestHandler = async (event) => {
 				.select(WEBSITE_CHAT_MESSAGE_COLUMNS)
 				.eq('organization_id', organizationId)
 				.not('client_id', 'is', null)
+				.is('client_deleted_at', null)
 				.order('created_at', { ascending: false })
 				.order('id', { ascending: false })
 		: null;

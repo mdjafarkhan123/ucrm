@@ -76,6 +76,8 @@ export async function searchConversations(
 		.select('id, organization_id, client_id, recipient_email, subject, created_at')
 		.eq('organization_id', organizationId)
 		.eq('channel', 'email')
+		// A customer in Recently Deleted is out of search with their messages (data privacy Part 6).
+		.is('client_deleted_at', null)
 		.or(`subject.ilike.${quoted},recipient_email.ilike.${quoted}`)
 		.order('created_at', { ascending: false })
 		.limit(SOURCE_LIMIT);
@@ -86,6 +88,7 @@ export async function searchConversations(
 		)
 		.eq('organization_id', organizationId)
 		.neq('review_status', 'dismissed')
+		.is('client_deleted_at', null)
 		.or(`subject.ilike.${quoted},sender_email.ilike.${quoted},sender_name.ilike.${quoted}`)
 		.order('created_at', { ascending: false })
 		.limit(SOURCE_LIMIT);
@@ -93,6 +96,7 @@ export async function searchConversations(
 		.from('communication_forward_events')
 		.select('id, organization_id, client_id, subject, created_at')
 		.eq('organization_id', organizationId)
+		.is('client_deleted_at', null)
 		.ilike('subject', pattern)
 		.order('created_at', { ascending: false })
 		.limit(SOURCE_LIMIT);
@@ -100,6 +104,7 @@ export async function searchConversations(
 		.from('website_chat_messages')
 		.select('id, organization_id, client_id, session_id, body, created_at')
 		.eq('organization_id', organizationId)
+		.is('client_deleted_at', null)
 		.ilike('body', pattern)
 		.order('created_at', { ascending: false })
 		.limit(SOURCE_LIMIT);
