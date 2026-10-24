@@ -34,7 +34,9 @@
 		texting_paused: 'critical',
 		business_details_needed: 'informative',
 		under_review: 'warning',
-		getting_ready: 'warning'
+		getting_ready: 'warning',
+		sending_paused: 'critical',
+		released: 'inactive'
 	};
 
 	const segments = $derived(

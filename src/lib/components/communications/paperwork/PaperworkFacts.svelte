@@ -34,6 +34,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <dl class="paperwork-facts">
 	{#each facts as fact (fact.key)}
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -- -1 only: a "fix this" link moves focus to its row -->
 		<div
 			class={['paperwork-facts__row', fact.needsFix && 'paperwork-facts__row--fix']}
 			id={anchored.has(fact.key) ? `paperwork-fact-${fact.step}` : undefined}

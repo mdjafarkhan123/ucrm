@@ -99,11 +99,6 @@
 			box-shadow: none;
 		}
 
-		&__icon :global(svg) {
-			width: 22px;
-			height: 22px;
-		}
-
 		&__title {
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-large);
